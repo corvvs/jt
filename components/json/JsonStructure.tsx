@@ -112,7 +112,7 @@ const JsonObjectStructure = (props: {
           <div className={keyClassName}>
             <div className="sticky top-0 flex items-center">
               {is_structural ? null : <IconForType json={value} /> }
-              <p className="key p-1">{k}</p>
+              <p className="key max-w-[10em] text-ellipsis whitespace-nowrap overflow-hidden p-1">{k}</p>
               {is_structural ? <IconForType json={value} /> : null }
               { _.isFinite(itemCount) ? <p className="p-1">({itemCount})</p> : null }
             </div>
