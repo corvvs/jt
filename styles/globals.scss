@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+
+}
+
+* {
+  border-color: #888;
+}
+
+.json-structure {
+  position: relative;
+  .schema-index, .schema-count, .schema-key, .schema-value {
+    color: #888;
+    border-bottom: 1px solid;
+  }
+
+  .item-index, .item-key {
+    &:hover {
+      background-color: rgb(196, 219, 196);
+    }
+  }
+
+  .item-key .key {
+    color: rgb(54, 102, 186);
+  }
+
+  .item-index .index {
+    color: rgb(54, 102, 186);
+  }
+
+  &.json-string-structure {
+    &:hover {
+      background-color: rgb(196, 219, 196);
+    }
+    .item-value {
+      color: rgb(236, 83, 106);
+    }
+  }
+
+  &.json-number-structure {
+    &:hover {
+      background-color: rgb(196, 219, 196);
+    }
+    .item-value {
+      color: rgb(55, 90, 55);
+      &:hover {
+        background-color: rgb(196, 219, 196);
+      }
+    }
+  }
+
+  &.json-boolean-structure:hover {
+    background-color: rgb(196, 219, 196);
+  }
+
+  &.json-null-structure:hover {
+    background-color: rgb(196, 219, 196);
+  }
+
+  .value-true {
+    font-weight: bold;
+    color: green;
+  }
+
+  .value-false {
+    font-weight: bold;
+    color: grey;
+  }
+}
+
