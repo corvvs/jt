@@ -12,7 +12,7 @@ const IconNumber = TiSortNumerically;
 const IconTrue = BsToggleOn;
 const IconFalse = BsToggleOff;
 const IconObject = MdDataObject;
-const IconArray = MdDataArray;
+const IconArray = MdDataArray;  
 
 
 const ActualIconForType = (props: {
@@ -46,43 +46,44 @@ const IconForType = (props: {
   return <InlineIcon className="text-xl" i={<Icon className="text-xl" />} />
 }
 
-const JsonNullStructure = (props: {
+type JsoCommonStructureProps = {
   jkey?: string;
+  depth?: number;
+}
+
+const JsonNullStructure = (props: JsoCommonStructureProps & {
   js: JSONNullValueStruct;
 }) => {
-  return (<div className="json-structure json-null-structure">
+  return (<div className="json-structure item-value json-null-structure">
     <p className="value-null">(null)</p>
   </div>);
 }
 
-const JsonStringStructure = (props: {
-  jkey?: string;
+const JsonStringStructure = (props: JsoCommonStructureProps & {
   js: JSONStringValueStruct;
 }) => {
-  return (<div className="json-structure json-string-structure flex items-center">
-    <p className="item-value">
+  return (<div className="json-structure item-value json-string-structure flex items-center">
+    <p className="">
       &quot;{props.js.value}&quot;
     </p>
   </div>);
 }
 
-const JsonNumberStructure = (props: {
-  jkey?: string;
+const JsonNumberStructure = (props: JsoCommonStructureProps & {
   js: JSONNumberValueStruct;
 }) => {
-  return (<div className="json-structure json-number-structure flex items-center">
-    <p className="item-value">
+  return (<div className="json-structure item-value json-number-structure flex items-center">
+    <p className="">
       {props.js.value}
     </p>
   </div>);
 }
 
-const JsonBooleanStructure = (props: {
-  jkey?: string;
+const JsonBooleanStructure = (props: JsoCommonStructureProps & {
   js: JSONBooleanValueStruct;
 }) => {
-  return (<div className="json-structure json-boolean-structure flex items-center">
-    <p className="item-value">
+  return (<div className="json-structure item-value json-boolean-structure flex items-center">
+    <p className="">
       {props.js.value
         ? <span className="value-true">True</span>
         : <span className="value-false">False</span>}
@@ -90,22 +91,27 @@ const JsonBooleanStructure = (props: {
   </div>);
 }
 
-const JsonObjectStructure = (props: {
-  jkey?: string;
+const JsonObjectStructure = (props: JsoCommonStructureProps & {
   js: JSONObjectValueStruct;
 }) => {
+  const depth = ((props.depth ?? 0) + 1) % 5;
   return (<div className="json-structure json-object-structure grid grid-cols-[max-content_1fr] justify-stretch">
-    <p className="schema-key">
-      <span className="p-1">key</span>
-    </p>
-    <p className="schema-value">
-      <span className="p-1">value</span>
-    </p>
+    {
+      props.js.subtree.length === 0 ? null : <>
+        <p className="schema-key">
+          <span className="p-1">key</span>
+        </p>
+        <p className="schema-value">
+        </p>
+      </>
+    }
     {props.js.subtree.map((v) => {
       const [k, value] = v;
       const key = `${props.jkey ? props.jkey + "." : ""}${k}`;
       const is_structural = value.typename === "object" || value.typename === "array";
-      const keyClassName = is_structural ? "item-key flex items-start" : "item-key flex items-center";
+      const keyClassName = is_structural
+        ? `item-key flex items-start depth-${depth}`
+        : `item-key flex items-center depth-${depth}`;
       const itemCount = jsonItemCount(value);
       return (
         <React.Fragment key={key}>
@@ -117,8 +123,8 @@ const JsonObjectStructure = (props: {
               { _.isFinite(itemCount) ? <p className="p-1">({itemCount})</p> : null }
             </div>
           </div>
-          <div className="item-value flex items-center pl-1">
-            <JsonStructure jkey={key} js={value} />
+          <div className="item-value flex items-center">
+            <JsonStructure jkey={key} depth={(props.depth ?? 0) + 1} js={value} />
           </div>
         </React.Fragment>
       );
@@ -126,35 +132,41 @@ const JsonObjectStructure = (props: {
   </div>);
 }
 
-const JsonArrayStructure = (props: {
-  jkey?: string;
+const JsonArrayStructure = (props: JsoCommonStructureProps & {
   js: JSONArrayValueStruct;
 }) => {
+  const depth = ((props.depth ?? 0) + 1) % 5;
   return (<div className="json-structure json-array-structure grid grid-cols-[max-content_1fr] justify-stretch">
-    <p className="schema-index">
-      <span className="p-1">idx</span>
-    </p>
-    <p className="schema-count">
-    </p>
+    {
+      props.js.subarray.length === 0 ? null : <>
+        <p className="schema-index">
+          <span className="p-1">index</span>
+        </p>
+        <p className="schema-count">
+        </p>
+      </>
+    }
 
-    {props.js.subarray.map((v, i) => {
+    { props.js.subarray.map((v, i) => {
       const key = `${props.jkey ? props.jkey + "." : ""}${i}`;
       const is_structural = v.typename === "object" || v.typename === "array";
-      const keyClassName = is_structural ? "item-index flex items-start" : "item-index flex items-center";
+      const keyClassName = is_structural
+        ? `item-index flex items-start depth-${depth}`
+        : `item-index flex items-center depth-${depth}`;
       const itemCount = jsonItemCount(v);
       return (<React.Fragment key={key}>
 
         <div className={keyClassName}>
           <div className="sticky top-0 flex items-center">
             {is_structural ? null: <IconForType json={v} /> }
-            <p className="index p-1 font-bold">#{i}</p>
+            <p className="index p-1">#{i}</p>
             {is_structural ? <IconForType json={v} /> : null }
             { _.isFinite(itemCount) ? <p className="p-1">({itemCount})</p> : null }
           </div>
         </div>
 
-        <div className="item-value flex items-center pl-1">
-          <JsonStructure jkey={key} js={v} />
+        <div className="item-value flex items-center">
+          <JsonStructure jkey={key} depth={(props.depth ?? 0) + 1} js={v} />
         </div>
 
       </React.Fragment>)
@@ -162,27 +174,26 @@ const JsonArrayStructure = (props: {
   </div>);
 }
 
-export const JsonStructure = (props: {
-  jkey?: string;
+export const JsonStructure = (props: JsoCommonStructureProps & {
   js: JSONValueStruct;
 }) => {
   if (props.js.typename === "string") {
-    return <JsonStringStructure jkey={props.jkey} js={props.js} />
+    return <JsonStringStructure jkey={props.jkey} depth={props.depth} js={props.js} />
   }
   if (props.js.typename === "number") {
-    return <JsonNumberStructure jkey={props.jkey} js={props.js} />
+    return <JsonNumberStructure jkey={props.jkey} depth={props.depth} js={props.js} />
   }
   if (props.js.typename === "boolean") {
-    return <JsonBooleanStructure jkey={props.jkey} js={props.js} />
+    return <JsonBooleanStructure jkey={props.jkey} depth={props.depth} js={props.js} />
   }
   if (props.js.typename === "object") {
-    return <JsonObjectStructure jkey={props.jkey} js={props.js} />
+    return <JsonObjectStructure jkey={props.jkey} depth={props.depth} js={props.js} />
   }
   if (props.js.typename === "array") {
-    return <JsonArrayStructure jkey={props.jkey} js={props.js} />
+    return <JsonArrayStructure jkey={props.jkey} depth={props.depth} js={props.js} />
   }
   if (props.js.typename === "null") {
-    return <JsonNullStructure jkey={props.jkey} js={props.js} />
+    return <JsonNullStructure jkey={props.jkey} depth={props.depth} js={props.js} />
   }
   return null;
 };

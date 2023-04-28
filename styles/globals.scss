@@ -6,6 +6,20 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+
+  --background: #efefef;
+  --foreground-schema: #888;
+  --foreground-key: rgb(60, 57, 213);
+  --foreground-string: #cf5732;
+  --foreground-number: #44a742;
+  --foreground-true: #73ff9d;
+  --foreground-false: #b9d6b1;
+
+  --background-key-0: #e0e4ee;
+  --background-key-1: #eaefe1;
+  --background-key-2: #eee1ef;
+  --background-key-3: #e1efe8;
+  --background-key-4: #efe3e1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,18 +27,34 @@
     --foreground-rgb: 255, 255, 255;
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
+
+    --background: #000;
+    --foreground-schema: #b3b3b3;
+    --foreground-key: #3c7aff;
+    --foreground-string: #ff537b;
+    --foreground-number: #63ff3c;
+    --foreground-true: #73ff9d;
+    --foreground-false: #b9d6b1;
+
+    --background-key-0: #1e2025;
+    --background-key-1: #22241e;
+    --background-key-2: #241e24;
+    --background-key-3: #1e2421;
+    --background-key-4: #241f1e;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: var(--background);
 
+  .item-key .key {
+    color: var(--foreground-key);
+  }
+
+  .item-index .index {
+    color: var(--foreground-key);
+  }
 }
 
 * {
@@ -34,30 +64,26 @@ body {
 .json-structure {
   position: relative;
   .schema-index, .schema-count, .schema-key, .schema-value {
-    color: #888;
+    color: var(--foreground-schema);
     border-bottom: 1px solid;
   }
 
-  .item-index, .item-key {
-    &:hover {
-      background-color: rgb(196, 219, 196);
-    }
+  .item-value {
+    background-color: var(--background);
   }
 
-  .item-key .key {
-    color: rgb(54, 102, 186);
-  }
-
-  .item-index .index {
-    color: rgb(54, 102, 186);
-  }
+  // .item-index, .item-key {
+  //   &:hover {
+  //     background-color: rgb(196, 219, 196);
+  //   }
+  // }
 
   &.json-string-structure {
     &:hover {
       background-color: rgb(196, 219, 196);
     }
-    .item-value {
-      color: rgb(236, 83, 106);
+    &.item-value {
+      color: var(--foreground-string);
     }
   }
 
@@ -65,8 +91,8 @@ body {
     &:hover {
       background-color: rgb(196, 219, 196);
     }
-    .item-value {
-      color: rgb(55, 90, 55);
+    &.item-value {
+      color: var(--foreground-number);
       &:hover {
         background-color: rgb(196, 219, 196);
       }
@@ -79,6 +105,15 @@ body {
 
   &.json-null-structure:hover {
     background-color: rgb(196, 219, 196);
+  }
+
+  .item-key, .item-index {
+    &.depth-0{ background-color: var(--background-key-0); }
+    &.depth-1{ background-color: var(--background-key-1); }
+    &.depth-2{ background-color: var(--background-key-2); }
+    &.depth-3{ background-color: var(--background-key-3); }
+    &.depth-4{ background-color: var(--background-key-4); }
+    &.depth-5{ background-color: var(--background-key-5); }
   }
 
   .value-true {
