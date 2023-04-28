@@ -1,5 +1,8 @@
 import Head from "next/head";
 import { ReactNode } from "react";
+import { RouteButton } from "./lv1/RouteButton";
+import { VscEdit, VscJson } from 'react-icons/vsc';
+import { InlineIcon } from "./lv1/InlineIcon";
 
 export default function Layout(props: {
   children: ReactNode;
@@ -14,11 +17,12 @@ export default function Layout(props: {
         <title>Jet</title>
       </Head>
 
-      <div className='shrink-0 grow-0 flex gap-2 flex-row border-b-[1px] p-2'>
+      <div className='shrink-0 grow-0 flex gap-2 flex-row items-center border-b-[1px] px-2'>
         <h2>JET.</h2>
 
         <div className='flex flex-row gap-0'>
-
+        <RouteButton route="view"><InlineIcon i={<VscJson />} />View</RouteButton>
+        <RouteButton route="text"><InlineIcon i={<VscEdit />} />Edit</RouteButton>
         </div>
       </div>
 

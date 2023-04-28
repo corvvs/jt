@@ -7,6 +7,7 @@
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 
+  --foreground: #130721;
   --background: #efefef;
   --foreground-schema: #888;
   --foreground-key: rgb(60, 57, 213);
@@ -20,6 +21,7 @@
   --background-key-2: #eee1ef;
   --background-key-3: #e1efe8;
   --background-key-4: #efe3e1;
+  --background-textarea: #c2c1c1;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,7 +30,8 @@
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
 
-    --background: #111212;
+    --foreground: #eee7f7;
+    --background: #131314;
     --foreground-schema: #b3b3b3;
     --foreground-key: #3c7aff;
     --foreground-string: #eaa18b;
@@ -41,11 +44,12 @@
     --background-key-2: #241e24;
     --background-key-3: #1e2421;
     --background-key-4: #241f1e;
+    --background-textarea: #303030;
   }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: var(--foreground);
   background-color: var(--background);
 
   .item-key .key {
@@ -55,6 +59,11 @@ body {
   .item-index .index {
     color: var(--foreground-key);
   }
+}
+
+.route-active {
+  color: var(--background);
+  background-color: var(--foreground);
 }
 
 * {
@@ -104,3 +113,9 @@ body {
   }
 }
 
+.json-text {
+  .json-text-textarea {
+    color: rgb(var(--foreground-rgb));
+    background-color: var(--background-textarea);
+  }
+}
