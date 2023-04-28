@@ -116,11 +116,11 @@ const JsonObjectStructure = (props: JsoCommonStructureProps & {
       return (
         <React.Fragment key={key}>
           <div className={keyClassName}>
-            <div className="sticky top-0 flex items-center">
+            <div className="sticky top-0 flex items-center p-1 gap-1">
               {is_structural ? null : <IconForType json={value} /> }
-              <p className="key max-w-[10em] text-ellipsis whitespace-nowrap overflow-hidden p-1">{k}</p>
+              <p className="key max-w-[16em] text-ellipsis whitespace-nowrap overflow-hidden">{k}</p>
               {is_structural ? <IconForType json={value} /> : null }
-              { _.isFinite(itemCount) ? <p className="p-1">({itemCount})</p> : null }
+              { _.isFinite(itemCount) ? <p>({itemCount})</p> : null }
             </div>
           </div>
           <div className="item-value flex items-center">
@@ -157,11 +157,11 @@ const JsonArrayStructure = (props: JsoCommonStructureProps & {
       return (<React.Fragment key={key}>
 
         <div className={keyClassName}>
-          <div className="sticky top-0 flex items-center">
+          <div className="sticky top-0 flex items-center p-1 gap-1">
             {is_structural ? null: <IconForType json={v} /> }
-            <p className="index p-1">#{i}</p>
+            <p className="index">#{i}</p>
             {is_structural ? <IconForType json={v} /> : null }
-            { _.isFinite(itemCount) ? <p className="p-1">({itemCount})</p> : null }
+            { _.isFinite(itemCount) ? <p>({itemCount})</p> : null }
           </div>
         </div>
 
