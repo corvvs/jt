@@ -18,7 +18,7 @@ export default function Home() {
       <div
         className='flex flex-row shrink grow overflow-hidden'
       >
-        <div className='flex flex-col flex-auto p-2 overflow-hidden'>
+        <div className='flex flex-col flex-auto overflow-hidden'>
           <div className='fixed z-10 right-[1.2em] px-2 py-1 flex justify-end bg-black text-white'>
             <h3>構造</h3>
           </div>

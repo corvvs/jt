@@ -28,11 +28,11 @@
     --background-start-rgb: 0, 0, 0;
     --background-end-rgb: 0, 0, 0;
 
-    --background: #000;
+    --background: #111212;
     --foreground-schema: #b3b3b3;
     --foreground-key: #3c7aff;
-    --foreground-string: #ff537b;
-    --foreground-number: #63ff3c;
+    --foreground-string: #eaa18b;
+    --foreground-number: #7cda65;
     --foreground-true: #73ff9d;
     --foreground-false: #b9d6b1;
 
@@ -72,39 +72,16 @@ body {
     background-color: var(--background);
   }
 
-  // .item-index, .item-key {
-  //   &:hover {
-  //     background-color: rgb(196, 219, 196);
-  //   }
-  // }
-
   &.json-string-structure {
-    &:hover {
-      background-color: rgb(196, 219, 196);
-    }
     &.item-value {
       color: var(--foreground-string);
     }
   }
 
   &.json-number-structure {
-    &:hover {
-      background-color: rgb(196, 219, 196);
-    }
     &.item-value {
       color: var(--foreground-number);
-      &:hover {
-        background-color: rgb(196, 219, 196);
-      }
     }
-  }
-
-  &.json-boolean-structure:hover {
-    background-color: rgb(196, 219, 196);
-  }
-
-  &.json-null-structure:hover {
-    background-color: rgb(196, 219, 196);
   }
 
   .item-key, .item-index {
