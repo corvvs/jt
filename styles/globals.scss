@@ -21,7 +21,7 @@
   --background-key-2: #eee1ef;
   --background-key-3: #e1efe8;
   --background-key-4: #efe3e1;
-  --background-textarea: #c2c1c1;
+  --background-textarea: #ccd4d3;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -115,7 +115,16 @@ body {
 
 .json-text {
   .json-text-textarea {
-    color: rgb(var(--foreground-rgb));
+    color: var(--foreground);
     background-color: var(--background-textarea);
   }
 }
+
+.json-type-button {
+  border: 1px solid transparent;
+  &:hover {
+    background-color: var(--foreground);
+    color: var(--background-textarea);
+  }
+}
+
