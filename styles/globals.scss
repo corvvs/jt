@@ -8,7 +8,9 @@
   --background-end-rgb: 255, 255, 255;
 
   --foreground: #130721;
+  --foreground-secondary: #3e3c41;
   --background: #efefef;
+  --background-secondary: #818080;
   --foreground-schema: #888;
   --foreground-key: rgb(60, 57, 213);
   --foreground-string: #cf5732;
@@ -31,7 +33,9 @@
     --background-end-rgb: 0, 0, 0;
 
     --foreground: #eee7f7;
+    --foreground-secondary: #66606e;
     --background: #1d1d1f;
+    --background-secondary: #33333a;
     --foreground-schema: #b3b3b3;
     --foreground-key: #3c7aff;
     --foreground-string: #eaa18b;
@@ -61,6 +65,14 @@ body {
   }
 }
 
+.secondary-foreground {
+  color: var(--foreground-secondary);
+}
+
+.secondary-background {
+  background-color: var(--background-secondary);
+}
+
 .route-active {
   color: var(--background);
   background-color: var(--foreground);
@@ -79,7 +91,6 @@ body {
 }
 
 .item-value {
-  background-color: var(--background);
 }
 
 .json-string-structure {
@@ -97,12 +108,18 @@ body {
 }
 
 .item-key, .item-index {
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
   &.depth-0{ background-color: var(--background-key-0); }
   &.depth-1{ background-color: var(--background-key-1); }
   &.depth-2{ background-color: var(--background-key-2); }
   &.depth-3{ background-color: var(--background-key-3); }
   &.depth-4{ background-color: var(--background-key-4); }
   &.depth-5{ background-color: var(--background-key-5); }
+}
+
+.item-type {
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+  color: royalblue;
 }
 
 .value-true {
