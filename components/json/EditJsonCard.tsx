@@ -2,6 +2,7 @@ import { useJSON } from "@/states";
 import { VscJson } from 'react-icons/vsc';
 import { InlineIcon } from "../lv1/InlineIcon";
 import { JetButton } from "../lv1/JetButton";
+import { BsIndent } from "react-icons/bs";
 
 export const EditJsonCard = (props: {
   closeModal: () => void;
@@ -25,6 +26,22 @@ export const EditJsonCard = (props: {
             変換
           </JetButton>
         </div>
+
+        <div>
+          <JetButton
+            onClick={() => {
+              try {
+                setRawtext(JSON.stringify(JSON.parse(rawText), null, 2))
+              } catch (e) {
+                console.log(e)
+              }
+            }}
+          >
+            <InlineIcon i={<BsIndent />} />
+            整形
+          </JetButton>
+        </div>
+
       </div>
       <div
         className="shrink grow relative"
