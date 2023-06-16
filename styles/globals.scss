@@ -10,7 +10,7 @@
   --foreground: #130721;
   --foreground-secondary: #3e3c41;
   --background: #efefef;
-  --background-secondary: #818080;
+  --background-secondary: #d4d4d4;
   --foreground-schema: #888;
   --foreground-key: rgb(60, 57, 213);
   --foreground-string: #cf5732;
@@ -23,7 +23,7 @@
   --background-key-2: #eee1ef;
   --background-key-3: #e1efe8;
   --background-key-4: #efe3e1;
-  --background-textarea: 204, 212, 211;
+  --background-textarea: 227, 232, 232;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -154,3 +154,6 @@ body {
   }
 }
 
+.modal-backdrop {
+  background-color: rgba(var(--background-textarea), 0.3);
+}
