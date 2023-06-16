@@ -30,14 +30,14 @@ const RightmostKeyCell = (props: {
       >[{props.right.itemKey}]</div>
     }
   }
-  throw new Error("unreachable");
+  return null;
 }
 
 const RightmostTypeCell = (props: {
   index: number;
   right: JsonRowItem;
 }) => {
-  const depth2 = (props.index + 1) % 5;
+  const depth2 = props.index % 5;
   switch (props.right.right.type) {
     case "map": {
       return <div
@@ -63,9 +63,10 @@ const RightmostTypeCell = (props: {
  * その行の本来のアイテムの左側に表示されるセル
  */
 const FlatJsonLeadingCell = (props: {
-  item: JsonRowItem;
+  item?: JsonRowItem;
   nextItem: JsonRowItem;
   index: number;
+  typeIndex: number;
   isHovered: boolean;
   /**
    * その行に本来表示したいアイテム
@@ -76,7 +77,7 @@ const FlatJsonLeadingCell = (props: {
 
   const depth = props.index % 5;
   if (!props.right) {
-    // 何も出さなくてよい
+    // 最も右のLeadingCell ではない場合
     return <div
       className={`w-[6em] grow-0 shrink-0 item-index depth-${depth} text-base secondary-foreground`}
     >
@@ -84,16 +85,20 @@ const FlatJsonLeadingCell = (props: {
     </div>
   }
 
+  // 最も右のLeadingCell である場合
   if (props.right.right.type === "array" || props.right.right.type === "map") {
+    // 本来のitemが配列またはマップ
+    // -> 本来のitemの添字またはキーを表示する
+    // -> 続けて, 本来のitemの型と要素数を表示する
     return <div
-      className="w-[6em] flex flex-row"
+      className="w-[12em] grow-0 shrink-0 flex flex-row"
       >
       <RightmostKeyCell index={props.index} right={props.right} />
-      {/* <RightmostTypeCell index={props.index} right={props.right} /> */}
+      <RightmostTypeCell index={props.typeIndex} right={props.right} />
     </div>
   } else {
     return <div
-      className="min-w-[6em] max-w-[24em] flex flex-row"
+      className="w-[6em] flex flex-row"
       >
       <RightmostKeyCell index={props.index} right={props.right} />
     </div>
@@ -117,22 +122,35 @@ export const FlatJsonRow = (props: {
     rowItems,
     childs,
   } = item;
-
+  const leadingPairs: {
+    item?: JsonRowItem;
+    nextItem: JsonRowItem;
+  }[] = rowItems.map((item, i) => ({
+    item,
+    nextItem: i + 1 < rowItems.length ? rowItems[i + 1] : item,
+  }));
+  if (leadingPairs.length === 0) {
+    leadingPairs.push({
+      nextItem: item,
+    });
+  }
   return (<div
     className={`h-[2em] flex flex-row items-stretch gap-0 ${isHovered ? "secondary-background" : ""}`}
     onMouseOver={() => setIsHovered(true)}
     onMouseOut={() => setIsHovered(false)}
   >
     {
-      rowItems.map((upItem, i) => {
-        const isRightmost = i + 1 === rowItems.length;
-        const nextItem = isRightmost ? item : rowItems[i + 1];
+      leadingPairs.map((pair, i) => {
+        const currentItem = pair.item;
+        const nextItem = pair.nextItem;
+        const isRightmost = i + 1 === leadingPairs.length;
         return <FlatJsonLeadingCell
-          key={"cell."+upItem.elementKey}
-          item={upItem}
+          key={"cell."+(currentItem?.elementKey ?? "root")}
+          item={currentItem}
           nextItem={nextItem}
           right={isRightmost ? item : undefined}
           index={i}
+          typeIndex={rowItems.length > 0 ? i + 1 : i}
           isHovered={isHovered}
         />
       })
@@ -151,7 +169,7 @@ export function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollPr
         {renderItem(data[index], index)}
       </div>
     );
-  }
+  };
 
   return (
     <AutoSizer>
