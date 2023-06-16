@@ -23,7 +23,7 @@
   --background-key-2: #eee1ef;
   --background-key-3: #e1efe8;
   --background-key-4: #efe3e1;
-  --background-textarea: #ccd4d3;
+  --background-textarea: 204, 212, 211;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -48,7 +48,7 @@
     --background-key-2: #3b313b;
     --background-key-3: #323b37;
     --background-key-4: #3d3432;
-    --background-textarea: #303030;
+    --background-textarea: 48, 48, 48;
   }
 }
 
@@ -104,6 +104,13 @@ body {
 .json-number-structure {
   &.item-value {
     color: var(--foreground-number);
+    font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+  }
+}
+
+.json-null-structure {
+  &.item-value {
+    font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
   }
 }
 
@@ -119,7 +126,7 @@ body {
 
 .item-type {
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
-  color: royalblue;
+  color: var(--foreground-secondary);
 }
 
 .value-true {
@@ -135,7 +142,7 @@ body {
 .json-text {
   .json-text-textarea {
     color: var(--foreground);
-    background-color: var(--background-textarea);
+    background-color: rgba(var(--background-textarea), 0.5);
   }
 }
 
