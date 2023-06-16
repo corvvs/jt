@@ -1,12 +1,23 @@
 import Head from "next/head";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { RouteButton } from "./lv1/RouteButton";
 import { VscEdit, VscJson } from 'react-icons/vsc';
 import { InlineIcon } from "./lv1/InlineIcon";
+import { JetButton } from "./lv1/JetButton";
+import { Modal } from "./Modal";
+import { EditJsonCard } from "./json/EditJsonCard";
 
 export default function Layout(props: {
   children: ReactNode;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const closeModal = () => {
+    setIsOpen(false);
+  };
+
+  const openModal = () => {
+    setIsOpen(true);
+  };
   return (
     <main
       className='
@@ -17,12 +28,19 @@ export default function Layout(props: {
         <title>Jet</title>
       </Head>
 
+      <Modal closeModal={closeModal} isOpen={isOpen}>
+        <EditJsonCard closeModal={closeModal} />
+      </Modal>
+
       <div className='shrink-0 grow-0 flex gap-2 flex-row items-center border-b-[1px] px-2'>
         <h2>JET.</h2>
 
         <div className='flex flex-row gap-0'>
-        <RouteButton route="view"><InlineIcon i={<VscJson />} />View</RouteButton>
-        <RouteButton route="text"><InlineIcon i={<VscEdit />} />Edit</RouteButton>
+        <JetButton
+          onClick={() => openModal()}
+        >
+          <InlineIcon i={<VscEdit />} />Edit JSON
+        </JetButton>
         </div>
       </div>
 
