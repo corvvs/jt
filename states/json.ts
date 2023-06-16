@@ -1,3 +1,4 @@
+import { flattenJson } from '@/libs/jetson';
 import { structurizeJSON } from '@/libs/json';
 import { atom, useAtom } from 'jotai';
 
@@ -33,6 +34,17 @@ const jsonStructureAtom = atom(
   },
 );
 
+const jsonFlattenedAtom = atom(
+  (get) => {
+    try {
+      return flattenJson(get(jsonAtom))
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  },
+);
+
 /**
  * JSONフック
  * – rawText: テキストエリアの生テキスト
@@ -43,10 +55,12 @@ export const useJSON = () => {
   const [rawText, setRawtext] = useAtom(rawTextAtom);
   const [, setBaseText] = useAtom(baseTextAtom);
   const [jsonStructure] = useAtom(jsonStructureAtom);
+  const [flatJsons] = useAtom(jsonFlattenedAtom);
   return {
     rawText,
     setRawtext,
     setBaseText,
     jsonStructure,
+    flatJsons,
   };
 };

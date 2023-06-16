@@ -83,6 +83,7 @@ export function structurizeJSON(json: any): JSONValueStruct {
   throw new Error("unreachable");
 }
 
+
 export function jsonItemCount(json: JSONValueStruct) {
   switch (json.typename) {
     case "string":
@@ -95,4 +96,92 @@ export function jsonItemCount(json: JSONValueStruct) {
     case "object":
       return json.subtree.length;
   }
+}
+
+type FlatParent = {
+  key: string;
+  parent: JSONObjectValueFlatStruct;
+} | {
+  index: number;
+  parent: JSONArrayValueFlatStruct;
+};
+type ParentPart = {
+  parent?: FlatParent;
+};
+
+export type JSONStringValueFlatStruct = JSONStringValueStruct & ParentPart;
+export type JSONNumberValueFlatStruct = JSONNumberValueStruct & ParentPart;
+export type JSONBooleanValueFlatStruct = JSONBooleanValueStruct & ParentPart;
+export type JSONNullValueFlatStruct = JSONNullValueStruct & ParentPart;
+export type JSONObjectValueFlatStruct = JSONObjectValueStruct & ParentPart;
+export type JSONArrayValueFlatStruct = JSONArrayValueStruct & ParentPart;
+
+export type JSONValueFlatStruct = JSONStringValueFlatStruct | JSONNumberValueFlatStruct | JSONBooleanValueFlatStruct | JSONNullValueFlatStruct | JSONObjectValueFlatStruct | JSONArrayValueFlatStruct;
+
+function flattenSingle(json: JSONValueStruct, parent?: FlatParent): JSONValueFlatStruct {
+  switch (json.typename) {
+    case "string": return {
+      typename: "string",
+      value: json.value,
+      parent,
+    };
+    case "number": return {
+      typename: "number",
+      value: json.value,
+      parent,
+    };
+    case "boolean": return {
+      typename: "boolean",
+      value: json.value,
+      parent,
+    };
+    case "null": return {
+      typename: "null",
+      value: null,
+      parent,
+    }
+    case "array": return {
+      typename: "array",
+      value: json.value,
+      subarray: json.subarray,
+      parent,
+    };
+    case "object": return {
+      typename: "object",
+      value: json.value,
+      subtree: json.subtree,
+      parent,
+    };
+  }
+}
+
+export function flattenJson(json: JSONValueStruct, context?: {
+  parent: FlatParent;
+  flattened: JSONValueFlatStruct[];
+}) {
+  const flattened = context?.flattened ?? [];
+  const o = flattenSingle(json, context?.parent);
+  flattened.push(o);
+  switch (json.typename) {
+    case "array": {
+      _.each(json.subarray, (value, index) => {
+        const parent: FlatParent = {
+          parent: o as JSONArrayValueFlatStruct,
+          index,
+        };
+        flattenJson(value, { parent, flattened });
+      });
+      break;
+    }
+    case "object": {
+      _.each(json.subtree, ([key, value]) => {
+        const parent: FlatParent = {
+          parent: o as JSONObjectValueFlatStruct,
+          key,
+        };
+        flattenJson(value, { parent, flattened });
+      });
+    }
+  }
+  return flattened;
 }
