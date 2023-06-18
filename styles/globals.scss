@@ -78,6 +78,13 @@ body {
   background-color: var(--foreground);
 }
 
+.menu-button {
+  &:hover {
+    color: var(--background);
+    background-color: var(--foreground);
+  }
+}
+
 * {
   border-color: #888;
 }
