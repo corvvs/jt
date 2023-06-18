@@ -64,7 +64,7 @@ export const Modal = ({
     <Transition show={isOpen} as={Fragment}>
       <Dialog onClose={closeModal}>
         <Transition.Child {...effectiveBackdropParams} as={Fragment}>
-          <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm" aria-hidden="true" />
+          <div className="fixed inset-0 z-50 modal-backdrop backdrop-blur-sm" aria-hidden="true" />
         </Transition.Child>
         <Transition.Child {...effectivePanelParams} as={Fragment}>
           <div className="fixed inset-0 z-50 flex flex-1 flex-col items-center justify-center gap-32">

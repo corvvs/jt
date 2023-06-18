@@ -38,7 +38,7 @@ export const EditJsonCard = (props: {
             }}
           >
             <InlineIcon i={<BsIndent />} />
-            整形
+            JSONを整形
           </JetButton>
         </div>
 
@@ -52,6 +52,11 @@ export const EditJsonCard = (props: {
           value={rawText}
           onChange={(e) => setRawtext(e.target.value)}
         />
+      </div>
+      <div
+        className="shrink-0 grow-0 p-2 text-md text-right"
+      >
+        { rawText.length } 文字
       </div>
     </div>
   )

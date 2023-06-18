@@ -1,11 +1,11 @@
 import Head from "next/head";
 import { ReactNode, useState } from "react";
-import { RouteButton } from "./lv1/RouteButton";
 import { VscEdit, VscJson } from 'react-icons/vsc';
 import { InlineIcon } from "./lv1/InlineIcon";
 import { JetButton } from "./lv1/JetButton";
 import { Modal } from "./Modal";
 import { EditJsonCard } from "./json/EditJsonCard";
+import { MenuButton } from "./lv1/MenuButton";
 
 export default function Layout(props: {
   children: ReactNode;
@@ -36,11 +36,11 @@ export default function Layout(props: {
         <h2>JET.</h2>
 
         <div className='flex flex-row gap-0'>
-        <JetButton
+        <MenuButton
           onClick={() => openModal()}
         >
           <InlineIcon i={<VscEdit />} />Edit JSON
-        </JetButton>
+        </MenuButton>
         </div>
       </div>
 

@@ -52,7 +52,7 @@ const jsonAtom = atom(
 const jsonFlattenedAtom = atom(
   (get) => {
     try {
-      return flattenJson(get(jsonAtom))
+      return flattenJson(get(jsonAtom), get(baseTextAtom))
     } catch (e) {
       console.error(e);
       return null;

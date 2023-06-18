@@ -82,12 +82,29 @@ function makeVOTree(subtree: any): JsonValueObject {
   }
 }
 
-function flattenDigger(subtree: JsonValueObject, items: JsonRowItem[], branch: JsonRowItem[], parent?: {
-  elementKey: string;
-  item: JsonRowItem;
-  itemKey: string | number;
-}): void {
-  const elementKey = parent ? parent.elementKey + "." + (parent.itemKey ?? `(${items.length})`) : `(${items.length})`;
+type JsonStat = {
+  item_count: number;
+  max_depth: number;
+  max_key_length: number[];
+  char_count: number;
+};
+
+function flattenDigger(
+  subtree: JsonValueObject,
+  items: JsonRowItem[],
+  branch: JsonRowItem[],
+  stats: JsonStat,
+  parent?: {
+    elementKey: string;
+    item: JsonRowItem;
+    itemKey: string | number;
+  }
+): void {
+  const elementKey = typeof parent?.elementKey === "string"
+    ? (parent.elementKey.length > 0
+      ? parent.elementKey + "." + `${parent.itemKey ?? items.length}`
+      : `${parent.itemKey ?? items.length}`
+    ) : "";
   const item: JsonRowItem = {
     elementKey,
     right: subtree,
@@ -95,6 +112,19 @@ function flattenDigger(subtree: JsonValueObject, items: JsonRowItem[], branch: J
     itemKey: parent?.itemKey,
   };
   items.push(item);
+
+  stats.item_count += 1;
+  const depth = branch.length;
+  if (stats.max_depth < depth) {
+    stats.max_depth = depth;
+  }
+  if (stats.max_key_length.length < depth + 1) {
+    stats.max_key_length.push(0);
+  }
+  if (stats.max_key_length[depth] < elementKey.length) {
+    stats.max_key_length[depth] = elementKey.length;
+  }
+
   switch (subtree.type) {
     case "string": {
       parent?.item.childs?.push(item);
@@ -118,7 +148,7 @@ function flattenDigger(subtree: JsonValueObject, items: JsonRowItem[], branch: J
       item.childs = [];
       branch.push(item);
       subtree.value.forEach((value, index) => {
-        flattenDigger(value, items, branch, { item, itemKey: index, elementKey });
+        flattenDigger(value, items, branch, stats, { item, itemKey: index, elementKey });
       });
       branch.pop();
       break;
@@ -129,7 +159,7 @@ function flattenDigger(subtree: JsonValueObject, items: JsonRowItem[], branch: J
 
       branch.push(item);
       _.forEach(subtree.value, (value, itemKey) => {
-        flattenDigger(value, items, branch, { item, itemKey, elementKey });
+        flattenDigger(value, items, branch, stats, { item, itemKey, elementKey });
       });
       branch.pop();
       break;
@@ -137,10 +167,19 @@ function flattenDigger(subtree: JsonValueObject, items: JsonRowItem[], branch: J
   }
 }
 
-export function flattenJson(json: any): JsonRowItem[] {
+export function flattenJson(json: any, rawText: string) {
   const tree = makeVOTree(json);
   const items: JsonRowItem[] = [];
   const branch: JsonRowItem[] = [];
-  flattenDigger(tree, items, branch);
-  return items;
+  const stats: JsonStat = {
+    item_count: 0,
+    max_depth: 0,
+    max_key_length: [],
+    char_count: rawText.length,
+  };
+  flattenDigger(tree, items, branch, stats);
+  return {
+    items,
+    stats,
+  };
 }
