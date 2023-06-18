@@ -3,11 +3,13 @@ import { VscJson } from 'react-icons/vsc';
 import { InlineIcon } from "../lv1/InlineIcon";
 import { JetButton } from "../lv1/JetButton";
 import { BsIndent } from "react-icons/bs";
+import { useToggleState } from "@/states/view";
 
 export const EditJsonCard = (props: {
   closeModal: () => void;
 }) => {
-  const { rawText, setRawtext, setBaseText, flatJsons }  = useJSON();
+  const { rawText, setRawtext, setBaseText }  = useJSON();
+  const { setToggleState } = useToggleState();
   return (
     <div
       className='json-text w-[36em] flex flex-col font-mono text-sm border-2 rounded-lg'
@@ -19,6 +21,7 @@ export const EditJsonCard = (props: {
           <JetButton
             onClick={() => {
               setBaseText(rawText)
+              setToggleState({});
               props.closeModal()
             }}
           >
