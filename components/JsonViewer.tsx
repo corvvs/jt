@@ -8,7 +8,7 @@ export const JsonViewer = () => {
   return (
     <VirtualScroll
       data={flatJsons} // データ
-      renderItem={(item, index) => <FlatJsonRow key={item.elementKey} item={item} />}
+      renderItem={(item, index) => <FlatJsonRow key={item.elementKey} item={item} index={index} />}
       itemSize={32} // 各アイテムの高さ
     />
   )

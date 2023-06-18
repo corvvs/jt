@@ -56,7 +56,7 @@ export const EditJsonCard = (props: {
       <div
         className="shrink-0 grow-0 p-2 text-md text-right"
       >
-        { rawText.length }文字
+        { rawText.length } 文字
       </div>
     </div>
   )

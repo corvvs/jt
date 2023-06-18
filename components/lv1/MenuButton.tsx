@@ -10,7 +10,7 @@ export const MenuButton = (
     <button
       {...{ ...props }}
       className={
-        'menu-button h-[3em] border-x-[1px] py-1 px-2' + (props.className || '')
+        'flippable-button h-[3em] border-x-[1px] py-1 px-2' + (props.className || '')
       }
       style={{
         ...(props.style || {}),
