@@ -1,5 +1,46 @@
 import { useJSON } from "@/states";
 import { FlatJsonRow, VirtualScroll } from "./json/FlatJsonRow";
+import { JsonRowItem, JsonStats } from "@/libs/jetson";
+import { useToggleState } from "@/states/view";
+
+const JsonStatsLine = (props: {
+  stats: JsonStats;
+}) => {
+  return (<>
+    <p>
+      Lines: {props.stats.item_count}
+    </p>
+    <p>
+      Depth: {props.stats.max_depth}
+    </p>
+    <p>
+      Characters: {props.stats.char_count}
+    </p>
+  </>)
+};
+
+
+const JsonItemsView = (props: {
+  items: JsonRowItem[]
+}) => {
+  const { items } = props;
+  const { toggleState } = useToggleState();
+  // 表示すべきitemを選別する
+  const visibleItems = items.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+
+  return (
+    <VirtualScroll
+      data={visibleItems} // データ
+      renderItem={(item, index) => <FlatJsonRow
+          key={item.elementKey}
+          item={item}
+          index={index}
+        />
+      }
+      itemSize={32} // 各アイテムの高さ
+    />
+  );
+}
 
 export const JsonViewer = () => {
   const { flatJsons }  = useJSON();
@@ -15,24 +56,12 @@ export const JsonViewer = () => {
       <div
         className="shrink grow"
       >
-        <VirtualScroll
-          data={items} // データ
-          renderItem={(item, index) => <FlatJsonRow key={item.elementKey} item={item} index={index} />}
-          itemSize={32} // 各アイテムの高さ
-        />
+        <JsonItemsView items={items} />
       </div>
       <div
         className="shrink-0 grow-0 flex flex-row gap-4 px-2 py-1 text-sm border-t-2 stats"
       >
-        <p>
-          Lines: {stats.item_count}
-        </p>
-        <p>
-          Depth: {stats.max_depth}
-        </p>
-        <p>
-          Characters: {stats.char_count}
-        </p>
+        <JsonStatsLine stats={stats} />
       </div>
     </div>
   )

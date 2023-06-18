@@ -39,6 +39,7 @@ export type JsonValueObject =
   | JsonValueObjectMap;
 
 export type JsonRowItem = {
+  index: number;
   elementKey: string;
   right: JsonValueObject;
   rowItems: JsonRowItem[];
@@ -82,7 +83,7 @@ function makeVOTree(subtree: any): JsonValueObject {
   }
 }
 
-type JsonStat = {
+export type JsonStats = {
   item_count: number;
   max_depth: number;
   max_key_length: number[];
@@ -93,7 +94,7 @@ function flattenDigger(
   subtree: JsonValueObject,
   items: JsonRowItem[],
   branch: JsonRowItem[],
-  stats: JsonStat,
+  stats: JsonStats,
   parent?: {
     elementKey: string;
     item: JsonRowItem;
@@ -106,6 +107,7 @@ function flattenDigger(
       : `${parent.itemKey ?? items.length}`
     ) : "";
   const item: JsonRowItem = {
+    index: items.length,
     elementKey,
     right: subtree,
     rowItems: [...branch],
@@ -171,7 +173,7 @@ export function flattenJson(json: any, rawText: string) {
   const tree = makeVOTree(json);
   const items: JsonRowItem[] = [];
   const branch: JsonRowItem[] = [];
-  const stats: JsonStat = {
+  const stats: JsonStats = {
     item_count: 0,
     max_depth: 0,
     max_key_length: [],

@@ -5,32 +5,48 @@ import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { InlineIcon } from "../lv1/InlineIcon";
 import { useState } from "react";
+import { ToggleButton } from "../lv1/ToggleButton";
+import { useToggleState } from "@/states/view";
 
 
 const RightmostKeyCell = (props: {
   index: number;
   right: JsonRowItem;
+  isTogglable?: boolean;
 }) => {
+  const { toggleState, setToggleState } = useToggleState();
+  if (typeof props.right.itemKey === "undefined") { return null; }
   const depth = props.index % 5;
-  switch (typeof props.right.itemKey) {
-    case "string": {
-      // キーを表示する
-      return <div
-        className={`w-[6em] grow shrink p-1 item-key depth-${depth} text-base text-ellipsis whitespace-nowrap break-keep overflow-hidden`}
-        style={{ overflow: "normal" }}
-        title={props.right.itemKey}
-      >{props.right.itemKey}</div>
+  const text = typeof props.right.itemKey === "string" ? props.right.itemKey : `[${props.right.itemKey}]`;
+  return <div
+    className={`item-key w-[6em] grow shrink flex flex-row p-1 depth-${depth}`}
+    style={{ overflow: "normal" }}
+    title={props.right.itemKey.toString()}
+  >
+    {
+      props.isTogglable
+        ? <div>
+            <ToggleButton
+              isClosed={!!toggleState[props.right.index]}
+              onClick={(isClosed) => setToggleState((prev) => {
+                const next = _.cloneDeep(prev);
+                if (isClosed) {
+                  next[props.right.index] = isClosed;
+                } else {
+                  delete next[props.right.index];
+                }
+                return next;
+              })}
+            />
+          </div>
+        : null 
     }
-    case "number": {
-      // インデックスを表示する
-      return <div
-        className={`w-[6em] grow shrink p-1 item-index depth-${depth} text-base text-ellipsis whitespace-nowrap break-keep overflow-hidden`}
-        style={{ overflow: "normal" }}
-        title={`${props.right.itemKey}`}
-      >[{props.right.itemKey}]</div>
-    }
-  }
-  return null;
+    <p
+      className='grow shrink text-base text-ellipsis whitespace-nowrap break-keep overflow-hidden'
+    >
+      {text}
+    </p>
+  </div>
 }
 
 const RightmostTypeCell = (props: {
@@ -89,14 +105,17 @@ const FlatJsonLeadingCell = (props: {
   if (props.right.right.type === "array" || props.right.right.type === "map") {
     // 本来のitemが配列またはマップ
     // -> 本来のitemの添字またはキーを表示する
+    //    - 本来のitemは開閉可能になるので, そのためのボタンを表示する
     // -> 続けて, 本来のitemの型と要素数を表示する
     return <div
       className="w-[12em] grow-0 shrink-0 flex flex-row"
       >
-      <RightmostKeyCell index={props.index} right={props.right} />
+      <RightmostKeyCell index={props.index} right={props.right} isTogglable={true} />
       <RightmostTypeCell index={props.typeIndex} right={props.right} />
     </div>
   } else {
+    // 本来のitemが配列でもマップでもない
+    // -> 開閉する必要がない
     return <div
       className="w-[6em] flex flex-row"
       >
@@ -160,13 +179,13 @@ export const FlatJsonRow = (props: {
   item: JsonRowItem;
   index: number;
 }) => {
+  
   const [isHovered, setIsHovered] = useState(false);
   const item = props.item;
   const {
     right,
     rowItems,
     elementKey,
-    childs,
   } = item;
 
   return (<div
@@ -174,7 +193,7 @@ export const FlatJsonRow = (props: {
     onMouseOver={() => setIsHovered(true)}
     onMouseOut={() => setIsHovered(false)}
   >
-    <LineNumberCell index={props.index} />
+    <LineNumberCell index={item.index} />
 
     <LeadingCells item={item} isHovered={isHovered} />
 
