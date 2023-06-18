@@ -1,8 +1,7 @@
 import Head from "next/head";
 import { ReactNode, useState } from "react";
-import { VscEdit, VscJson } from 'react-icons/vsc';
+import { VscEdit } from 'react-icons/vsc';
 import { InlineIcon } from "./lv1/InlineIcon";
-import { JetButton } from "./lv1/JetButton";
 import { Modal } from "./Modal";
 import { EditJsonCard } from "./json/EditJsonCard";
 import { MenuButton } from "./lv1/MenuButton";

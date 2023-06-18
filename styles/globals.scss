@@ -55,14 +55,6 @@
 body {
   color: var(--foreground);
   background-color: var(--background);
-
-  .item-key .key {
-    color: var(--foreground-key);
-  }
-
-  .item-index .index {
-    color: var(--foreground-key);
-  }
 }
 
 .secondary-foreground {

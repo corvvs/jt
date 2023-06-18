@@ -1,6 +1,7 @@
 import { useJSON } from "@/states";
 import { FlatJsonRow, VirtualScroll } from "./json/FlatJsonRow";
 import { JsonRowItem, JsonStats } from "@/libs/jetson";
+import { useToggleState } from "@/states/view";
 
 const JsonStatsLine = (props: {
   stats: JsonStats;
@@ -18,14 +19,24 @@ const JsonStatsLine = (props: {
   </>)
 };
 
+
 const JsonItemsView = (props: {
   items: JsonRowItem[]
 }) => {
   const { items } = props;
+  const { toggleState } = useToggleState();
+  // 表示すべきitemを選別する
+  const visibleItems = items.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+
   return (
     <VirtualScroll
-      data={items} // データ
-      renderItem={(item, index) => <FlatJsonRow key={item.elementKey} item={item} index={index} />}
+      data={visibleItems} // データ
+      renderItem={(item, index) => <FlatJsonRow
+          key={item.elementKey}
+          item={item}
+          index={index}
+        />
+      }
       itemSize={32} // 各アイテムの高さ
     />
   );

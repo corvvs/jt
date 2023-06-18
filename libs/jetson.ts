@@ -39,6 +39,7 @@ export type JsonValueObject =
   | JsonValueObjectMap;
 
 export type JsonRowItem = {
+  index: number;
   elementKey: string;
   right: JsonValueObject;
   rowItems: JsonRowItem[];
@@ -106,6 +107,7 @@ function flattenDigger(
       : `${parent.itemKey ?? items.length}`
     ) : "";
   const item: JsonRowItem = {
+    index: items.length,
     elementKey,
     right: subtree,
     rowItems: [...branch],
