@@ -103,24 +103,28 @@ const FlatJsonLeadingCell = (props: {
       <RightmostKeyCell index={props.index} right={props.right} />
     </div>
   }
-
 }
 
-interface VirtualScrollProps<T> {
-  data: T[];
-  renderItem: (item: T, index: number) => JSX.Element;
-  itemSize: number;
-}
-
-export const FlatJsonRow = (props: {
-  item: JsonRowItem;
+const LineNumberCell = (props: {
+  index: number;
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const item = props.item;
+  return <div
+    className="w-[4em] grow-0 shrink-0 flex flex-row justify-end items-center p-1 line-number text-sm"
+  >
+    <div>{props.index + 1}</div>
+  </div>
+}
+
+const LeadingCells = (props: {
+  item: JsonRowItem;
+  isHovered: boolean;
+}) => {
   const {
-    right,
-    rowItems,
-    childs,
+    item,
+    isHovered,
+  } = props;
+  const {
+    rowItems
   } = item;
   const leadingPairs: {
     item?: JsonRowItem;
@@ -134,32 +138,58 @@ export const FlatJsonRow = (props: {
       nextItem: item,
     });
   }
+  return <>{
+    leadingPairs.map((pair, i) => {
+      const currentItem = pair.item;
+      const nextItem = pair.nextItem;
+      const isRightmost = i + 1 === leadingPairs.length;
+      return <FlatJsonLeadingCell
+        key={"cell."+(currentItem?.elementKey ?? "root")}
+        item={currentItem}
+        nextItem={nextItem}
+        right={isRightmost ? item : undefined}
+        index={i}
+        typeIndex={rowItems.length > 0 ? i + 1 : i}
+        isHovered={isHovered}
+      />
+    })
+  }</>
+}
+
+export const FlatJsonRow = (props: {
+  item: JsonRowItem;
+  index: number;
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const item = props.item;
+  const {
+    right,
+    rowItems,
+    elementKey,
+    childs,
+  } = item;
+
   return (<div
     className={`h-[2em] flex flex-row items-stretch gap-0 ${isHovered ? "secondary-background" : ""}`}
     onMouseOver={() => setIsHovered(true)}
     onMouseOut={() => setIsHovered(false)}
   >
-    {
-      leadingPairs.map((pair, i) => {
-        const currentItem = pair.item;
-        const nextItem = pair.nextItem;
-        const isRightmost = i + 1 === leadingPairs.length;
-        return <FlatJsonLeadingCell
-          key={"cell."+(currentItem?.elementKey ?? "root")}
-          item={currentItem}
-          nextItem={nextItem}
-          right={isRightmost ? item : undefined}
-          index={i}
-          typeIndex={rowItems.length > 0 ? i + 1 : i}
-          isHovered={isHovered}
-        />
-      })
-    }
+    <LineNumberCell index={props.index} />
+
+    <LeadingCells item={item} isHovered={isHovered} />
+
     <FlatJsonValueCell
       vo={right}
+      elementKey={elementKey}
       index={rowItems.length}
     />
   </div>)
+}
+
+interface VirtualScrollProps<T> {
+  data: T[];
+  renderItem: (item: T, index: number) => JSX.Element;
+  itemSize: number;
 }
 
 export function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollProps<T>) {

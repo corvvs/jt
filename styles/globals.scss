@@ -8,7 +8,7 @@
   --background-end-rgb: 255, 255, 255;
 
   --foreground: #130721;
-  --foreground-secondary: #3e3c41;
+  --foreground-secondary: #807d83;
   --background: #efefef;
   --background-secondary: #d4d4d4;
   --foreground-schema: #888;
@@ -80,6 +80,12 @@ body {
 
 * {
   border-color: #888;
+}
+
+.line-number {
+  color: royalblue;
+  text-align: right;
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
 }
 
 .json-structure {
