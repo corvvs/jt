@@ -8,7 +8,7 @@ import { MenuButton, MenuToggleButton } from "./lv1/MenuButton";
 import { BsChevronDown, BsChevronUp } from "react-icons/bs";
 import { ToggleState, useToggleState } from "@/states/view";
 import { useJSON } from "@/states";
-import { usePreference } from "@/states/preferece";
+import { usePreference } from "@/states/preference";
 
 const MenuBar = () => {
   const { flatJsons } = useJSON();
@@ -61,10 +61,10 @@ const MenuBar = () => {
       </MenuButton>
 
       <MenuToggleButton
-        isToggled={preference.show_subtree_stat}
-        onClick={(isToggled) => setPreference((prev) => ({ ...prev, show_subtree_stat: isToggled }))}
+        isToggled={preference.visible_subtree_stat}
+        onClick={(isToggled) => setPreference((prev) => ({ ...prev, visible_subtree_stat: isToggled }))}
       >
-        {preference.show_subtree_stat ? "Show" : "Hide"} Subtree Stats
+        {preference.visible_subtree_stat ? "Hide" : "Show"} Subtree Stats
       </MenuToggleButton>
 
     </div>

@@ -4,11 +4,11 @@ type Preference = {
   /**
    * サブツリーの統計情報を表示するかどうか
    */
-  show_subtree_stat: boolean;
+  visible_subtree_stat: boolean;
 };
 
 const defaultPreference: Preference = {
-  show_subtree_stat: false,
+  visible_subtree_stat: false,
 };
 
 const preferenceAtom = atom<Preference>(defaultPreference);
