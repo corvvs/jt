@@ -4,14 +4,16 @@ import { VscEdit } from 'react-icons/vsc';
 import { InlineIcon } from "./lv1/InlineIcon";
 import { Modal } from "./Modal";
 import { EditJsonCard } from "./json/EditJsonCard";
-import { MenuButton } from "./lv1/MenuButton";
+import { MenuButton, MenuToggleButton } from "./lv1/MenuButton";
 import { BsChevronDown, BsChevronUp } from "react-icons/bs";
 import { ToggleState, useToggleState } from "@/states/view";
 import { useJSON } from "@/states";
+import { usePreference } from "@/states/preferece";
 
 const MenuBar = () => {
   const { flatJsons } = useJSON();
   const { setToggleState } = useToggleState();
+  const { preference, setPreference } = usePreference();
   const [isOpen, setIsOpen] = useState(false);
   const closeModal = () => {
     setIsOpen(false);
@@ -57,6 +59,13 @@ const MenuBar = () => {
       >
         <InlineIcon i={<BsChevronUp />} />Close All
       </MenuButton>
+
+      <MenuToggleButton
+        isToggled={preference.show_subtree_stat}
+        onClick={(isToggled) => setPreference((prev) => ({ ...prev, show_subtree_stat: isToggled }))}
+      >
+        {preference.show_subtree_stat ? "Show" : "Hide"} Subtree Stats
+      </MenuToggleButton>
 
     </div>
   </div>

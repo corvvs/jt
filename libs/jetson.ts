@@ -38,11 +38,22 @@ export type JsonValueObject =
   | JsonValueObjectArray
   | JsonValueObjectMap;
 
+type TreeStats = {
+  item_count: number;
+  max_depth: number;
+};
+
+export type JsonStats = TreeStats & {
+  max_key_length: number[];
+  char_count: number;
+};
+
 export type JsonRowItem = {
   index: number;
   elementKey: string;
   right: JsonValueObject;
   rowItems: JsonRowItem[];
+  stats: TreeStats;
   childs?: JsonRowItem[];
   itemKey?: string | number;
 };
@@ -83,13 +94,6 @@ function makeVOTree(subtree: any): JsonValueObject {
   }
 }
 
-export type JsonStats = {
-  item_count: number;
-  max_depth: number;
-  max_key_length: number[];
-  char_count: number;
-};
-
 function flattenDigger(
   subtree: JsonValueObject,
   items: JsonRowItem[],
@@ -111,12 +115,23 @@ function flattenDigger(
     elementKey,
     right: subtree,
     rowItems: [...branch],
+    stats: {
+      item_count: 1,
+      max_depth: 0,
+    },
     itemKey: parent?.itemKey,
   };
   items.push(item);
 
   stats.item_count += 1;
   const depth = branch.length;
+  item.rowItems.forEach((rowItem, d) => {
+    rowItem.stats.item_count += 1;
+    if (rowItem.stats.max_depth < depth - d) {
+      rowItem.stats.max_depth = depth - d;
+    }
+  });
+
   if (stats.max_depth < depth) {
     stats.max_depth = depth;
   }
