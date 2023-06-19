@@ -12,6 +12,7 @@ import { useManipulation } from "@/states/manipulation";
 import { IconButton } from "../lv1/IconButton";
 import { VscCopy } from "react-icons/vsc";
 import { useJSON } from "@/states";
+import { ClipboardAccess } from "@/libs/sideeffect";
 
 
 const RightmostKeyCell = (props: {
@@ -93,11 +94,16 @@ const SubtreeMenuCell = (props: {
       <IconButton
         icon={VscCopy}
         alt="Copy Subtree as JSON"
-        onClick={() => {
+        onClick={async () => {
           const keyPath = props.item.elementKey;
           const subJson = keyPath ? _.get(json, keyPath) : json;
           if (!subJson) { return; }
           const subText = JSON.stringify(subJson, null, 2);
+          try {
+            await ClipboardAccess.copyText(subText);
+          } catch (e) {
+            console.error(e);
+          }
         }}
       />
     </p>
