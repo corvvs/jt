@@ -11,7 +11,6 @@ export default function Home() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const jsonText = JsonText.loadTextLocal() || defaultRawText;
-      console.log("jsonText", jsonText);
       setRawtext(jsonText);
       setBaseText(jsonText);
       const json = parseJson(jsonText);

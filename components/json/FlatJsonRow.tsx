@@ -7,6 +7,7 @@ import { InlineIcon } from "../lv1/InlineIcon";
 import { useState } from "react";
 import { ToggleButton } from "../lv1/ToggleButton";
 import { useToggleState } from "@/states/view";
+import { usePreference } from "@/states/preferece";
 
 
 const RightmostKeyCell = (props: {
@@ -57,7 +58,7 @@ const RightmostTypeCell = (props: {
   switch (props.right.right.type) {
     case "map": {
       return <div
-        className={`grow-0 shrink-0 json-structure item-key item-type depth-${depth2} w-[6em] p-1 text-base text-center`}
+        className={`grow-0 shrink-0 w-[6em] json-structure item-key item-type depth-${depth2} w-[6em] p-1 text-base text-center`}
       >
         <InlineIcon i={<ActualIconForType vo={props.right.right} />} />
         {props.right.childs?.length ?? 0}
@@ -65,7 +66,7 @@ const RightmostTypeCell = (props: {
     }
     case "array": {
       return <div
-        className={`grow-0 shrink-0 json-structure item-index item-type depth-${depth2} w-[6em] p-1 text-base text-center`}
+        className={`grow-0 shrink-0 w-[6em] json-structure item-index item-type depth-${depth2} w-[6em] p-1 text-base text-center`}
       >
         <InlineIcon i={<ActualIconForType vo={props.right.right} />} />
         {props.right.childs?.length ?? 0}
@@ -74,6 +75,20 @@ const RightmostTypeCell = (props: {
   }
   return null;
 }
+
+const SubtreeStatCell = (props: {
+  item: JsonRowItem;
+}) => {
+  const { preference } = usePreference();
+  if (!preference.show_subtree_stat) { return null; }
+  const stats = props.item.stats;
+  return (<div
+    className="grow-0 shrink-0 flex flex-row stats secondary-foreground p-1 gap-3 text-sm"
+  >
+    <p>Items: {stats.item_count}</p>
+    <p>Depth: {stats.max_depth}</p>
+  </div>)
+};
 
 /**
  * その行の本来のアイテムの左側に表示されるセル
@@ -108,10 +123,11 @@ const FlatJsonLeadingCell = (props: {
     //    - 本来のitemは開閉可能になるので, そのためのボタンを表示する
     // -> 続けて, 本来のitemの型と要素数を表示する
     return <div
-      className="w-[12em] grow-0 shrink-0 flex flex-row"
+      className="grow-0 shrink-0 flex flex-row items-center"
       >
       <RightmostKeyCell index={props.index} right={props.right} isTogglable={true} />
       <RightmostTypeCell index={props.typeIndex} right={props.right} />
+      <SubtreeStatCell item={props.right}/>
     </div>
   } else {
     // 本来のitemが配列でもマップでもない

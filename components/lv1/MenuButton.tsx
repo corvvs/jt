@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 
 export const MenuButton = (
   props: React.DetailedHTMLProps<
@@ -18,3 +18,20 @@ export const MenuButton = (
     />
   );
 };
+
+export const MenuToggleButton = (
+  props: {
+    isToggled: boolean;
+    onClick: (isToggled: boolean) => void;
+    children: ReactNode;
+  }
+) => {
+  return (
+    <button
+      className={`menu-toggle-button h-[2em] py-1 px-2 ${ props.isToggled ? "is-toggled" : "is-not-toggled"}`}
+      onClick={() => props.onClick(!props.isToggled)}
+    >
+      {props.children}
+    </button>
+  );
+}
