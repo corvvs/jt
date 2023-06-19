@@ -12,7 +12,7 @@ export const EditJsonCard = (props: {
   const { setToggleState } = useToggleState();
   return (
     <div
-      className='json-text w-[36em] flex flex-col font-mono text-sm border-2 rounded-lg'
+      className='json-text w-[48em] flex flex-col font-mono text-sm border-2 rounded-lg'
     >
       <div
         className="shrink-0 grow-0 flex flex-row gap-2 p-2 text-md"
@@ -48,7 +48,22 @@ export const EditJsonCard = (props: {
           </JetButton>
         </div>
 
+        <div>
+          <JetButton
+            onClick={() => {
+              try {
+                setRawtext(JSON.stringify(JSON.parse(rawText), null, 0))
+              } catch (e) {
+                console.log(e)
+              }
+            }}
+          >
+            <InlineIcon i={<BsIndent />} />
+            JSONをMinify
+          </JetButton>
+        </div>
       </div>
+
       <div
         className="shrink grow relative"
       >
