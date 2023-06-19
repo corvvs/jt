@@ -8,7 +8,7 @@ import { useToggleState } from "@/states/view";
 export const EditJsonCard = (props: {
   closeModal: () => void;
 }) => {
-  const { rawText, setRawtext, setBaseText }  = useJSON();
+  const { rawText, setRawtext, setBaseText, parseJson, setParsedJson }  = useJSON();
   const { setToggleState } = useToggleState();
   return (
     <div
@@ -22,6 +22,9 @@ export const EditJsonCard = (props: {
             onClick={() => {
               setBaseText(rawText)
               setToggleState({});
+              const json = parseJson(rawText);
+              if (!json) { return; }
+              setParsedJson(json);
               props.closeModal()
             }}
           >

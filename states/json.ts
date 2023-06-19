@@ -1,7 +1,8 @@
+import { JsonText } from '@/data/text';
 import { flattenJson } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 
-const defaultRawText = `
+export const defaultRawText = `
 {
   "types":["sublocality","political"],
   "formatted_address":"Winnetka, California, USA",
@@ -34,14 +35,37 @@ const defaultRawText = `
 }
 `
 
-const rawTextAtom = atom<string>(defaultRawText);
+/**
+ * 編集エリアのテキスト
+ */
+const rawTextAtom = atom<string>("null");
 
-const baseTextAtom = atom<string>(defaultRawText);
+/**
+ * JSON変換を行う対象のテキスト
+ */
+const baseTextAtom = atom<string>("null");
+
+const parsedJsonAtom = atom<any | null>(null);
+
+const parseJson = (baseText: string) => {
+  try {
+    const text = baseText.replace(/[\u0000-\u0019]+/g, "");
+    const json = JSON.parse(text);
+    JsonText.saveTextLocal(baseText);
+    return json;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
 
 const jsonAtom = atom(
   (get) => {
     try {
-      return JSON.parse(get(baseTextAtom).replace(/[\u0000-\u0019]+/g, ""));
+      const text = get(baseTextAtom).replace(/[\u0000-\u0019]+/g, "");
+      const json = JSON.parse(text);
+      JsonText.saveTextLocal(text);
+      return json;
     } catch (e) {
       console.error(e);
       return null;
@@ -52,7 +76,9 @@ const jsonAtom = atom(
 const jsonFlattenedAtom = atom(
   (get) => {
     try {
-      return flattenJson(get(jsonAtom), get(baseTextAtom))
+      const json = get(parsedJsonAtom);
+      if (!json) { return null; }
+      return flattenJson(json, get(baseTextAtom))
     } catch (e) {
       console.error(e);
       return null;
@@ -68,12 +94,15 @@ const jsonFlattenedAtom = atom(
  */
 export const useJSON = () => {
   const [rawText, setRawtext] = useAtom(rawTextAtom);
-  const [, setBaseText] = useAtom(baseTextAtom);
+  const [baseText, setBaseText] = useAtom(baseTextAtom);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
+  const [, setParsedJson] = useAtom(parsedJsonAtom);
   return {
     rawText,
     setRawtext,
     setBaseText,
     flatJsons,
+    parseJson,
+    setParsedJson,
   };
 };

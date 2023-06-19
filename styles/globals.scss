@@ -77,6 +77,13 @@ body {
   }
 }
 
+.flippable-button-secondary {
+  &:hover {
+    color: var(--background-secondary);
+    background-color: var(--foreground-secondary);
+  }
+}
+
 * {
   border-color: #888;
 }
