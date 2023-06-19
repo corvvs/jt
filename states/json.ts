@@ -96,12 +96,13 @@ export const useJSON = () => {
   const [rawText, setRawtext] = useAtom(rawTextAtom);
   const [baseText, setBaseText] = useAtom(baseTextAtom);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
-  const [, setParsedJson] = useAtom(parsedJsonAtom);
+  const [json, setParsedJson] = useAtom(parsedJsonAtom);
   return {
     rawText,
     setRawtext,
     setBaseText,
     flatJsons,
+    json,
     parseJson,
     setParsedJson,
   };
