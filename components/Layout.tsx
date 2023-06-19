@@ -31,7 +31,7 @@ const MenuBar = () => {
       <MenuButton
         onClick={() => openModal()}
       >
-        <InlineIcon i={<VscEdit />} />Edit JSON
+        <InlineIcon i={<VscEdit />} />Edit Text
       </MenuButton>
 
       <MenuButton

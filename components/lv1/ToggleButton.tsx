@@ -9,7 +9,7 @@ export const ToggleButton = (
 ) => {
   return (
     <button
-      className=""
+      className="flippable-button-secondary font-bold"
       onClick={() => props.onClick(!props.isClosed)}
     >
       {props.isClosed ? <BsChevronUp /> : <BsChevronDown />}
