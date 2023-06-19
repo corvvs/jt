@@ -13,6 +13,7 @@ import { IconButton } from "../lv1/IconButton";
 import { VscCopy } from "react-icons/vsc";
 import { useJSON } from "@/states";
 import { ClipboardAccess } from "@/libs/sideeffect";
+import { toast } from "react-toastify";
 
 
 const RightmostKeyCell = (props: {
@@ -101,6 +102,7 @@ const SubtreeMenuCell = (props: {
           const subText = JSON.stringify(subJson, null, 2);
           try {
             await ClipboardAccess.copyText(subText);
+            toast(`キーパス ${keyPath} のJSON文字列をクリップボードにコピーしました`);
           } catch (e) {
             console.error(e);
           }

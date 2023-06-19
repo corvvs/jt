@@ -1,5 +1,6 @@
 import { JsonViewer } from "@/components/JsonViewer";
 import Layout from "@/components/Layout";
+import { ToastHolder } from "@/components/toast/ToastHolder";
 import { JsonText } from "@/data/text";
 import { useJSON } from "@/states";
 import { defaultRawText } from "@/states/json";
@@ -23,6 +24,7 @@ export default function Home() {
   return (
     <Layout>
       <JsonViewer />
+      <ToastHolder />
     </Layout>
   )
 }
