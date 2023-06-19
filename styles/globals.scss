@@ -24,6 +24,8 @@
   --background-key-3: #e1efe8;
   --background-key-4: #efe3e1;
   --background-textarea: 227, 232, 232;
+
+  --selected-row: #c6f1c8;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -49,6 +51,8 @@
     --background-key-3: #323b37;
     --background-key-4: #3d3432;
     --background-textarea: 48, 48, 48;
+
+    --selected-row: #c6f1c8;
   }
 }
 
@@ -63,6 +67,10 @@ body {
 
 .secondary-background {
   background-color: var(--background-secondary);
+}
+
+.selected-row {
+  background-color: var(--selected-row);
 }
 
 .route-active {

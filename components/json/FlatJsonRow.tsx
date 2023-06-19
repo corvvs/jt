@@ -7,7 +7,8 @@ import { InlineIcon } from "../lv1/InlineIcon";
 import { useState } from "react";
 import { ToggleButton } from "../lv1/ToggleButton";
 import { useToggleState } from "@/states/view";
-import { usePreference } from "@/states/preferece";
+import { usePreference } from "@/states/preference";
+import { useManipulation } from "@/states/manipulation";
 
 
 const RightmostKeyCell = (props: {
@@ -80,7 +81,7 @@ const SubtreeStatCell = (props: {
   item: JsonRowItem;
 }) => {
   const { preference } = usePreference();
-  if (!preference.show_subtree_stat) { return null; }
+  if (!preference.visible_subtree_stat) { return null; }
   const stats = props.item.stats;
   return (<div
     className="grow-0 shrink-0 flex flex-row stats secondary-foreground p-1 gap-3 text-sm"
@@ -141,12 +142,30 @@ const FlatJsonLeadingCell = (props: {
 }
 
 const LineNumberCell = (props: {
-  index: number;
+  item: JsonRowItem;
 }) => {
+  const { manipulation, setManipulation } = useManipulation();
+  const itemIndex = props.item.index;
+  const isSelected = manipulation.selectedIndex === itemIndex;
   return <div
-    className="w-[4em] grow-0 shrink-0 flex flex-row justify-end items-center p-1 line-number text-sm"
+    className={
+      'w-[4em] grow-0 shrink-0 flex flex-row justify-end items-center p-1 line-number text-sm cursor-pointer line-number-cell'
+    }
+    onClick={() => {
+      if (isSelected) {
+        setManipulation((prev) => ({
+          ...prev,
+          selectedIndex: null,
+        }));
+      } else {
+        setManipulation((prev) => ({
+          ...prev,
+          selectedIndex: itemIndex,
+        }));
+      }
+    }}
   >
-    <div>{props.index + 1}</div>
+    <div>{itemIndex}</div>
   </div>
 }
 
@@ -197,19 +216,24 @@ export const FlatJsonRow = (props: {
 }) => {
   
   const [isHovered, setIsHovered] = useState(false);
+  const { manipulation } = useManipulation();
+  const isSelected = manipulation.selectedIndex === props.item.index;
   const item = props.item;
   const {
     right,
     rowItems,
     elementKey,
   } = item;
+  const backgroundClass = isSelected ? "selected-row" : isHovered ? "secondary-background" : "";
 
   return (<div
-    className={`h-[2em] flex flex-row items-stretch gap-0 ${isHovered ? "secondary-background" : ""}`}
+    className={
+      `h-[2em] flex flex-row items-stretch gap-0 ${backgroundClass}`
+    }
     onMouseOver={() => setIsHovered(true)}
     onMouseOut={() => setIsHovered(false)}
   >
-    <LineNumberCell index={item.index} />
+    <LineNumberCell item={item} />
 
     <LeadingCells item={item} isHovered={isHovered} />
 

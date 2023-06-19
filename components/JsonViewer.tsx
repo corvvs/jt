@@ -2,10 +2,13 @@ import { useJSON } from "@/states";
 import { FlatJsonRow, VirtualScroll } from "./json/FlatJsonRow";
 import { JsonRowItem, JsonStats } from "@/libs/jetson";
 import { useToggleState } from "@/states/view";
+import { useManipulation } from "@/states/manipulation";
+import _ from "lodash";
 
 const JsonStatsLine = (props: {
   stats: JsonStats;
 }) => {
+  const { manipulation } = useManipulation();
   return (<>
     <p>
       Lines: {props.stats.item_count}
@@ -16,6 +19,11 @@ const JsonStatsLine = (props: {
     <p>
       Characters: {props.stats.char_count}
     </p>
+    {
+      _.isFinite(manipulation.selectedIndex)
+        ? <p>Selected: {manipulation.selectedIndex}</p>
+        : null
+    }
   </>)
 };
 
