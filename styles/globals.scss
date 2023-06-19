@@ -52,7 +52,7 @@
     --background-key-4: #3d3432;
     --background-textarea: 48, 48, 48;
 
-    --selected-row: #c6f1c8;
+    --selected-row: #203120;
   }
 }
 
@@ -175,9 +175,61 @@ body {
 }
 
 .modal-backdrop {
-  background-color: rgba(var(--background-textarea), 0.3);
+  background-color: rgba(var(--background-textarea), 0.3) !important;
 }
 
 .stats {
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+}
+
+.stats-value {
+  padding: 0 0.25rem;
+  color: var(--foreground-number);
+}
+
+.Toastify__toast {
+  border: 2px solid #888;
+  border-radius: 0;
+}
+
+.Toastify__toast--error {
+  color: red;
+}
+
+@mixin transform {
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translate3d(110%, 0, 0);
+    visibility: visible;
+  }
+  to {
+    @include transform;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    @include transform;
+  }
+  to {
+    visibility: hidden;
+    transform: translate3d(110%, 0, 0);
+  }
+}
+
+.my-enter {
+  animation-fill-mode: both;
+  animation-duration: 0.24s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-name: slideInRight;
+}
+
+.my-exit {
+  animation-fill-mode: both;
+  animation-duration: 0.15s;
+  animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
+  animation-name: slideOutRight;
 }

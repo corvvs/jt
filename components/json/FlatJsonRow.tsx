@@ -9,6 +9,11 @@ import { ToggleButton } from "../lv1/ToggleButton";
 import { useToggleState } from "@/states/view";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
+import { IconButton } from "../lv1/IconButton";
+import { VscCopy } from "react-icons/vsc";
+import { useJSON } from "@/states";
+import { ClipboardAccess } from "@/libs/sideeffect";
+import { toast } from "react-toastify";
 
 
 const RightmostKeyCell = (props: {
@@ -21,7 +26,7 @@ const RightmostKeyCell = (props: {
   const depth = props.index % 5;
   const text = typeof props.right.itemKey === "string" ? props.right.itemKey : `[${props.right.itemKey}]`;
   return <div
-    className={`item-key w-[6em] grow shrink flex flex-row p-1 depth-${depth}`}
+    className={`item-key w-[6em] grow-0 shrink-0 flex flex-row p-1 depth-${depth}`}
     style={{ overflow: "normal" }}
     title={props.right.itemKey.toString()}
   >
@@ -77,6 +82,36 @@ const RightmostTypeCell = (props: {
   return null;
 }
 
+const SubtreeMenuCell = (props: {
+  item: JsonRowItem;
+}) => {
+  const { manipulation } = useManipulation();
+  const { json } = useJSON();
+  if (manipulation.selectedIndex !== props.item.index) { return null; }
+  return (<div
+    className="grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
+  >
+    <p>
+      <IconButton
+        icon={VscCopy}
+        alt="Copy Subtree as JSON"
+        onClick={async () => {
+          const keyPath = props.item.elementKey;
+          const subJson = keyPath ? _.get(json, keyPath) : json;
+          if (!subJson) { return; }
+          const subText = JSON.stringify(subJson, null, 2);
+          try {
+            await ClipboardAccess.copyText(subText);
+            toast(`キーパス ${keyPath} のJSON文字列をクリップボードにコピーしました`);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+    </p>
+  </div>)
+}
+
 const SubtreeStatCell = (props: {
   item: JsonRowItem;
 }) => {
@@ -84,7 +119,7 @@ const SubtreeStatCell = (props: {
   if (!preference.visible_subtree_stat) { return null; }
   const stats = props.item.stats;
   return (<div
-    className="grow-0 shrink-0 flex flex-row stats secondary-foreground p-1 gap-3 text-sm"
+    className="grow-0 shrink-0 flex flex-row items-center stats secondary-foreground p-1 gap-3 text-sm"
   >
     <p>Items: {stats.item_count}</p>
     <p>Depth: {stats.max_depth}</p>
@@ -108,36 +143,40 @@ const FlatJsonLeadingCell = (props: {
 }) => {
 
   const depth = props.index % 5;
-  if (!props.right) {
+  const right = props.right;
+  const isRightmost = !!right;
+  const showTypeCell = right && (right.right.type === "array" || right.right.type === "map");
+  const isTogglable = showTypeCell;
+
+  // - KeyCell: isRightmost || isHovered 
+  // - TypeCell: showTypeCell
+  // - StatCell: showTypeCell
+
+  if (!isRightmost) {
     // 最も右のLeadingCell ではない場合
     return <div
       className={`w-[6em] grow-0 shrink-0 item-index depth-${depth} text-base secondary-foreground`}
     >
-      {props.isHovered ? <RightmostKeyCell index={props.index} right={props.nextItem} /> : null}
+      {props.isHovered ? <RightmostKeyCell index={props.index} right={props.nextItem} isTogglable={isTogglable} /> : null}
     </div>
   }
 
   // 最も右のLeadingCell である場合
-  if (props.right.right.type === "array" || props.right.right.type === "map") {
+  if (right.right.type === "array" || right.right.type === "map") {
     // 本来のitemが配列またはマップ
     // -> 本来のitemの添字またはキーを表示する
     //    - 本来のitemは開閉可能になるので, そのためのボタンを表示する
     // -> 続けて, 本来のitemの型と要素数を表示する
-    return <div
-      className="grow-0 shrink-0 flex flex-row items-center"
-      >
-      <RightmostKeyCell index={props.index} right={props.right} isTogglable={true} />
-      <RightmostTypeCell index={props.typeIndex} right={props.right} />
-      <SubtreeStatCell item={props.right}/>
-    </div>
+    return <>
+      <RightmostKeyCell index={props.index} right={right} isTogglable={isTogglable} />
+      <RightmostTypeCell index={props.typeIndex} right={right} />
+      <SubtreeMenuCell item={right}/>
+      <SubtreeStatCell item={right}/>
+    </>
   } else {
     // 本来のitemが配列でもマップでもない
     // -> 開閉する必要がない
-    return <div
-      className="w-[6em] flex flex-row"
-      >
-      <RightmostKeyCell index={props.index} right={props.right} />
-    </div>
+    return <RightmostKeyCell index={props.index} right={right} isTogglable={isTogglable} />
   }
 }
 
@@ -268,6 +307,7 @@ export function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollPr
           width={width}
           itemCount={data.length}
           itemSize={itemSize}
+          overscanCount={10}
         >
           {Row}
         </FixedSizeList>

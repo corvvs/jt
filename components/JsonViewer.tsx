@@ -21,7 +21,7 @@ const JsonStatsLine = (props: {
     </p>
     {
       _.isFinite(manipulation.selectedIndex)
-        ? <p>Selected: {manipulation.selectedIndex}</p>
+        ? <p>Selected Line: {manipulation.selectedIndex}</p>
         : null
     }
   </>)

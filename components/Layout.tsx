@@ -29,7 +29,7 @@ const MenuBar = () => {
 
     <h2>J.E.T</h2>
 
-    <div className='flex flex-row gap-2'>
+    <div className='flex flex-row items-center gap-2'>
       <MenuButton
         onClick={() => openModal()}
       >
