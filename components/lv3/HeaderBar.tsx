@@ -9,6 +9,7 @@ import { useToggleState } from "@/states/view";
 import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
+import { SimpleFilterPanel } from "../lv2/SimpleFilterPanel";
 
 const MassManipulationButtons = () => {
   const { flatJsons } = useJSON();
@@ -22,7 +23,7 @@ const MassManipulationButtons = () => {
     <MenuButton
       onClick={() => openAll(manipulation.narrowedRange || undefined)}
     >
-      <InlineIcon i={<BsChevronDoubleDown />} />Open All
+      <InlineIcon i={<BsChevronDoubleDown />} />Unfold All
     </MenuButton>
 
     <MenuButton
@@ -30,7 +31,7 @@ const MassManipulationButtons = () => {
         closeAll(items, manipulation.narrowedRange || undefined)
       }}
     >
-      <InlineIcon i={<BsChevronDoubleUp />} />Close All
+      <InlineIcon i={<BsChevronDoubleUp />} />Fold All
     </MenuButton>
 
     { false &&
@@ -69,6 +70,8 @@ export const MenuBar = () => {
       </MenuButton>
 
       <MassManipulationButtons />
+
+      <SimpleFilterPanel />
 
     </div>
   </div>

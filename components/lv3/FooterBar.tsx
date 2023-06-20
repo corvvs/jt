@@ -11,7 +11,9 @@ export const JsonStatsLine = (props: {
   const { manipulation } = useManipulation();
   const { flatJsons } = useJSON();
   if (!flatJsons) { return null; }
-  const narrowingItemFrom = _.isFinite(manipulation.narrowedRange?.from) ? flatJsons.items[manipulation.narrowedRange!.from] : null;
+  const items = flatJsons.items;
+  const selectedItem = _.isFinite(manipulation.selectedIndex) ? items[manipulation.selectedIndex!] : null;
+  const narrowingItemFrom = _.isFinite(manipulation.narrowedRange?.from) ? items[manipulation.narrowedRange!.from] : null;
 
   return (<>
     <p className="stats-item">
@@ -30,10 +32,10 @@ export const JsonStatsLine = (props: {
     </p>
 
     {
-      _.isFinite(manipulation.selectedIndex)
+      selectedItem
         ? <p className="stats-item">
             <span>Selected Line:</span>
-            <span className="stats-value">{manipulation.selectedIndex}</span>
+            <span className="stats-value">{selectedItem.lineNumber}</span>
           </p>
         : null
     }

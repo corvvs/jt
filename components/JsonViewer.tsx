@@ -8,6 +8,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 import { JsonStatsLine } from "./lv3/FooterBar";
 import { MutableRefObject, useRef } from "react";
+import { FaRegMehRollingEyes } from 'react-icons/fa';
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -49,16 +50,34 @@ const JsonItemsView = (props: {
 }) => {
   const { items } = props;
   const { toggleState } = useToggleState();
-  const { manipulation } = useManipulation();
+  const { manipulation, simpleFilterMaps } = useManipulation();
 
   // 表示すべきitemを選別する
+  const filterBySimpleFilteringQuery = simpleFilterMaps
+    ? (item: JsonRowItem) => simpleFilterMaps.visible[item.index]
+    : () => true;
+
+  const filterByNarrowing = manipulation.narrowedRange
+    ? (item: JsonRowItem) => {
+        const { from, to } = manipulation.narrowedRange!;
+        return from <= item.index && item.index < to;
+      }
+    : () => true;
   const visibleItems = (() => {
-    if (manipulation.narrowedRange) {
-      const { from, to } = manipulation.narrowedRange;
-      return items.filter((item) => from <= item.index && item.index < to && !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
-    }
-    return items.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+    return items
+      .filter(filterByNarrowing)
+      .filter(filterBySimpleFilteringQuery)
+      .filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
   })();
+
+  if (visibleItems.length === 0) {
+    return <div
+      className="h-full shrink grow gap-2 flex flex-col justify-center items-center"
+    >
+      <FaRegMehRollingEyes className="text-4xl" />
+      <p className="text-xl">no visible items</p>
+    </div>
+  }
 
   return (
     <VirtualScroll

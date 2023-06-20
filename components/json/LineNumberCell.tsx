@@ -5,7 +5,7 @@ import { useManipulation } from "@/states/manipulation";
 export const LineNumberCell = (props: {
   item: JsonRowItem;
 }) => {
-  const { manipulation, setManipulation } = useManipulation();
+  const { manipulation, setSelectedIndex } = useManipulation();
   const itemIndex = props.item.index;
   const lineNumber = props.item.lineNumber;
   const isSelected = manipulation.selectedIndex === itemIndex;
@@ -15,15 +15,9 @@ export const LineNumberCell = (props: {
     }
     onClick={() => {
       if (isSelected) {
-        setManipulation((prev) => ({
-          ...prev,
-          selectedIndex: null,
-        }));
+        setSelectedIndex(null);
       } else {
-        setManipulation((prev) => ({
-          ...prev,
-          selectedIndex: itemIndex,
-        }));
+        setSelectedIndex(itemIndex);
       }
     }}
   >

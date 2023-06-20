@@ -54,9 +54,9 @@
     --background-key-4: #3d3432;
     --background-textarea: 48, 48, 48;
 
-    --selected-row: #81c381;
+    --selected-row: #76f4d0;
     --narrowed-from-row: #c260f6;
-    --line-number: rgb(94, 106, 142);
+    --line-number: rgb(133, 141, 255);
   }
 }
 
@@ -255,4 +255,12 @@ body {
   .stats-value {
     color: var(--background);
   }
+}
+
+.filter-matched-items {
+  color: var(--foreground-number);
+  &.no-hit {
+    color: var(--foreground-string);
+  }
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
 }
