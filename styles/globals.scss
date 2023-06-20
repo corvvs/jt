@@ -27,6 +27,7 @@
 
   --selected-row: #c6f1c8;
   --narrowed-from-row: #bf91ff;
+  --line-number: royalblue;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -53,8 +54,9 @@
     --background-key-4: #3d3432;
     --background-textarea: 48, 48, 48;
 
-    --selected-row: #203120;
-    --narrowed-from-row: #c6f1c8;
+    --selected-row: #81c381;
+    --narrowed-from-row: #c260f6;
+    --line-number: rgb(94, 106, 142);
   }
 }
 
@@ -103,7 +105,7 @@ body {
 }
 
 .line-number {
-  color: royalblue;
+  color: var(--line-number);
   text-align: right;
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
 }

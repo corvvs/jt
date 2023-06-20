@@ -16,20 +16,19 @@ const RightmostKeyCell = (props: {
   const depth = props.index % 5;
   const text = typeof props.right.itemKey === "string" ? props.right.itemKey : `[${props.right.itemKey}]`;
   return <div
-    className={`item-key w-[6em] grow-0 shrink-0 flex flex-row p-1 depth-${depth}`}
+    className={`item-key w-[6em] grow-0 shrink-0 flex flex-row items-center p-1 depth-${depth}`}
     style={{ overflow: "normal" }}
     title={props.right.itemKey.toString()}
   >
     {
       props.isTogglable
-        ? <div>
-            <ToggleButton
-              isClosed={!!toggleState[props.right.index]}
-              onClick={(isClosed) => toggleItem(props.right, isClosed)}
-            />
-          </div>
+        ? <ToggleButton
+            isClosed={!!toggleState[props.right.index]}
+            onClick={(isClosed) => toggleItem(props.right, isClosed)}
+          />
         : null 
     }
+
     <p
       className='grow shrink text-base text-ellipsis whitespace-nowrap break-keep overflow-hidden'
     >
