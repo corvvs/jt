@@ -11,17 +11,23 @@ const JsonStatsLine = (props: {
   const { manipulation } = useManipulation();
   return (<>
     <p>
-      Lines: {props.stats.item_count}
+      <span>Lines:</span>
+      <span className="stats-value">{props.stats.item_count}</span>
     </p>
     <p>
-      Depth: {props.stats.max_depth}
+      <span>Depth:</span>
+      <span className="stats-value">{props.stats.max_depth}</span>
     </p>
     <p>
-      Characters: {props.stats.char_count}
+      <span>Characters:</span>
+      <span className="stats-value">{props.stats.char_count}</span>
     </p>
     {
       _.isFinite(manipulation.selectedIndex)
-        ? <p>Selected Line: {manipulation.selectedIndex}</p>
+        ? <p>
+            <span>Selected Line:</span>
+            <span className="stats-value">{manipulation.selectedIndex}</span>
+          </p>
         : null
     }
   </>)
@@ -33,16 +39,33 @@ const JsonItemsView = (props: {
 }) => {
   const { items } = props;
   const { toggleState } = useToggleState();
+  const { manipulation } = useManipulation();
+
   // 表示すべきitemを選別する
-  const visibleItems = items.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+  const visibleItems = (() => {
+    console.log(manipulation);
+    if (typeof manipulation.narrowedIndex === "number") {
+      const indexFrom = manipulation.narrowedIndex;
+      const itemFrom = items[indexFrom];
+      const itemTo = _.range(indexFrom + 1, items.length).find(index => {
+        if (index === items.length) { return true; }
+        const itemTo = items[index];
+        return itemFrom.rowItems.length === itemTo.rowItems.length;
+      });
+      if (typeof itemTo === "number") {
+        const indexTo = items[itemTo].index;
+        return items.filter((item) => indexFrom <= item.index && item.index < indexTo && !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+      }
+    }
+    return items.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+  })();
 
   return (
     <VirtualScroll
       data={visibleItems} // データ
-      renderItem={(item, index) => <FlatJsonRow
+      renderItem={(item) => <FlatJsonRow
           key={item.elementKey}
           item={item}
-          index={index}
         />
       }
       itemSize={32} // 各アイテムの高さ

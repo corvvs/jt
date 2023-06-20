@@ -10,10 +10,12 @@ import { useToggleState } from "@/states/view";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
 import { IconButton } from "../lv1/IconButton";
+import { CgArrowsBreakeV, CgArrowsShrinkV } from "react-icons/cg";
 import { VscCopy } from "react-icons/vsc";
 import { useJSON } from "@/states";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
+import { MdPhotoSizeSelectActual } from "react-icons/md";
 
 
 const RightmostKeyCell = (props: {
@@ -85,7 +87,7 @@ const RightmostTypeCell = (props: {
 const SubtreeMenuCell = (props: {
   item: JsonRowItem;
 }) => {
-  const { manipulation } = useManipulation();
+  const { manipulation, setManipulation } = useManipulation();
   const { json } = useJSON();
   if (manipulation.selectedIndex !== props.item.index) { return null; }
   return (<div
@@ -102,10 +104,36 @@ const SubtreeMenuCell = (props: {
           const subText = JSON.stringify(subJson, null, 2);
           try {
             await ClipboardAccess.copyText(subText);
-            toast(`キーパス ${keyPath} のJSON文字列をクリップボードにコピーしました`);
+            toast(`キーパス ${keyPath} 以下のJSONをクリップボードにコピーしました`);
           } catch (e) {
             console.error(e);
           }
+        }}
+      />
+    </p>
+
+    <p>
+      <IconButton
+        icon={CgArrowsShrinkV}
+        alt="Narrowing"
+        onClick={() => {
+          setManipulation(prev => {
+            const next = { ...prev, narrowedIndex: props.item.index };
+            return next;
+          });
+        }}
+      />
+    </p>
+
+    <p>
+      <IconButton
+        icon={CgArrowsBreakeV}
+        alt="Cancel Narrowing"
+        onClick={() => {
+          setManipulation(prev => {
+            const next = { ...prev, narrowedIndex: null };
+            return next;
+          });
         }}
       />
     </p>
@@ -251,7 +279,6 @@ const LeadingCells = (props: {
 
 export const FlatJsonRow = (props: {
   item: JsonRowItem;
-  index: number;
 }) => {
   
   const [isHovered, setIsHovered] = useState(false);
@@ -307,7 +334,7 @@ export function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollPr
           width={width}
           itemCount={data.length}
           itemSize={itemSize}
-          overscanCount={10}
+          overscanCount={20}
         >
           {Row}
         </FixedSizeList>
