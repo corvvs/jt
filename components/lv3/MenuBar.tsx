@@ -4,7 +4,7 @@ import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { Modal } from "@/components/Modal";
 import { EditJsonCard } from "@/components/json/EditJsonCard";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
-import { BsChevronDown, BsChevronUp } from "react-icons/bs";
+import { BsChevronDoubleDown, BsChevronDoubleUp, BsChevronDown, BsChevronUp } from "react-icons/bs";
 import { useToggleState } from "@/states/view";
 import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
@@ -41,7 +41,7 @@ export const MenuBar = () => {
       <MenuButton
         onClick={() => openAll(manipulation.narrowedRange || undefined)}
       >
-        <InlineIcon i={<BsChevronDown />} />Open All
+        <InlineIcon i={<BsChevronDoubleDown />} />Open All
       </MenuButton>
 
       <MenuButton
@@ -51,7 +51,7 @@ export const MenuBar = () => {
           closeAll(items, manipulation.narrowedRange || undefined)
         }}
       >
-        <InlineIcon i={<BsChevronUp />} />Close All
+        <InlineIcon i={<BsChevronDoubleUp />} />Close All
       </MenuButton>
 
       <MenuToggleButton

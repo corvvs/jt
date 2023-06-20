@@ -11,11 +11,12 @@ import { toast } from "react-toastify";
 
 export const SubtreeMenuCell = (props: {
   item: JsonRowItem;
+  isHovered: boolean;
 }) => {
-  const { manipulation, setManipulation, setNarrowedRange, unsetNarrowdRange } = useManipulation();
+  const { manipulation, setNarrowedRange, unsetNarrowdRange } = useManipulation();
   const { json, flatJsons } = useJSON();
-  if (manipulation.selectedIndex !== props.item.index) { return null; }
   const isNarrowed = manipulation.narrowedRange?.from === props.item.index;
+  if (!props.isHovered && !isNarrowed && manipulation.selectedIndex !== props.item.index) { return null; }
 
   return (<div
     className="grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"

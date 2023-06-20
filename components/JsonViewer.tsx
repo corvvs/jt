@@ -1,47 +1,22 @@
 import { useJSON } from "@/states";
 import { FlatJsonRow } from "./json/FlatJsonRow";
-import { JsonRowItem, JsonStats } from "@/libs/jetson";
+import { JsonRowItem } from "@/libs/jetson";
 import { useToggleState } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
 import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
-
-const JsonStatsLine = (props: {
-  stats: JsonStats;
-}) => {
-  const { manipulation } = useManipulation();
-  return (<>
-    <p>
-      <span>Lines:</span>
-      <span className="stats-value">{props.stats.item_count}</span>
-    </p>
-    <p>
-      <span>Depth:</span>
-      <span className="stats-value">{props.stats.max_depth}</span>
-    </p>
-    <p>
-      <span>Characters:</span>
-      <span className="stats-value">{props.stats.char_count}</span>
-    </p>
-    {
-      _.isFinite(manipulation.selectedIndex)
-        ? <p>
-            <span>Selected Line:</span>
-            <span className="stats-value">{manipulation.selectedIndex}</span>
-          </p>
-        : null
-    }
-  </>)
-};
+import { JsonStatsLine } from "./lv3/FooterBar";
+import { MutableRefObject, useRef } from "react";
 
 interface VirtualScrollProps<T> {
   data: T[];
   renderItem: (item: T, index: number) => JSX.Element;
   itemSize: number;
+  itemViewRef: MutableRefObject<any>;
 }
 
-function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollProps<T>) {
+function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualScrollProps<T>) {
   const Row = ({ index, style }: any) => {
     return (
       <div style={style}>
@@ -54,6 +29,7 @@ function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollProps<T>)
     <AutoSizer>
       {({ height, width }) => (
         <FixedSizeList
+          ref={itemViewRef}
           height={height}
           width={width}
           itemCount={data.length}
@@ -68,7 +44,8 @@ function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollProps<T>)
 }
 
 const JsonItemsView = (props: {
-  items: JsonRowItem[]
+  items: JsonRowItem[];
+  itemViewRef: MutableRefObject<any>;
 }) => {
   const { items } = props;
   const { toggleState } = useToggleState();
@@ -85,6 +62,7 @@ const JsonItemsView = (props: {
 
   return (
     <VirtualScroll
+      itemViewRef={props.itemViewRef}
       data={visibleItems} // データ
       renderItem={(item) => <FlatJsonRow
           key={item.elementKey}
@@ -98,6 +76,7 @@ const JsonItemsView = (props: {
 
 export const JsonViewer = () => {
   const { flatJsons }  = useJSON();
+  const itemViewRef = useRef<any>(null);
 
   if (!flatJsons) { return null; }
   const {
@@ -110,12 +89,12 @@ export const JsonViewer = () => {
       <div
         className="shrink grow"
       >
-        <JsonItemsView items={items} />
+        <JsonItemsView items={items} itemViewRef={itemViewRef}/>
       </div>
       <div
-        className="shrink-0 grow-0 flex flex-row gap-4 px-2 py-1 text-sm border-t-2 stats"
+        className="shrink-0 grow-0 flex flex-row gap-4 px-2 py-1 text-sm border-t-2 stats items-center"
       >
-        <JsonStatsLine stats={stats} />
+        <JsonStatsLine stats={stats} itemViewRef={itemViewRef} />
       </div>
     </div>
   )

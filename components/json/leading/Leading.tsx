@@ -108,8 +108,8 @@ export const FlatJsonLeadingCell = (props: {
     return <>
       <RightmostKeyCell index={props.index} right={right} isTogglable={isTogglable} />
       <RightmostTypeCell index={props.typeIndex} right={right} />
-      <SubtreeMenuCell item={right}/>
-      <SubtreeStatCell item={right}/>
+      <SubtreeMenuCell item={right} isHovered={props.isHovered} />
+      <SubtreeStatCell item={right} />
     </>
   } else {
     // 本来のitemが配列でもマップでもない

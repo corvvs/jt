@@ -50,6 +50,7 @@ export type JsonStats = TreeStats & {
 
 export type JsonRowItem = {
   index: number;
+  lineNumber: number;
   elementKey: string;
   right: JsonValueObject;
   rowItems: JsonRowItem[];
@@ -110,8 +111,11 @@ function flattenDigger(
       ? parent.elementKey + "." + `${parent.itemKey ?? items.length}`
       : `${parent.itemKey ?? items.length}`
     ) : "";
+  const index = items.length;
+  const lineNumber = items.length + 1;
   const item: JsonRowItem = {
-    index: items.length,
+    index,
+    lineNumber,
     elementKey,
     right: subtree,
     rowItems: [...branch],
