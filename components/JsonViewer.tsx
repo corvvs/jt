@@ -1,8 +1,10 @@
 import { useJSON } from "@/states";
-import { FlatJsonRow, VirtualScroll } from "./json/FlatJsonRow";
+import { FlatJsonRow } from "./json/FlatJsonRow";
 import { JsonRowItem, JsonStats } from "@/libs/jetson";
 import { useToggleState } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
+import { FixedSizeList } from "react-window";
+import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 
 const JsonStatsLine = (props: {
@@ -33,6 +35,37 @@ const JsonStatsLine = (props: {
   </>)
 };
 
+interface VirtualScrollProps<T> {
+  data: T[];
+  renderItem: (item: T, index: number) => JSX.Element;
+  itemSize: number;
+}
+
+function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollProps<T>) {
+  const Row = ({ index, style }: any) => {
+    return (
+      <div style={style}>
+        {renderItem(data[index], index)}
+      </div>
+    );
+  };
+
+  return (
+    <AutoSizer>
+      {({ height, width }) => (
+        <FixedSizeList
+          height={height}
+          width={width}
+          itemCount={data.length}
+          itemSize={itemSize}
+          overscanCount={20}
+        >
+          {Row}
+        </FixedSizeList>
+      )}
+    </AutoSizer>
+  );
+}
 
 const JsonItemsView = (props: {
   items: JsonRowItem[]
