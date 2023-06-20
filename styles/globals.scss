@@ -26,6 +26,7 @@
   --background-textarea: 227, 232, 232;
 
   --selected-row: #c6f1c8;
+  --narrowed-from-row: #bf91ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -53,6 +54,7 @@
     --background-textarea: 48, 48, 48;
 
     --selected-row: #203120;
+    --narrowed-from-row: #c6f1c8;
   }
 }
 
@@ -67,6 +69,10 @@ body {
 
 .secondary-background {
   background-color: var(--background-secondary);
+}
+
+.narrowed-from-row {
+  background-color: var(--narrowed-from-row);
 }
 
 .selected-row {
@@ -182,9 +188,14 @@ body {
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
 }
 
-.stats-value {
-  padding: 0 0.25rem;
-  color: var(--foreground-number);
+.stats-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+  .stats-value {
+    color: var(--foreground-number);
+  }
 }
 
 .Toastify__toast {
@@ -232,4 +243,14 @@ body {
   animation-duration: 0.15s;
   animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
   animation-name: slideOutRight;
+}
+
+.narrowing-status {
+  border-radius: 0.25rem;
+  padding: 0rem 0.5rem;
+  background-color: var(--narrowed-from-row);
+  color: var(--background);
+  .stats-value {
+    color: var(--background);
+  }
 }

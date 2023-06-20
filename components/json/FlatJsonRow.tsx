@@ -4,34 +4,7 @@ import { FlatJsonValueCell } from "./FlatJsonValueCell";
 import { useState } from "react";
 import { useManipulation } from "@/states/manipulation";
 import { FlatJsonLeadingCell } from "./leading/Leading";
-
-const LineNumberCell = (props: {
-  item: JsonRowItem;
-}) => {
-  const { manipulation, setManipulation } = useManipulation();
-  const itemIndex = props.item.index;
-  const isSelected = manipulation.selectedIndex === itemIndex;
-  return <div
-    className={
-      'w-[4em] grow-0 shrink-0 flex flex-row justify-end items-center p-1 line-number text-sm cursor-pointer line-number-cell'
-    }
-    onClick={() => {
-      if (isSelected) {
-        setManipulation((prev) => ({
-          ...prev,
-          selectedIndex: null,
-        }));
-      } else {
-        setManipulation((prev) => ({
-          ...prev,
-          selectedIndex: itemIndex,
-        }));
-      }
-    }}
-  >
-    <div>{itemIndex}</div>
-  </div>
-}
+import { LineNumberCell } from "./LineNumberCell";
 
 const LeadingCells = (props: {
   item: JsonRowItem;
@@ -81,13 +54,20 @@ export const FlatJsonRow = (props: {
   const [isHovered, setIsHovered] = useState(false);
   const { manipulation } = useManipulation();
   const isSelected = manipulation.selectedIndex === props.item.index;
+  const isNarrowedFrom = manipulation.narrowedRange?.from === props.item.index;
   const item = props.item;
   const {
     right,
     rowItems,
     elementKey,
   } = item;
-  const backgroundClass = isSelected ? "selected-row" : isHovered ? "secondary-background" : "";
+  const backgroundClass = isNarrowedFrom
+    ? "narrowed-from-row"
+    : isSelected
+      ? "selected-row"
+      : isHovered
+        ? "secondary-background"
+        : "";
 
   return (<div
     className={
