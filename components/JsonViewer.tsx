@@ -43,19 +43,9 @@ const JsonItemsView = (props: {
 
   // 表示すべきitemを選別する
   const visibleItems = (() => {
-    console.log(manipulation);
-    if (typeof manipulation.narrowedIndex === "number") {
-      const indexFrom = manipulation.narrowedIndex;
-      const itemFrom = items[indexFrom];
-      const itemTo = _.range(indexFrom + 1, items.length).find(index => {
-        if (index === items.length) { return true; }
-        const itemTo = items[index];
-        return itemFrom.rowItems.length === itemTo.rowItems.length;
-      });
-      if (typeof itemTo === "number") {
-        const indexTo = items[itemTo].index;
-        return items.filter((item) => indexFrom <= item.index && item.index < indexTo && !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
-      }
+    if (manipulation.narrowedRange) {
+      const { from, to } = manipulation.narrowedRange;
+      return items.filter((item) => from <= item.index && item.index < to && !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
     }
     return items.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
   })();

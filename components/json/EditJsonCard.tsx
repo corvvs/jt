@@ -9,7 +9,7 @@ export const EditJsonCard = (props: {
   closeModal: () => void;
 }) => {
   const { rawText, setRawtext, setBaseText, parseJson, setParsedJson }  = useJSON();
-  const { setToggleState } = useToggleState();
+  const { openAll } = useToggleState();
   return (
     <div
       className='json-text w-[48em] flex flex-col font-mono text-sm border-2 rounded-lg'
@@ -21,7 +21,7 @@ export const EditJsonCard = (props: {
           <JetButton
             onClick={() => {
               setBaseText(rawText)
-              setToggleState({});
+              openAll();
               const json = parseJson(rawText);
               if (!json) { return; }
               setParsedJson(json);

@@ -6,15 +6,18 @@ import { Modal } from "./Modal";
 import { EditJsonCard } from "./json/EditJsonCard";
 import { MenuButton, MenuToggleButton } from "./lv1/MenuButton";
 import { BsChevronDown, BsChevronUp } from "react-icons/bs";
-import { ToggleState, useToggleState } from "@/states/view";
+import { useToggleState } from "@/states/view";
 import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
+import { useManipulation } from "@/states/manipulation";
 
 const MenuBar = () => {
   const { flatJsons } = useJSON();
-  const { setToggleState } = useToggleState();
+  const { openAll, closeAll } = useToggleState();
   const { preference, setPreference } = usePreference();
+  const { manipulation } = useManipulation();
   const [isOpen, setIsOpen] = useState(false);
+
   const closeModal = () => {
     setIsOpen(false);
   };
@@ -37,25 +40,17 @@ const MenuBar = () => {
       </MenuButton>
 
       <MenuButton
-        onClick={() => setToggleState({})}
+        onClick={() => openAll(manipulation.narrowedRange || undefined)}
       >
         <InlineIcon i={<BsChevronDown />} />Open All
       </MenuButton>
 
       <MenuButton
-        onClick={() => setToggleState(() => {
-          const newState: ToggleState = {};
-          if (flatJsons?.items) {
-            for (const item of flatJsons?.items) {
-              if (item.rowItems.length === 0) { continue; }
-              const isTogglable = item.right.type === "array" || item.right.type === "map";
-              if (isTogglable) {
-                newState[item.index] = true;
-              }
-            }
-          }
-          return newState;
-        })}
+        onClick={() => {
+          const items = flatJsons?.items;
+          if (!items) { return; }
+          closeAll(items, manipulation.narrowedRange || undefined)
+        }}
       >
         <InlineIcon i={<BsChevronUp />} />Close All
       </MenuButton>

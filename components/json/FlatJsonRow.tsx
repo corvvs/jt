@@ -23,7 +23,7 @@ const RightmostKeyCell = (props: {
   right: JsonRowItem;
   isTogglable?: boolean;
 }) => {
-  const { toggleState, setToggleState } = useToggleState();
+  const { toggleState, toggleItem } = useToggleState();
   if (typeof props.right.itemKey === "undefined") { return null; }
   const depth = props.index % 5;
   const text = typeof props.right.itemKey === "string" ? props.right.itemKey : `[${props.right.itemKey}]`;
@@ -37,15 +37,7 @@ const RightmostKeyCell = (props: {
         ? <div>
             <ToggleButton
               isClosed={!!toggleState[props.right.index]}
-              onClick={(isClosed) => setToggleState((prev) => {
-                const next = _.cloneDeep(prev);
-                if (isClosed) {
-                  next[props.right.index] = isClosed;
-                } else {
-                  delete next[props.right.index];
-                }
-                return next;
-              })}
+              onClick={(isClosed) => toggleItem(props.right, isClosed)}
             />
           </div>
         : null 
@@ -87,16 +79,18 @@ const RightmostTypeCell = (props: {
 const SubtreeMenuCell = (props: {
   item: JsonRowItem;
 }) => {
-  const { manipulation, setManipulation } = useManipulation();
-  const { json } = useJSON();
+  const { manipulation, setManipulation, setNarrowedRange, unsetNarrowdRange } = useManipulation();
+  const { json, flatJsons } = useJSON();
   if (manipulation.selectedIndex !== props.item.index) { return null; }
+  const isNarrowed = manipulation.narrowedRange?.from === props.item.index;
+
   return (<div
     className="grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
     <p>
       <IconButton
         icon={VscCopy}
-        alt="Copy Subtree as JSON"
+        alt="この要素以下をJSONとしてクリップボードにコピーする"
         onClick={async () => {
           const keyPath = props.item.elementKey;
           const subJson = keyPath ? _.get(json, keyPath) : json;
@@ -112,31 +106,25 @@ const SubtreeMenuCell = (props: {
       />
     </p>
 
-    <p>
-      <IconButton
-        icon={CgArrowsShrinkV}
-        alt="Narrowing"
-        onClick={() => {
-          setManipulation(prev => {
-            const next = { ...prev, narrowedIndex: props.item.index };
-            return next;
-          });
-        }}
-      />
-    </p>
+    {
+      isNarrowed ? null : <p>
+        <IconButton
+          icon={CgArrowsShrinkV}
+          alt="この要素以下だけを表示する(ナローイング)"
+          onClick={() => setNarrowedRange(props.item.index, flatJsons!.items)}
+        />
+      </p>
+    }
 
-    <p>
-      <IconButton
-        icon={CgArrowsBreakeV}
-        alt="Cancel Narrowing"
-        onClick={() => {
-          setManipulation(prev => {
-            const next = { ...prev, narrowedIndex: null };
-            return next;
-          });
-        }}
-      />
-    </p>
+    {
+      isNarrowed ? <p>
+        <IconButton
+          icon={CgArrowsBreakeV}
+          alt="ナローイングを解除する"
+          onClick={() => unsetNarrowdRange()}
+        />
+      </p> : null
+    }
   </div>)
 }
 
