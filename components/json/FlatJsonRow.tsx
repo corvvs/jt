@@ -10,10 +10,12 @@ import { useToggleState } from "@/states/view";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
 import { IconButton } from "../lv1/IconButton";
+import { CgArrowsBreakeV, CgArrowsShrinkV } from "react-icons/cg";
 import { VscCopy } from "react-icons/vsc";
 import { useJSON } from "@/states";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
+import { MdPhotoSizeSelectActual } from "react-icons/md";
 
 
 const RightmostKeyCell = (props: {
@@ -21,7 +23,7 @@ const RightmostKeyCell = (props: {
   right: JsonRowItem;
   isTogglable?: boolean;
 }) => {
-  const { toggleState, setToggleState } = useToggleState();
+  const { toggleState, toggleItem } = useToggleState();
   if (typeof props.right.itemKey === "undefined") { return null; }
   const depth = props.index % 5;
   const text = typeof props.right.itemKey === "string" ? props.right.itemKey : `[${props.right.itemKey}]`;
@@ -35,15 +37,7 @@ const RightmostKeyCell = (props: {
         ? <div>
             <ToggleButton
               isClosed={!!toggleState[props.right.index]}
-              onClick={(isClosed) => setToggleState((prev) => {
-                const next = _.cloneDeep(prev);
-                if (isClosed) {
-                  next[props.right.index] = isClosed;
-                } else {
-                  delete next[props.right.index];
-                }
-                return next;
-              })}
+              onClick={(isClosed) => toggleItem(props.right, isClosed)}
             />
           </div>
         : null 
@@ -85,16 +79,18 @@ const RightmostTypeCell = (props: {
 const SubtreeMenuCell = (props: {
   item: JsonRowItem;
 }) => {
-  const { manipulation } = useManipulation();
-  const { json } = useJSON();
+  const { manipulation, setManipulation, setNarrowedRange, unsetNarrowdRange } = useManipulation();
+  const { json, flatJsons } = useJSON();
   if (manipulation.selectedIndex !== props.item.index) { return null; }
+  const isNarrowed = manipulation.narrowedRange?.from === props.item.index;
+
   return (<div
     className="grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
     <p>
       <IconButton
         icon={VscCopy}
-        alt="Copy Subtree as JSON"
+        alt="この要素以下をJSONとしてクリップボードにコピーする"
         onClick={async () => {
           const keyPath = props.item.elementKey;
           const subJson = keyPath ? _.get(json, keyPath) : json;
@@ -102,13 +98,33 @@ const SubtreeMenuCell = (props: {
           const subText = JSON.stringify(subJson, null, 2);
           try {
             await ClipboardAccess.copyText(subText);
-            toast(`キーパス ${keyPath} のJSON文字列をクリップボードにコピーしました`);
+            toast(`キーパス ${keyPath} 以下のJSONをクリップボードにコピーしました`);
           } catch (e) {
             console.error(e);
           }
         }}
       />
     </p>
+
+    {
+      isNarrowed ? null : <p>
+        <IconButton
+          icon={CgArrowsShrinkV}
+          alt="この要素以下だけを表示する(ナローイング)"
+          onClick={() => setNarrowedRange(props.item.index, flatJsons!.items)}
+        />
+      </p>
+    }
+
+    {
+      isNarrowed ? <p>
+        <IconButton
+          icon={CgArrowsBreakeV}
+          alt="ナローイングを解除する"
+          onClick={() => unsetNarrowdRange()}
+        />
+      </p> : null
+    }
   </div>)
 }
 
@@ -251,7 +267,6 @@ const LeadingCells = (props: {
 
 export const FlatJsonRow = (props: {
   item: JsonRowItem;
-  index: number;
 }) => {
   
   const [isHovered, setIsHovered] = useState(false);
@@ -307,7 +322,7 @@ export function VirtualScroll<T>({ data, renderItem, itemSize }: VirtualScrollPr
           width={width}
           itemCount={data.length}
           itemSize={itemSize}
-          overscanCount={10}
+          overscanCount={20}
         >
           {Row}
         </FixedSizeList>
