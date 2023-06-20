@@ -14,7 +14,6 @@ const MySlide = cssTransition({
 
 export const ToastHolder = () => {
   const colorScheme = useColorScheme();
-  console.log("colorScheme", colorScheme);
   return (
     <ToastContainer
       position="bottom-right"
