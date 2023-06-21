@@ -24,11 +24,45 @@ const defaultManipulation: Manipulation = {
 
 const selectedIndexAtom = atom<Manipulation["selectedIndex"]>(defaultManipulation.selectedIndex);
 const narrowedRangeAtom = atom<Manipulation["narrowedRange"]>(defaultManipulation.narrowedRange);
+
+
+type FilteringVisibilityOption = "just" | "ascendant" | "ascendant_descendant";
+
+type FilteringPreference = {
+  visibility: FilteringVisibilityOption;
+};
+
+const filteringPreferenceAtom = atom<FilteringPreference>({
+  visibility: "ascendant_descendant",
+});
+
+export const filteringVisibilityAtom = atom(
+  (get) => {
+    const v = get(filteringPreferenceAtom).visibility;
+    switch (v) {
+      case "just": return {
+        ascendant: false,
+        descendant: false,
+      };
+      case "ascendant": return {
+        ascendant: true,
+        descendant: false,
+      };
+      case "ascendant_descendant": return {
+        ascendant: true,
+        descendant: true,
+      };
+    }
+  }
+);
+
 const simpleFilteringQueryAtom = atom<string>(defaultManipulation.simpleFilteringQuery);
 const simpleFilterMapsAtom = atom<FilteringMap | null>(
   (get) => {
     const query = get(simpleFilteringQueryAtom);
     const json = get(jsonFlattenedAtom);
+    const filteringVisibility = get(filteringVisibilityAtom);
+
     if (query.length === 0 || !json) { return null; }
     const { items } = json;
     // item ごとに query にマッチしたかどうかを判定する
@@ -75,9 +109,20 @@ const simpleFilterMapsAtom = atom<FilteringMap | null>(
         lowerVisibleMap[item.index] = true;
       }
     }
+
+    const visibleMap: { [k: number]: boolean } = {};
+    for (const item of items) {
+      if (matchedMap[item.index]) {
+        visibleMap[item.index] = true;
+      } else if (filteringVisibility.ascendant && upperVisibleMap[item.index]) {
+        visibleMap[item.index] = true;
+      } else if (filteringVisibility.descendant && lowerVisibleMap[item.index]) {
+        visibleMap[item.index] = true;
+      }
+    }
     return {
       matched: matchedMap,
-      visible: { ...upperVisibleMap, ...lowerVisibleMap },
+      visible: visibleMap,
     };
   }
 )
@@ -100,6 +145,8 @@ export const useManipulation = () => {
   const [narrowedRange, setNarrowedRangeRaw] = useAtom(narrowedRangeAtom);
   const [simpleFilteringQuery, setSimpleFilteringQuery] = useAtom(simpleFilteringQueryAtom);
   const [simpleFilterMaps] = useAtom(simpleFilterMapsAtom);
+  const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
+  const [filteringVisibility] = useAtom(filteringVisibilityAtom);
 
   const setNarrowedRange = (index: number, items: JsonRowItem[]) => {
     const range = deriveNarrowdRange(index, items);
@@ -109,6 +156,11 @@ export const useManipulation = () => {
   const unsetNarrowdRange = () => {
     setNarrowedRangeRaw(null);
   };
+  const setFilteringVisibility = (v: FilteringVisibilityOption) => setFilteringPreference(prev => {
+    const next = _.cloneDeep(prev);
+    next.visibility = v;
+    return  next;
+  });
 
   return {
     manipulation: {
@@ -116,10 +168,15 @@ export const useManipulation = () => {
       narrowedRange,
       simpleFilteringQuery,
     },
+
     setSelectedIndex,
     setNarrowedRange,
     unsetNarrowdRange,
     setSimpleFilteringQuery,
     simpleFilterMaps,
+
+    filteringPreference,
+    filteringVisibility,
+    setFilteringVisibility,
   };
 };

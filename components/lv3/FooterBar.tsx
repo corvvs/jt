@@ -1,5 +1,6 @@
 import { JsonStats } from "@/libs/jetson";
 import { useJSON } from "@/states";
+import { useVisibleItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
 import _ from "lodash";
 import { MutableRefObject } from "react";
@@ -10,9 +11,11 @@ export const JsonStatsLine = (props: {
 }) => {
   const { manipulation } = useManipulation();
   const { flatJsons } = useJSON();
+  const visibleItems = useVisibleItems();
   if (!flatJsons) { return null; }
   const items = flatJsons.items;
   const selectedItem = _.isFinite(manipulation.selectedIndex) ? items[manipulation.selectedIndex!] : null;
+  const selectedIndexInVisibles = _.isFinite(manipulation.selectedIndex) ? visibleItems.findIndex(item => item.index === manipulation.selectedIndex) : null;
   const narrowingItemFrom = _.isFinite(manipulation.narrowedRange?.from) ? items[manipulation.narrowedRange!.from] : null;
 
   return (<>
@@ -33,9 +36,16 @@ export const JsonStatsLine = (props: {
 
     {
       selectedItem
-        ? <p className="stats-item">
-            <span>Selected Line:</span>
-            <span className="stats-value">{selectedItem.lineNumber}</span>
+        ? <p
+            className="stats-item selecting-status cursor-pointer"
+            onClick={() => {
+              const itemView = props.itemViewRef.current
+              if (!itemView || !_.isFinite(selectedIndexInVisibles)) { return; }
+              itemView.scrollToItem(selectedIndexInVisibles);
+            }}
+          >
+            <span>Selecting Line:</span>
+            <span className="stats-value">{selectedItem.elementKey}</span>
           </p>
         : null
     }
@@ -43,15 +53,15 @@ export const JsonStatsLine = (props: {
     {
       narrowingItemFrom
         ? <p
-          className="stats-item narrowing-status cursor-pointer"
-          onClick={() => {
-            const itemView = props.itemViewRef.current
-            if (!itemView || !manipulation.narrowedRange) { return; }
-            itemView.scrollToItem(0);
-          }}
-        >
+            className="stats-item narrowing-status cursor-pointer"
+            onClick={() => {
+              const itemView = props.itemViewRef.current
+              if (!itemView || !manipulation.narrowedRange) { return; }
+              itemView.scrollToItem(0);
+            }}
+          >
             <span>Narrowing:</span>
-            <span className="stats-value">{narrowingItemFrom.lineNumber}</span>
+            <span className="stats-value">{narrowingItemFrom.elementKey}</span>
           </p>
         : null
     }

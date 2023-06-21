@@ -20,11 +20,6 @@ const MassManipulationButtons = () => {
   if (!items) { return null; }
 
   return <>
-    <MenuButton
-      onClick={() => openAll(manipulation.narrowedRange || undefined)}
-    >
-      <InlineIcon i={<BsChevronDoubleDown />} />Unfold All
-    </MenuButton>
 
     <MenuButton
       onClick={() => {
@@ -32,6 +27,12 @@ const MassManipulationButtons = () => {
       }}
     >
       <InlineIcon i={<BsChevronDoubleUp />} />Fold All
+    </MenuButton>
+
+    <MenuButton
+      onClick={() => openAll(manipulation.narrowedRange || undefined)}
+    >
+      <InlineIcon i={<BsChevronDoubleDown />} />Unfold All
     </MenuButton>
 
     { false &&
