@@ -10,6 +10,7 @@ import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
 import { SimpleFilterPanel } from "../lv2/SimpleFilterPanel";
+import _ from "lodash";
 
 const MassManipulationButtons = () => {
   const { flatJsons } = useJSON();
@@ -22,15 +23,13 @@ const MassManipulationButtons = () => {
   return <>
 
     <MenuButton
-      onClick={() => {
-        closeAll(items, manipulation.narrowedRange || undefined)
-      }}
+      onClick={() => closeAll(items, _.last(manipulation.narrowedRanges))}
     >
       <InlineIcon i={<BsChevronDoubleUp />} />Fold All
     </MenuButton>
 
     <MenuButton
-      onClick={() => openAll(manipulation.narrowedRange || undefined)}
+      onClick={() => openAll(_.last(manipulation.narrowedRanges))}
     >
       <InlineIcon i={<BsChevronDoubleDown />} />Unfold All
     </MenuButton>

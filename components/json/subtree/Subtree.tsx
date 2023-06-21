@@ -13,9 +13,9 @@ export const SubtreeMenuCell = (props: {
   item: JsonRowItem;
   isHovered: boolean;
 }) => {
-  const { manipulation, setNarrowedRange, unsetNarrowdRange } = useManipulation();
+  const { manipulation, pushNarrowedRange, popNarrowedRange } = useManipulation();
   const { json, flatJsons } = useJSON();
-  const isNarrowed = manipulation.narrowedRange?.from === props.item.index;
+  const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
   if (!props.isHovered && !isNarrowed && manipulation.selectedIndex !== props.item.index) { return null; }
 
   return (<div
@@ -45,7 +45,7 @@ export const SubtreeMenuCell = (props: {
         <IconButton
           icon={CgArrowsShrinkV}
           alt="この要素以下だけを表示する(ナローイング)"
-          onClick={() => setNarrowedRange(props.item.index, flatJsons!.items)}
+          onClick={() => pushNarrowedRange(props.item.index, flatJsons!.items)}
         />
       </p>
     }
@@ -55,7 +55,7 @@ export const SubtreeMenuCell = (props: {
         <IconButton
           icon={CgArrowsBreakeV}
           alt="ナローイングを解除する"
-          onClick={() => unsetNarrowdRange()}
+          onClick={() => popNarrowedRange(-1)}
         />
       </p> : null
     }

@@ -13,10 +13,11 @@ export const JsonStatsLine = (props: {
   const { flatJsons } = useJSON();
   const visibleItems = useVisibleItems();
   if (!flatJsons) { return null; }
-  const items = flatJsons.items;
-  const selectedItem = _.isFinite(manipulation.selectedIndex) ? items[manipulation.selectedIndex!] : null;
+  const allItems = flatJsons.items;
+  const selectedItem = _.isFinite(manipulation.selectedIndex) ? allItems[manipulation.selectedIndex!] : null;
   const selectedIndexInVisibles = _.isFinite(manipulation.selectedIndex) ? visibleItems.findIndex(item => item.index === manipulation.selectedIndex) : null;
-  const narrowingItemFrom = _.isFinite(manipulation.narrowedRange?.from) ? items[manipulation.narrowedRange!.from] : null;
+  const topNarrowingRange = _.last(manipulation.narrowedRanges) || null;
+  const narrowingItemFrom = topNarrowingRange ? allItems[topNarrowingRange.from] : null;
 
   return (<>
     <p className="stats-item">
@@ -56,7 +57,7 @@ export const JsonStatsLine = (props: {
             className="stats-item narrowing-status cursor-pointer"
             onClick={() => {
               const itemView = props.itemViewRef.current
-              if (!itemView || !manipulation.narrowedRange) { return; }
+              if (!itemView || manipulation.narrowedRanges.length === 0) { return; }
               itemView.scrollToItem(0);
             }}
           >
