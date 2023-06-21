@@ -1,6 +1,9 @@
 import { JsonText } from '@/data/text';
-import { flattenJson } from '@/libs/jetson';
+import { JsonRowItem, flattenJson } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
+import { useMemo } from 'react';
+import { useToggleState } from './view';
+import { useManipulation } from './manipulation';
 
 export const defaultRawText = `
 {
@@ -59,21 +62,7 @@ const parseJson = (baseText: string) => {
   }
 }
 
-const jsonAtom = atom(
-  (get) => {
-    try {
-      const text = get(baseTextAtom).replace(/[\u0000-\u0019]+/g, "");
-      const json = JSON.parse(text);
-      JsonText.saveTextLocal(text);
-      return json;
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }
-);
-
-const jsonFlattenedAtom = atom(
+export const jsonFlattenedAtom = atom(
   (get) => {
     try {
       const json = get(parsedJsonAtom);
@@ -85,6 +74,36 @@ const jsonFlattenedAtom = atom(
     }
   },
 );
+
+export const useVisibleItems = () => {
+  const { flatJsons } = useJSON();
+  const { toggleState } = useToggleState();
+  const { manipulation, simpleFilterMaps } = useManipulation();
+
+  return useMemo(() => {
+    if (!flatJsons) { return []; }
+    const { items } = flatJsons;
+  
+    // 表示すべきitemを選別する
+    const filterBySimpleFilteringQuery = simpleFilterMaps
+      ? (item: JsonRowItem) => simpleFilterMaps.visible[item.index]
+      : () => true;
+  
+    const filterByNarrowing = manipulation.narrowedRange
+      ? (item: JsonRowItem) => {
+          const { from, to } = manipulation.narrowedRange!;
+          return from <= item.index && item.index < to;
+        }
+      : () => true;
+    const visibleItems = (() => {
+      return items
+        .filter(filterByNarrowing)
+        .filter(filterBySimpleFilteringQuery)
+        .filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+    })();
+    return visibleItems;
+  }, [flatJsons, toggleState, manipulation, simpleFilterMaps]);
+};
 
 /**
  * JSONフック

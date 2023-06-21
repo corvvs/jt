@@ -10,26 +10,32 @@ const RightmostKeyCell = (props: {
   index: number;
   right: JsonRowItem;
   isTogglable?: boolean;
+  isMatched?: boolean;
 }) => {
+  const {
+    right,
+    index,
+    isMatched,
+  } = props;
   const { toggleState, toggleItem } = useToggleState();
-  if (typeof props.right.itemKey === "undefined") { return null; }
-  const depth = props.index % 5;
-  const text = typeof props.right.itemKey === "string" ? props.right.itemKey : `[${props.right.itemKey}]`;
+  if (typeof right.itemKey === "undefined") { return null; }
+  const depth = index % 5;
+  const text = typeof right.itemKey === "string" ? right.itemKey : `[${right.itemKey}]`;
+
   return <div
-    className={`item-key w-[6em] grow-0 shrink-0 flex flex-row p-1 depth-${depth}`}
+    className={`item-key w-[6em] grow-0 shrink-0 flex flex-row items-center p-1 depth-${depth} ${isMatched ? "matched-cell" : ""}`}
     style={{ overflow: "normal" }}
-    title={props.right.itemKey.toString()}
+    title={right.itemKey.toString()}
   >
     {
       props.isTogglable
-        ? <div>
-            <ToggleButton
-              isClosed={!!toggleState[props.right.index]}
-              onClick={(isClosed) => toggleItem(props.right, isClosed)}
-            />
-          </div>
+        ? <ToggleButton
+            isClosed={!!toggleState[right.index]}
+            onClick={(isClosed) => toggleItem(right, isClosed)}
+          />
         : null 
     }
+
     <p
       className='grow shrink text-base text-ellipsis whitespace-nowrap break-keep overflow-hidden'
     >
@@ -73,6 +79,7 @@ export const FlatJsonLeadingCell = (props: {
   index: number;
   typeIndex: number;
   isHovered: boolean;
+  isMatched: boolean;
   /**
    * その行に本来表示したいアイテム
    * 「最も右のLeadingCell」にのみ与えられる
@@ -81,7 +88,10 @@ export const FlatJsonLeadingCell = (props: {
 }) => {
 
   const depth = props.index % 5;
-  const right = props.right;
+  const {
+    right,
+    isMatched,
+  } = props;
   const isRightmost = !!right;
   const showTypeCell = right && (right.right.type === "array" || right.right.type === "map");
   const isTogglable = showTypeCell;
@@ -106,7 +116,7 @@ export const FlatJsonLeadingCell = (props: {
     //    - 本来のitemは開閉可能になるので, そのためのボタンを表示する
     // -> 続けて, 本来のitemの型と要素数を表示する
     return <>
-      <RightmostKeyCell index={props.index} right={right} isTogglable={isTogglable} />
+      <RightmostKeyCell index={props.index} right={right} isTogglable={isTogglable} isMatched={isMatched} />
       <RightmostTypeCell index={props.typeIndex} right={right} />
       <SubtreeMenuCell item={right} isHovered={props.isHovered} />
       <SubtreeStatCell item={right} />
@@ -114,6 +124,6 @@ export const FlatJsonLeadingCell = (props: {
   } else {
     // 本来のitemが配列でもマップでもない
     // -> 開閉する必要がない
-    return <RightmostKeyCell index={props.index} right={right} isTogglable={isTogglable} />
+    return <RightmostKeyCell index={props.index} right={right} isTogglable={isTogglable} isMatched={isMatched} />
   }
 }

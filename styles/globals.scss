@@ -25,8 +25,11 @@
   --background-key-4: #efe3e1;
   --background-textarea: 227, 232, 232;
 
-  --selected-row: #c6f1c8;
+  --matched-foreground: #2a86d6;
+  --matched-row: #bfe0fd;
   --narrowed-from-row: #bf91ff;
+  --selected-row: #c6f1c8;
+  --line-number: royalblue;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -53,8 +56,10 @@
     --background-key-4: #3d3432;
     --background-textarea: 48, 48, 48;
 
-    --selected-row: #203120;
-    --narrowed-from-row: #c6f1c8;
+    --matched-row: #2f463e;
+    --narrowed-from-row: #c260f6;
+    --selected-row: #76f4d0;
+    --line-number: rgb(133, 141, 255);
   }
 }
 
@@ -69,6 +74,15 @@ body {
 
 .secondary-background {
   background-color: var(--background-secondary);
+}
+
+.matched-row {
+  background-color: var(--matched-row);
+}
+
+.matched-cell {
+  color: var(--matched-foreground);
+  // background-color: var(--matched-row) !important;
 }
 
 .narrowed-from-row {
@@ -103,7 +117,7 @@ body {
 }
 
 .line-number {
-  color: royalblue;
+  color: var(--line-number);
   text-align: right;
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
 }
@@ -245,6 +259,15 @@ body {
   animation-name: slideOutRight;
 }
 
+.selecting-status {
+  border-radius: 0.25rem;
+  padding: 0rem 0.5rem;
+  background-color: var(--selected-row);
+  .stats-value {
+    color: var(--foreground);
+  }
+}
+
 .narrowing-status {
   border-radius: 0.25rem;
   padding: 0rem 0.5rem;
@@ -254,3 +277,31 @@ body {
     color: var(--background);
   }
 }
+
+.filter-matched-items {
+  color: var(--foreground-number);
+  &.no-hit {
+    color: var(--foreground-string);
+  }
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+}
+
+.multiple-buttons {
+  display: flex;
+  flex-direction: row;
+  border: 1px solid var(--foreground);
+  .multiple-buttons-button {
+    padding: 0.25rem;
+    color: var(--foreground);
+    background-color: var(--background);
+    &:hover {
+      color: var(--background);
+      background-color: var(--foreground);
+    }
+    &.active {
+      color: var(--background);
+      background-color: var(--foreground);
+    }
+  }
+}
+

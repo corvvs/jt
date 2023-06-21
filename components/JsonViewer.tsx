@@ -8,6 +8,8 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 import { JsonStatsLine } from "./lv3/FooterBar";
 import { MutableRefObject, useRef } from "react";
+import { FaRegMehRollingEyes } from 'react-icons/fa';
+import { useVisibleItems } from "@/states/json";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -44,31 +46,24 @@ function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualSc
 }
 
 const JsonItemsView = (props: {
-  items: JsonRowItem[];
   itemViewRef: MutableRefObject<any>;
 }) => {
-  const { items } = props;
-  const { toggleState } = useToggleState();
-  const { manipulation } = useManipulation();
+  const visibleItems = useVisibleItems();
 
-  // 表示すべきitemを選別する
-  const visibleItems = (() => {
-    if (manipulation.narrowedRange) {
-      const { from, to } = manipulation.narrowedRange;
-      return items.filter((item) => from <= item.index && item.index < to && !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
-    }
-    return items.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
-  })();
+  if (visibleItems.length === 0) {
+    return <div
+      className="h-full shrink grow gap-2 flex flex-col justify-center items-center"
+    >
+      <FaRegMehRollingEyes className="text-4xl" />
+      <p className="text-xl">no visible items</p>
+    </div>
+  }
 
   return (
     <VirtualScroll
       itemViewRef={props.itemViewRef}
       data={visibleItems} // データ
-      renderItem={(item) => <FlatJsonRow
-          key={item.elementKey}
-          item={item}
-        />
-      }
+      renderItem={(item) => <FlatJsonRow key={item.elementKey} item={item} />}
       itemSize={32} // 各アイテムの高さ
     />
   );
@@ -80,7 +75,6 @@ export const JsonViewer = () => {
 
   if (!flatJsons) { return null; }
   const {
-    items,
     stats,
   } = flatJsons;
   return (<div
@@ -89,7 +83,7 @@ export const JsonViewer = () => {
       <div
         className="shrink grow"
       >
-        <JsonItemsView items={items} itemViewRef={itemViewRef}/>
+        <JsonItemsView itemViewRef={itemViewRef}/>
       </div>
       <div
         className="shrink-0 grow-0 flex flex-row gap-4 px-2 py-1 text-sm border-t-2 stats items-center"

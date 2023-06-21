@@ -9,10 +9,12 @@ import { LineNumberCell } from "./LineNumberCell";
 const LeadingCells = (props: {
   item: JsonRowItem;
   isHovered: boolean;
+  isMatched: boolean;
 }) => {
   const {
     item,
     isHovered,
+    isMatched,
   } = props;
   const {
     rowItems
@@ -42,6 +44,7 @@ const LeadingCells = (props: {
         index={i}
         typeIndex={rowItems.length > 0 ? i + 1 : i}
         isHovered={isHovered}
+        isMatched={isMatched}
       />
     })
   }</>
@@ -52,7 +55,8 @@ export const FlatJsonRow = (props: {
 }) => {
   
   const [isHovered, setIsHovered] = useState(false);
-  const { manipulation } = useManipulation();
+  const { manipulation, simpleFilterMaps } = useManipulation();
+  const isMatched = !!(simpleFilterMaps && simpleFilterMaps.matched[props.item.index]);
   const isSelected = manipulation.selectedIndex === props.item.index;
   const isNarrowedFrom = manipulation.narrowedRange?.from === props.item.index;
   const item = props.item;
@@ -61,13 +65,15 @@ export const FlatJsonRow = (props: {
     rowItems,
     elementKey,
   } = item;
-  const backgroundClass = isNarrowedFrom
-    ? "narrowed-from-row"
-    : isSelected
-      ? "selected-row"
-      : isHovered
-        ? "secondary-background"
-        : "";
+  const backgroundClass = isMatched
+    ? "matched-row"
+    : isNarrowedFrom
+      ? "narrowed-from-row"
+      : isSelected
+        ? "selected-row"
+        : isHovered
+          ? "secondary-background"
+          : "";
 
   return (<div
     className={
@@ -78,12 +84,16 @@ export const FlatJsonRow = (props: {
   >
     <LineNumberCell item={item} />
 
-    <LeadingCells item={item} isHovered={isHovered} />
+    <LeadingCells
+      item={item}
+      isHovered={isHovered}
+      isMatched={isMatched}
+    />
 
     <FlatJsonValueCell
       vo={right}
       elementKey={elementKey}
-      index={rowItems.length}
+      matched={isMatched}
     />
   </div>)
 }
