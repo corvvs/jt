@@ -6,8 +6,7 @@ import { useToggleState } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
 
-export const defaultRawText = `
-{
+export const defaultRawText = JSON.stringify({
   "app_name": "JSON Analyzer",
   "version": "alpha",
   "description": "JSONを見やすく表示し、中身の分析を手助けするツールです。",
@@ -59,8 +58,7 @@ export const defaultRawText = `
     "web": "https://corvvs.dev/",
     "github": "https://github.com/corvvs"
   }
-}
-`
+}, null, 2);
 
 /**
  * 編集エリアのテキスト
