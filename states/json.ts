@@ -52,15 +52,10 @@ const baseTextAtom = atom<string>("null");
 const parsedJsonAtom = atom<any | null>(null);
 
 const parseJson = (baseText: string) => {
-  try {
-    const text = baseText.replace(/[\u0000-\u0019]+/g, "");
-    const json = JSON.parse(text);
-    JsonText.saveTextLocal(baseText);
-    return json;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
+  const text = baseText.replace(/[\u0000-\u0019]+/g, "");
+  const json = JSON.parse(text);
+  JsonText.saveTextLocal(baseText);
+  return json;
 }
 
 export const jsonFlattenedAtom = atom(
