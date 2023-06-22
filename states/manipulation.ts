@@ -7,7 +7,7 @@ type IndexRange = { from: number; to: number; };
 
 type Manipulation = {
   selectedIndex: number | null;
-  narrowedRange: IndexRange | null;
+  narrowedRanges: IndexRange[];
   simpleFilteringQuery: string;
 };
 
@@ -18,12 +18,12 @@ type FilteringMap = {
 
 const defaultManipulation: Manipulation = {
   selectedIndex: null,
-  narrowedRange: null,
+  narrowedRanges: [],
   simpleFilteringQuery: "",
 };
 
 const selectedIndexAtom = atom<Manipulation["selectedIndex"]>(defaultManipulation.selectedIndex);
-const narrowedRangeAtom = atom<Manipulation["narrowedRange"]>(defaultManipulation.narrowedRange);
+const narrowedRangeAtom = atom<Manipulation["narrowedRanges"]>(defaultManipulation.narrowedRanges);
 
 
 type FilteringVisibilityOption = "just" | "ascendant" | "ascendant_descendant";
@@ -142,19 +142,28 @@ const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
 
 export const useManipulation = () => {
   const [selectedIndex, setSelectedIndex] = useAtom(selectedIndexAtom);
-  const [narrowedRange, setNarrowedRangeRaw] = useAtom(narrowedRangeAtom);
+  const [narrowedRanges, setNarrowedRangesRaw] = useAtom(narrowedRangeAtom);
   const [simpleFilteringQuery, setSimpleFilteringQuery] = useAtom(simpleFilteringQueryAtom);
   const [simpleFilterMaps] = useAtom(simpleFilterMapsAtom);
   const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
   const [filteringVisibility] = useAtom(filteringVisibilityAtom);
 
-  const setNarrowedRange = (index: number, items: JsonRowItem[]) => {
-    const range = deriveNarrowdRange(index, items);
+  const pushNarrowedRange = (index: number, allItems: JsonRowItem[]) => {
+    const range = deriveNarrowdRange(index, allItems);
     if (!range) { return; }
-    setNarrowedRangeRaw(range);
+    setNarrowedRangesRaw(prev => [...prev, range]);
   };
-  const unsetNarrowdRange = () => {
-    setNarrowedRangeRaw(null);
+  const popNarrowedRange = (topIndex?: number) => {
+    if (_.isFinite(topIndex)) {
+      if (topIndex! < 0) {
+        setNarrowedRangesRaw(prev => _.dropRight(prev));
+        return;
+      } else if (topIndex! < narrowedRanges.length) {
+        setNarrowedRangesRaw(prev => _.slice(prev, 0, topIndex! + 1));
+        return;
+      }
+    }
+    setNarrowedRangesRaw([]);
   };
   const setFilteringVisibility = (v: FilteringVisibilityOption) => setFilteringPreference(prev => {
     const next = _.cloneDeep(prev);
@@ -165,13 +174,13 @@ export const useManipulation = () => {
   return {
     manipulation: {
       selectedIndex,
-      narrowedRange,
+      narrowedRanges,
       simpleFilteringQuery,
     },
 
     setSelectedIndex,
-    setNarrowedRange,
-    unsetNarrowdRange,
+    pushNarrowedRange,
+    popNarrowedRange,
     setSimpleFilteringQuery,
     simpleFilterMaps,
 

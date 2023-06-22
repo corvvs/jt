@@ -4,6 +4,7 @@ import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
 import { useToggleState } from './view';
 import { useManipulation } from './manipulation';
+import _ from 'lodash';
 
 export const defaultRawText = `
 {
@@ -89,9 +90,10 @@ export const useVisibleItems = () => {
       ? (item: JsonRowItem) => simpleFilterMaps.visible[item.index]
       : () => true;
   
-    const filterByNarrowing = manipulation.narrowedRange
+    const topNarrowingRange = _.last(manipulation.narrowedRanges);
+    const filterByNarrowing = topNarrowingRange
       ? (item: JsonRowItem) => {
-          const { from, to } = manipulation.narrowedRange!;
+          const { from, to } = topNarrowingRange;
           return from <= item.index && item.index < to;
         }
       : () => true;
