@@ -132,7 +132,7 @@ const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   const indexFrom = index;
   const itemFrom = items[indexFrom];
   const itemTo = _.slice(items, indexFrom + 1).find(itemTo => {
-    return itemFrom.rowItems.length === itemTo.rowItems.length;
+    return itemTo.rowItems.length <= itemFrom.rowItems.length || itemTo.rowItems[itemFrom.rowItems.length].elementKey !== itemFrom.elementKey;
   });
   const indexTo = itemTo ? itemTo.index : items.length;
   return {
