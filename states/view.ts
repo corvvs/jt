@@ -53,10 +53,13 @@ export function useToggleState() {
     });
   };
 
+  const clearToggleState = () => openAll();
+
   return {
     toggleState,
     toggleItem,
     openAll,
     closeAll,
+    clearToggleState,
   };
 }

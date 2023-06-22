@@ -4,12 +4,14 @@ import { InlineIcon } from "../lv1/InlineIcon";
 import { JetButton } from "../lv1/JetButton";
 import { BsIndent } from "react-icons/bs";
 import { useToggleState } from "@/states/view";
+import { useManipulation } from "@/states/manipulation";
 
 export const EditJsonCard = (props: {
   closeModal: () => void;
 }) => {
   const { rawText, setRawtext, setBaseText, parseJson, setParsedJson }  = useJSON();
-  const { openAll } = useToggleState();
+  const { clearToggleState } = useToggleState();
+  const { clearManipulation } = useManipulation();
   return (
     <div
       className='json-text w-[48em] flex flex-col font-mono text-sm border-2 rounded-lg'
@@ -21,10 +23,12 @@ export const EditJsonCard = (props: {
           <JetButton
             onClick={() => {
               setBaseText(rawText)
-              openAll();
               const json = parseJson(rawText);
               if (!json) { return; }
+              // パース成功時
               setParsedJson(json);
+              clearManipulation();
+              clearToggleState();
               props.closeModal()
             }}
           >
