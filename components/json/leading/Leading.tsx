@@ -94,6 +94,8 @@ export const FlatJsonLeadingCell = (props: {
   typeIndex: number;
   isHovered: boolean;
   isMatched: boolean;
+  isSelected: boolean;
+  isNarrowedFrom: boolean;
   /**
    * その行に本来表示したいアイテム
    * 「最も右のLeadingCell」にのみ与えられる
@@ -116,10 +118,14 @@ export const FlatJsonLeadingCell = (props: {
   if (!isRightmost) {
     // 最も右のLeadingCell ではない場合
     return <div
-      className={`grow-0 shrink-0 item-index depth-${depth} text-base secondary-foreground`}
+      className={`grow-0 shrink-0 item-index depth-${depth} text-base ${props.isNarrowedFrom ? "" : "secondary-foreground"}`}
       style={{ width: `${currentColumnLength}em` }}
     >
-      {props.isHovered ? <RightmostKeyCell index={props.index} gauge={gauge} right={props.nextItem} isTogglable={isTogglable} /> : null}
+      {
+        (props.isHovered || props.isSelected || props.isNarrowedFrom)
+          ? <RightmostKeyCell index={props.index} gauge={gauge} right={props.nextItem} isTogglable={isTogglable} />
+          : null
+      }
     </div>
   }
 
