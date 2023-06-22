@@ -7,6 +7,7 @@ import { useManipulation } from './manipulation';
 import _ from 'lodash';
 
 export const defaultRawText = JSON.stringify({
+  "title": "サンプルテキスト 兼 ReadMe",
   "app_name": "JSON Analyzer",
   "version": "alpha",
   "description": "JSONを見やすく表示し、中身の分析を手助けするツールです。",
@@ -56,8 +57,9 @@ export const defaultRawText = JSON.stringify({
   },
   "author": {
     "web": "https://corvvs.dev/",
-    "github": "https://github.com/corvvs"
-  }
+    "github": "https://github.com/corvvs/jt"
+  },
+  "notice": "アルファ版のため、予告なく大規模・破壊的な変更をします。",
 }, null, 2);
 
 /**
