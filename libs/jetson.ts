@@ -48,6 +48,11 @@ export type JsonStats = TreeStats & {
   char_count: number;
 };
 
+export type JsonGauge = {
+  maxKeyLengths: number[];
+  crampedKeyLengths: number[];
+};
+
 export type JsonRowItem = {
   index: number;
   lineNumber: number;
@@ -100,17 +105,27 @@ function flattenDigger(
   items: JsonRowItem[],
   branch: JsonRowItem[],
   stats: JsonStats,
+  gauge: {
+    columnKeyLengths: number[][];
+  },
   parent?: {
     elementKey: string;
     item: JsonRowItem;
     itemKey: string | number;
   }
 ): void {
+  const ownKey = typeof parent?.elementKey === "string"
+    ? `${parent.itemKey ?? items.length}`
+    : "";
+
   const elementKey = typeof parent?.elementKey === "string"
     ? (parent.elementKey.length > 0
-      ? parent.elementKey + "." + `${parent.itemKey ?? items.length}`
-      : `${parent.itemKey ?? items.length}`
+      ? parent.elementKey + "." + ownKey
+      : ownKey
     ) : "";
+  /**
+   * **全体**インデックス
+   */
   const index = items.length;
   const lineNumber = items.length + 1;
   const item: JsonRowItem = {
@@ -141,7 +156,9 @@ function flattenDigger(
   }
   if (stats.max_key_length.length < depth + 1) {
     stats.max_key_length.push(0);
+    gauge.columnKeyLengths.push([]);
   }
+  gauge.columnKeyLengths[depth].push(ownKey.length);
   if (stats.max_key_length[depth] < elementKey.length) {
     stats.max_key_length[depth] = elementKey.length;
   }
@@ -169,7 +186,7 @@ function flattenDigger(
       item.childs = [];
       branch.push(item);
       subtree.value.forEach((value, index) => {
-        flattenDigger(value, items, branch, stats, { item, itemKey: index, elementKey });
+        flattenDigger(value, items, branch, stats, gauge, { item, itemKey: index, elementKey });
       });
       branch.pop();
       break;
@@ -180,7 +197,7 @@ function flattenDigger(
 
       branch.push(item);
       _.forEach(subtree.value, (value, itemKey) => {
-        flattenDigger(value, items, branch, stats, { item, itemKey, elementKey });
+        flattenDigger(value, items, branch, stats, gauge, { item, itemKey, elementKey });
       });
       branch.pop();
       break;
@@ -198,9 +215,20 @@ export function flattenJson(json: any, rawText: string) {
     max_key_length: [],
     char_count: rawText.length,
   };
-  flattenDigger(tree, items, branch, stats);
+  const gauge: {
+    columnKeyLengths: number[][];
+  } = {
+    columnKeyLengths: [],
+  };
+  flattenDigger(tree, items, branch, stats, gauge);
+  const maxKeyLengths = gauge.columnKeyLengths.map(ls => Math.ceil(ls.reduce((s,a) => s + a, 0) / ls.length));
+  const g: JsonGauge = {
+    maxKeyLengths,
+    crampedKeyLengths: maxKeyLengths.map(x => Math.max(6, Math.min(x, 12))),
+  };
   return {
     items,
     stats,
+    gauge: g,
   };
 }
