@@ -76,9 +76,10 @@ const BaseLine = (props: {
 }) => {
   const { manipulation } = useManipulation();
   const { flatJsons } = useJSON();
-  const visibleItems = useVisibleItems();
-  if (!flatJsons) { return null; }
+  const visibles = useVisibleItems();
+  if (!flatJsons || !visibles) { return null; }
   const allItems = flatJsons.items;
+  const { visibleItems } = visibles;
   const selectedItem = _.isFinite(manipulation.selectedIndex) ? allItems[manipulation.selectedIndex!] : null;
   const selectedIndexInVisibles = _.isFinite(manipulation.selectedIndex) ? visibleItems.findIndex(item => item.index === manipulation.selectedIndex) : null;
 

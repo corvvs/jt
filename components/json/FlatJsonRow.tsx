@@ -1,4 +1,4 @@
-import { JsonRowItem } from "@/libs/jetson";
+import { JsonGauge, JsonRowItem } from "@/libs/jetson";
 import _ from "lodash";
 import { FlatJsonValueCell } from "./FlatJsonValueCell";
 import { useState } from "react";
@@ -8,11 +8,13 @@ import { LineNumberCell } from "./LineNumberCell";
 
 const LeadingCells = (props: {
   item: JsonRowItem;
+  gauge?: JsonGauge;
   isHovered: boolean;
   isMatched: boolean;
 }) => {
   const {
     item,
+    gauge,
     isHovered,
     isMatched,
   } = props;
@@ -39,6 +41,7 @@ const LeadingCells = (props: {
       return <FlatJsonLeadingCell
         key={"cell."+(currentItem?.elementKey ?? "root")}
         item={currentItem}
+        gauge={gauge}
         nextItem={nextItem}
         right={isRightmost ? item : undefined}
         index={i}
@@ -52,6 +55,7 @@ const LeadingCells = (props: {
 
 export const FlatJsonRow = (props: {
   item: JsonRowItem;
+  gauge?: JsonGauge;
 }) => {
   
   const [isHovered, setIsHovered] = useState(false);
@@ -59,7 +63,10 @@ export const FlatJsonRow = (props: {
   const isMatched = !!(simpleFilterMaps && simpleFilterMaps.matched[props.item.index]);
   const isSelected = manipulation.selectedIndex === props.item.index;
   const isNarrowedFrom = _.last(manipulation.narrowedRanges)?.from === props.item.index;
-  const item = props.item;
+  const {
+    item,
+    gauge,
+  } = props;
   const {
     right,
     rowItems,
@@ -86,6 +93,7 @@ export const FlatJsonRow = (props: {
 
     <LeadingCells
       item={item}
+      gauge={gauge}
       isHovered={isHovered}
       isMatched={isMatched}
     />

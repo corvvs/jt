@@ -48,9 +48,9 @@ function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualSc
 const JsonItemsView = (props: {
   itemViewRef: MutableRefObject<any>;
 }) => {
-  const visibleItems = useVisibleItems();
+  const visibles = useVisibleItems();
 
-  if (visibleItems.length === 0) {
+  if (!visibles) {
     return <div
       className="h-full shrink grow gap-2 flex flex-col justify-center items-center"
     >
@@ -59,11 +59,12 @@ const JsonItemsView = (props: {
     </div>
   }
 
+  const { visibleItems, gauge } = visibles;
   return (
     <VirtualScroll
       itemViewRef={props.itemViewRef}
       data={visibleItems} // データ
-      renderItem={(item) => <FlatJsonRow key={item.elementKey} item={item} />}
+      renderItem={(item) => <FlatJsonRow key={item.elementKey} item={item} gauge={gauge} />}
       itemSize={32} // 各アイテムの高さ
     />
   );

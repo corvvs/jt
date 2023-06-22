@@ -1,5 +1,5 @@
 import { JsonText } from '@/data/text';
-import { JsonRowItem, flattenJson } from '@/libs/jetson';
+import { JsonGauge, JsonRowItem, flattenJson } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
 import { useToggleState } from './view';
@@ -81,8 +81,8 @@ export const useVisibleItems = () => {
   const { toggleState } = useToggleState();
   const { manipulation, simpleFilterMaps } = useManipulation();
 
-  return useMemo(() => {
-    if (!flatJsons) { return []; }
+  return useMemo((): { visibleItems: JsonRowItem[], gauge: JsonGauge } | null => {
+    if (!flatJsons) { return null; }
     const { items } = flatJsons;
   
     // 表示すべきitemを選別する
@@ -103,7 +103,10 @@ export const useVisibleItems = () => {
         .filter(filterBySimpleFilteringQuery)
         .filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
     })();
-    return visibleItems;
+    return {
+      visibleItems,
+      gauge: flatJsons.gauge,
+    };
   }, [flatJsons, toggleState, manipulation, simpleFilterMaps]);
 };
 
