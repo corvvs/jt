@@ -11,12 +11,16 @@ const LeadingCells = (props: {
   gauge?: JsonGauge;
   isHovered: boolean;
   isMatched: boolean;
+  isSelected: boolean;
+  isNarrowedFrom: boolean;
 }) => {
   const {
     item,
     gauge,
     isHovered,
     isMatched,
+    isSelected,
+    isNarrowedFrom,
   } = props;
   const {
     rowItems
@@ -48,6 +52,8 @@ const LeadingCells = (props: {
         typeIndex={rowItems.length > 0 ? i + 1 : i}
         isHovered={isHovered}
         isMatched={isMatched}
+        isSelected={isSelected}
+        isNarrowedFrom={isNarrowedFrom}
       />
     })
   }</>
@@ -96,6 +102,8 @@ export const FlatJsonRow = (props: {
       gauge={gauge}
       isHovered={isHovered}
       isMatched={isMatched}
+      isSelected={isSelected}
+      isNarrowedFrom={isNarrowedFrom}
     />
 
     <FlatJsonValueCell
