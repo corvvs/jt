@@ -8,34 +8,57 @@ import _ from 'lodash';
 
 export const defaultRawText = `
 {
-  "types":["sublocality","political"],
-  "formatted_address":"Winnetka, California, USA",
-  "address_components":[{
-    "long_name":"Winnetka",
-    "short_name":"Winnetka",
-    "types":["sublocality","political"]
-  },{
-    "long_name":"Los Angeles",
-    "short_name":"Los Angeles",
-    "types":["administrative_area_level_3","political"]
-  },{
-    "long_name":"Los Angeles",
-    "short_name":"Los Angeles",
-    "types":["administrative_area_level_2","political"]
-  },{
-    "long_name":"California",
-    "short_name":"CA",
-    "types":["administrative_area_level_1","political"]
-  },{
-    "long_name":"United States",
-    "short_name":"US",
-    "types":["country","political"]
-  }],
-  "geometry":{
-    "location": [34.213171,-118.571022],
-    "location_type":"APPROXIMATE"
+  "app_name": "JSON Analyzer",
+  "version": "alpha",
+  "description": "JSONを見やすく表示し、中身の分析を手助けするツールです。",
+  "how_to_use": [
+    {
+      "name": "JSON文字フォームの表示",
+      "description": "画面上の\"Edit Text\"ボタンで、入力フォームが開きます。"
+    },
+    {
+      "name": "JSON文字の入力",
+      "description": "フォームにJSON文字列を入力し、フォーム左上の「変換」ボタンを押します。"
+    },
+    {
+      "name": "JSONの表示",
+      "description": "入力内容にJSONとして問題がなければ、フォームが閉じ、JSONの構造が表示されます。"
+    }
+  ],
+  "features": {
+    "folding_array_and_map": {
+      "description": "配列型とオブジェクト型の要素は、アイコンボタンにより開閉が可能です。",
+      "fold_all_unfold_all": {
+        "description": "画面上の\"Fold All\"および\"Unfold All\"ボタンはそれぞれ、表示中の開閉可能な要素すべてを一括して閉じ(開き)ます。"
+      }
+    },
+    "line_selection": {
+      "description": "行番号をクリックすると、その行の要素が選択状態になります。もう一度同じ行番号をクリックすると選択が解除されます。",
+      "subtree": {
+        "description": "選択状態の要素に対してはいくつかの操作が可能です。",
+        "copy_as_text": {
+          "description": "選択状態の要素以下の部分のみを文字列としてクリップボードにコピーします。"
+        },
+        "narrowing": {
+          "description": "選択状態の要素以下の部分のみを画面に表示します。"
+        }
+      }
+    },
+    "simple_filtering": {
+      "description": "画面上のテキストフィールドで、表示内容の絞り込みができます。"
+    },
+    "performance": {
+      "description": "数万行程度までのJSONであれば、比較的ストレスなく表示できると思います。"
+    }
   },
-  "place_id": "ChIJ0fd4S_KbwoAR2hRDrsr3HmQ"
+  "powered_by": {
+    "application_framework": "https://nextjs.org/",
+    "hosting": "https://vercel.com/"
+  },
+  "author": {
+    "web": "https://corvvs.dev/",
+    "github": "https://github.com/corvvs"
+  }
 }
 `
 
