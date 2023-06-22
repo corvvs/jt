@@ -221,10 +221,14 @@ export function flattenJson(json: any, rawText: string) {
     columnKeyLengths: [],
   };
   flattenDigger(tree, items, branch, stats, gauge);
-  const maxKeyLengths = gauge.columnKeyLengths.map(ls => Math.ceil(ls.reduce((s,a) => s + a, 0) / ls.length));
+  const maxKeyLengths = gauge.columnKeyLengths.map(ls => {
+    const mean = ls.reduce((s, a) => s + a, 0) / ls.length;
+    const sigma2 = ls.reduce((s, a) => s + (a - mean) ** 2, 0) / ls.length;
+    return Math.ceil(mean + Math.sqrt(sigma2) * 0.66);
+  });
   const g: JsonGauge = {
     maxKeyLengths,
-    crampedKeyLengths: maxKeyLengths.map(x => Math.max(6, Math.min(x, 12))),
+    crampedKeyLengths: maxKeyLengths.map(x => Math.max(4, Math.min(x, 12))),
   };
   return {
     items,
