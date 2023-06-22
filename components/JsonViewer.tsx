@@ -29,7 +29,7 @@ function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualSc
 
   return (
     <AutoSizer>
-      {({ height: number, width: number }) => (
+      {({ height, width }: { height: number; width: number; }) => (
         <FixedSizeList
           ref={itemViewRef}
           height={height}
