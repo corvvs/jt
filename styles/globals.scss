@@ -31,7 +31,7 @@
   --selected-row: #c6f1c8;
   --line-number: royalblue;
 
-  --narrowing-stats: #b686ff;
+  --narrowing-stats: #bf91ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -59,8 +59,8 @@
     --background-textarea: 48, 48, 48;
 
     --matched-row: #2f463e;
-    --narrowed-from-row: #c260f6;
-    --selected-row: #76f4d0;
+    --narrowed-from-row: #5822a3;
+    --selected-row: #096865;
     --line-number: rgb(133, 141, 255);
 
     --narrowing-stats: #5822a3;
@@ -300,7 +300,7 @@ body {
   flex-direction: row;
   border: 1px solid var(--foreground);
   .multiple-buttons-button {
-    padding: 0.25rem;
+    padding: 0.15rem 0.40rem;
     color: var(--foreground);
     background-color: var(--background);
     &:hover {

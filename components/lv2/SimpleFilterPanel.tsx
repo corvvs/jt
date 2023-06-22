@@ -13,7 +13,7 @@ const TextField = () => {
         const next = value.trim().toLowerCase();
         return next === prev ? prev : next;
       });
-    }, 33), []
+    }, 100), []
   );
 
   return <div>
