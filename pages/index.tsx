@@ -5,6 +5,7 @@ import { JsonText } from "@/data/text";
 import { useJSON } from "@/states";
 import { defaultRawText } from "@/states/json";
 import { useEffect } from "react";
+import { GoogleAnalytics } from '../components/gtag'
 
 export default function Home() {
 
@@ -23,6 +24,7 @@ export default function Home() {
 
   return (
     <Layout>
+      <GoogleAnalytics />
       <JsonViewer />
       <ToastHolder />
     </Layout>
