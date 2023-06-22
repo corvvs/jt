@@ -12,7 +12,7 @@ export default function Layout(props: {
       '
     >
       <Head>
-        <title>Jet</title>
+        <title>JSON Analyzer</title>
       </Head>
 
       <MenuBar />
