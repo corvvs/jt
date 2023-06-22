@@ -40,14 +40,17 @@ const NarrowingLine = (props: {
   >
     <p className="line-title shrink-0 grow-0">Narrowing</p>
 
+    <p
+      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
+      onClick={() => popNarrowedRange()}
+    >
+      <span className="stats-value">(root)</span>
+    </p>
+
     {
       narrowingItems.map((narrowingItem, i) => {
         return <React.Fragment key={narrowingItem.item.elementKey}>
-          {
-            0 < i
-              ? <p><BsChevronRight /></p>
-              : null
-          }
+          <p><BsChevronRight /></p>
           <p
             className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
             onClick={() => {
