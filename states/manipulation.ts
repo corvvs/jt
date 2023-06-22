@@ -171,6 +171,12 @@ export const useManipulation = () => {
     return  next;
   });
 
+  const clearManipulation = () => {
+    setSelectedIndex(defaultManipulation.selectedIndex);
+    setNarrowedRangesRaw(defaultManipulation.narrowedRanges);
+    setSimpleFilteringQuery(defaultManipulation.simpleFilteringQuery);
+  };
+
   return {
     manipulation: {
       selectedIndex,
@@ -187,5 +193,7 @@ export const useManipulation = () => {
     filteringPreference,
     filteringVisibility,
     setFilteringVisibility,
+
+    clearManipulation,
   };
 };
