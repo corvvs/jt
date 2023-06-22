@@ -6,7 +6,7 @@ import { useManipulation } from "@/states/manipulation";
 import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
-import { JsonStatsLine } from "./lv3/FooterBar";
+import { JsonStatsLines } from "./lv3/FooterBar";
 import { MutableRefObject, useRef } from "react";
 import { FaRegMehRollingEyes } from 'react-icons/fa';
 import { useVisibleItems } from "@/states/json";
@@ -85,10 +85,11 @@ export const JsonViewer = () => {
       >
         <JsonItemsView itemViewRef={itemViewRef}/>
       </div>
+
       <div
-        className="shrink-0 grow-0 flex flex-row gap-4 px-2 py-1 text-sm border-t-2 stats items-center"
+        className="shrink-0 grow-0 flex flex-col border-t-2"
       >
-        <JsonStatsLine stats={stats} itemViewRef={itemViewRef} />
+        <JsonStatsLines stats={stats} itemViewRef={itemViewRef} />
       </div>
     </div>
   )

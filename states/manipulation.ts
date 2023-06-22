@@ -159,7 +159,7 @@ export const useManipulation = () => {
         setNarrowedRangesRaw(prev => _.dropRight(prev));
         return;
       } else if (topIndex! < narrowedRanges.length) {
-        setNarrowedRangesRaw(prev => _.slice(prev, 0, topIndex));
+        setNarrowedRangesRaw(prev => _.slice(prev, 0, topIndex! + 1));
         return;
       }
     }
