@@ -228,7 +228,7 @@ export function flattenJson(json: any, rawText: string) {
   });
   const g: JsonGauge = {
     maxKeyLengths,
-    crampedKeyLengths: maxKeyLengths.map(x => Math.max(4, Math.min(x, 12))),
+    crampedKeyLengths: maxKeyLengths.map(x => Math.max(4, Math.min(x, 10))),
   };
   return {
     items,
