@@ -15,7 +15,15 @@ const OperationPanel = (props: {
   const { clearToggleState } = useToggleState();
   const { clearManipulation } = useManipulation();
 
-return <>
+  const setErrorStr = (e: any) => {
+    if (e instanceof Error) {
+      props.setErrorStr(e.message);
+    } else {
+      props.setErrorStr("some error has occurred");
+    }
+  }
+
+  return <>
     <div>
       <JetButton
         onClick={() => {
@@ -28,11 +36,7 @@ return <>
             clearToggleState();
             props.closeModal()
           } catch (e) {
-            if (e instanceof Error) {
-              props.setErrorStr(e.message);
-            } else {
-              props.setErrorStr("some error has occurred");
-            }
+            setErrorStr(e);
           }
         }}
       >
@@ -47,7 +51,7 @@ return <>
           try {
             setRawtext(JSON.stringify(JSON.parse(rawText), null, 2))
           } catch (e) {
-            console.log(e)
+            setErrorStr(e);
           }
         }}
       >
@@ -62,7 +66,7 @@ return <>
           try {
             setRawtext(JSON.stringify(JSON.parse(rawText), null, 0))
           } catch (e) {
-            console.log(e);
+            setErrorStr(e);
           }
         }}
       >
