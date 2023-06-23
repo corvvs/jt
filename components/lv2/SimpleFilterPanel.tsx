@@ -1,9 +1,9 @@
 import { useJSON } from "@/states";
 import { InlineIcon } from "../lv1/InlineIcon";
-import { VscFilter } from 'react-icons/vsc';
 import _ from "lodash";
 import { useCallback } from "react";
 import { useManipulation } from "@/states/manipulation";
+import { FaSearch } from "react-icons/fa";
 
 const TextField = () => {
   const { setSimpleFilteringQuery } = useManipulation();
@@ -112,7 +112,7 @@ export const SimpleFilterPanel = () => {
   return <div
     className="p-1 gap-1 flex flex-row items-center"
   >
-    <InlineIcon i={<VscFilter />} />
+    <InlineIcon i={<FaSearch />} />
 
     <TextField />
 

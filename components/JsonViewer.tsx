@@ -6,10 +6,11 @@ import { useManipulation } from "@/states/manipulation";
 import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
-import { JsonStatsLines } from "./lv3/FooterBar";
+import { FooterBar } from "./lv3/FooterBar";
 import { MutableRefObject, useRef } from "react";
 import { FaRegMehRollingEyes } from 'react-icons/fa';
 import { useVisibleItems } from "@/states/json";
+import { HeaderBar } from "./lv3/HeaderBar";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -75,23 +76,24 @@ export const JsonViewer = () => {
   const itemViewRef = useRef<any>(null);
 
   if (!flatJsons) { return null; }
-  const {
-    stats,
-  } = flatJsons;
   return (<div
-      className="shrink grow flex flex-col"
-    >
-      <div
-        className="shrink grow"
-      >
-        <JsonItemsView itemViewRef={itemViewRef}/>
-      </div>
-
-      <div
-        className="shrink-0 grow-0 flex flex-col border-t-2"
-      >
-        <JsonStatsLines stats={stats} itemViewRef={itemViewRef} />
-      </div>
+    className="shrink grow flex flex-col"
+  >
+    <div
+      className='shrink-0 grow-0 flex flex-col'>
+      <HeaderBar itemViewRef={itemViewRef} />
     </div>
-  )
+
+    <div
+      className="shrink grow"
+    >
+      <JsonItemsView itemViewRef={itemViewRef}/>
+    </div>
+
+    <div
+      className="shrink-0 grow-0 flex flex-col"
+    >
+      <FooterBar itemViewRef={itemViewRef} />
+    </div>
+  </div>)
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { BsChevronDown, BsChevronUp } from "react-icons/bs";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 export const ToggleButton = (
   props: {
@@ -9,10 +9,10 @@ export const ToggleButton = (
 ) => {
   return (
     <button
-      className="flippable-button-secondary font-bold"
+      className="font-bold"
       onClick={() => props.onClick(!props.isClosed)}
     >
-      {props.isClosed ? <BsChevronUp /> : <BsChevronDown />}
+      {props.isClosed ? <FaChevronUp /> : <FaChevronDown />}
     </button>
   );
 };

@@ -19,7 +19,7 @@ export const SubtreeMenuCell = (props: {
   if (!props.isHovered && !isNarrowed && manipulation.selectedIndex !== props.item.index) { return null; }
 
   return (<div
-    className="grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
+    className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
     <p>
       <IconButton
@@ -51,7 +51,7 @@ export const SubtreeMenuCell = (props: {
     }
 
     {
-      isNarrowed ? <p>
+      isNarrowed ? <p className="button-unnarrow">
         <IconButton
           icon={CgArrowsBreakeV}
           alt="ナローイングを解除する"

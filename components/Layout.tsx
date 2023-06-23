@@ -1,6 +1,5 @@
 import Head from "next/head";
 import { ReactNode } from "react";
-import { MenuBar } from "./lv3/HeaderBar";
 
 export default function Layout(props: {
   children: ReactNode;
@@ -14,8 +13,6 @@ export default function Layout(props: {
       <Head>
         <title>JSON Analyzer</title>
       </Head>
-
-      <MenuBar />
 
       <div
         className='flex flex-row shrink grow overflow-hidden'
