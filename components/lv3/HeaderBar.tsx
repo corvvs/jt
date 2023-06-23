@@ -45,7 +45,7 @@ const MassManipulationButtons = () => {
   </>
 }
 
-export const MenuBar = () => {
+export const HeaderBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const closeModal = () => {
@@ -55,7 +55,7 @@ export const MenuBar = () => {
   const openModal = () => {
     setIsOpen(true);
   };
-  return (<div className='shrink-0 grow-0 flex gap-2 flex-row items-center border-b-[1px] px-2'>
+  return (<>
     <Modal closeModal={closeModal} isOpen={isOpen}>
       <EditJsonCard closeModal={closeModal} />
     </Modal>
@@ -74,6 +74,6 @@ export const MenuBar = () => {
       <SimpleFilterPanel />
 
     </div>
-  </div>
+  </>
   )
 };

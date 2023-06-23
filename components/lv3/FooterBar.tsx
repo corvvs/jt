@@ -122,14 +122,18 @@ const BaseLine = (props: {
   </div>);
 }
 
-export const JsonStatsLines = (props: {
-  stats: JsonStats;
+export const FooterBar = (props: {
   itemViewRef: MutableRefObject<any>;
 }) => {
+  const { flatJsons }  = useJSON();
+  if (!flatJsons) { return null; }
+  const {
+    stats,
+  } = flatJsons;
 
   return <>
-    <NarrowingLine {...props} />
-    <BaseLine {...props} />
+    <NarrowingLine stats={stats} itemViewRef={props.itemViewRef} />
+    <BaseLine stats={stats} itemViewRef={props.itemViewRef} />
   </>;
 };
 
