@@ -28,11 +28,9 @@
 
   --matched-foreground: #2a86d6;
   --matched-row: #d2e1ee;
-  --narrowed-from-row: #bf91ff;
+  --narrowing-base: #9e62f3;
   --selected-row: #c6f1c8;
   --line-number: royalblue;
-
-  --narrowing-stats: #bf91ff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -61,11 +59,9 @@
     --background-textarea: 48, 48, 48;
 
     --matched-row: #2f463e;
-    --narrowed-from-row: #5822a3;
+    --narrowing-base: #5822a3;
     --selected-row: #096865;
     --line-number: rgb(133, 141, 255);
-
-    --narrowing-stats: #5822a3;
   }
 }
 
@@ -92,7 +88,14 @@ body {
 }
 
 .narrowed-from-row {
-  background-color: var(--narrowed-from-row);
+  background-color: var(--narrowing-base);
+  .line-number {
+    color: white;
+  }
+  .subtree-menu {
+    color: white;
+    border-color: white;
+  }
 }
 
 .selected-row {
@@ -275,15 +278,13 @@ body {
 }
 
 .narrowing-line {
-  color: var(--foreground);
-  background-color: var(--narrowing-stats);
+  color: white;
+  background-color: var(--narrowing-base);
   .line-title {
     padding: 0.25rem 0.5rem;
     font-weight: bold;
   }
-  .stats-value {
-    color: var(--foreground);
-  }
+
   .narrowing-status {
     text-decoration: underline;
   }

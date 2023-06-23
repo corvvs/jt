@@ -44,7 +44,7 @@ const NarrowingLine = (props: {
       className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
       onClick={() => popNarrowedRange()}
     >
-      <span className="stats-value">(root)</span>
+      <span>(root)</span>
     </p>
 
     {
@@ -65,7 +65,7 @@ const NarrowingLine = (props: {
               }
             }}
           >
-            <span className="stats-value">{narrowingItem.keyPath}</span>
+            <span>{narrowingItem.keyPath}</span>
           </p>
         </React.Fragment>;
       })
