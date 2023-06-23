@@ -4,7 +4,7 @@ import { useVisibleItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
 import _ from "lodash";
 import React, { MutableRefObject } from "react";
-import { BsChevronRight } from "react-icons/bs";
+import { FaChevronRight } from "react-icons/fa";
 
 const NarrowingLine = (props: {
   stats: JsonStats;
@@ -50,7 +50,7 @@ const NarrowingLine = (props: {
     {
       narrowingItems.map((narrowingItem, i) => {
         return <React.Fragment key={narrowingItem.item.elementKey}>
-          <p><BsChevronRight /></p>
+          <p><FaChevronRight /></p>
           <p
             className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
             onClick={() => {

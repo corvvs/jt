@@ -4,7 +4,7 @@ import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { Modal } from "@/components/Modal";
 import { EditJsonCard } from "@/components/json/EditJsonCard";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
-import { BsChevronDoubleDown, BsChevronDoubleUp } from "react-icons/bs";
+import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { useToggleState } from "@/states/view";
 import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
@@ -25,13 +25,13 @@ const MassManipulationButtons = () => {
     <MenuButton
       onClick={() => closeAll(items, _.last(manipulation.narrowedRanges))}
     >
-      <InlineIcon i={<BsChevronDoubleUp />} />Fold All
+      <InlineIcon i={<HiChevronDoubleUp />} />Fold All
     </MenuButton>
 
     <MenuButton
       onClick={() => openAll(_.last(manipulation.narrowedRanges))}
     >
-      <InlineIcon i={<BsChevronDoubleDown />} />Unfold All
+      <InlineIcon i={<HiChevronDoubleDown />} />Unfold All
     </MenuButton>
 
     { false &&
