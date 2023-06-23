@@ -51,7 +51,7 @@ export const SubtreeMenuCell = (props: {
     }
 
     {
-      isNarrowed ? <p>
+      isNarrowed ? <p className="button-unnarrow">
         <IconButton
           icon={CgArrowsBreakeV}
           alt="ナローイングを解除する"

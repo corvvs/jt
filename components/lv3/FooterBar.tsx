@@ -4,76 +4,8 @@ import { useVisibleItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
 import _ from "lodash";
 import React, { MutableRefObject } from "react";
-import { FaChevronRight } from "react-icons/fa";
 
-const NarrowingLine = (props: {
-  stats: JsonStats;
-  itemViewRef: MutableRefObject<any>;
-}) => {
-  const { manipulation, popNarrowedRange } = useManipulation();
-  const { flatJsons } = useJSON();
-  if (!flatJsons) { return null; }
-  if (manipulation.narrowedRanges.length === 0) { return null; }
-  const allItems = flatJsons.items;
-
-  let lastKeyPath = "";
-  const narrowingItems = manipulation.narrowedRanges.map(range => {
-    const item = allItems[range.from];
-    const keyPath = (() => {
-      if (item.elementKey.startsWith(lastKeyPath)) {
-        return item.elementKey.substring(lastKeyPath ? lastKeyPath.length + 1 : 0);
-      } else {
-        // 本来はおかしい
-        return item.elementKey;
-      }
-    })();
-    lastKeyPath = item.elementKey;
-    return {
-      item,
-      keyPath,
-      range,
-    };
-  });
-
-  return (<div
-    className="narrowing-line shrink-0 grow-0 flex flex-row gap-1 text-sm stats items-center"
-  >
-    <p className="line-title shrink-0 grow-0">Narrowing</p>
-
-    <p
-      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
-      onClick={() => popNarrowedRange()}
-    >
-      <span>(root)</span>
-    </p>
-
-    {
-      narrowingItems.map((narrowingItem, i) => {
-        return <React.Fragment key={narrowingItem.item.elementKey}>
-          <p><FaChevronRight /></p>
-          <p
-            className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
-            onClick={() => {
-              const itemView = props.itemViewRef.current
-              if (!itemView) { return; }
-              if (i + 1 === narrowingItems.length) {
-                // ナローイングスタックの末尾 -> ただスクロールする
-                itemView.scrollToItem(0);
-              } else {
-                // 末尾でない -> クリックした要素までスタックをpopする
-                popNarrowedRange(i);
-              }
-            }}
-          >
-            <span>{narrowingItem.keyPath}</span>
-          </p>
-        </React.Fragment>;
-      })
-    }
-  </div>)
-}
-
-const BaseLine = (props: {
+const MainLine = (props: {
   stats: JsonStats;
   itemViewRef: MutableRefObject<any>;
 }) => {
@@ -132,8 +64,7 @@ export const FooterBar = (props: {
   } = flatJsons;
 
   return <>
-    <NarrowingLine stats={stats} itemViewRef={props.itemViewRef} />
-    <BaseLine stats={stats} itemViewRef={props.itemViewRef} />
+    <MainLine stats={stats} itemViewRef={props.itemViewRef} />
   </>;
 };
 

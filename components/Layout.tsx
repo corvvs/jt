@@ -1,6 +1,5 @@
 import Head from "next/head";
 import { ReactNode } from "react";
-import { HeaderBar } from "./lv3/HeaderBar";
 
 export default function Layout(props: {
   children: ReactNode;

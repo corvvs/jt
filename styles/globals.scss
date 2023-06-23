@@ -84,17 +84,20 @@ body {
 
 .matched-cell {
   color: var(--matched-foreground);
-  // background-color: var(--matched-row) !important;
 }
 
 .narrowed-from-row {
-  background-color: var(--narrowing-base);
   .line-number {
     color: white;
+    background-color: var(--narrowing-base);
   }
-  .subtree-menu {
+}
+
+.button-unnarrow {
+  button {
     color: white;
-    border-color: white;
+    background-color: var(--narrowing-base);
+    border-color: transparent;
   }
 }
 

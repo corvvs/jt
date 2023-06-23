@@ -80,8 +80,8 @@ export const JsonViewer = () => {
     className="shrink grow flex flex-col"
   >
     <div
-      className='shrink-0 grow-0 flex gap-2 flex-row items-center border-b-[1px] px-2'>
-      <HeaderBar />
+      className='shrink-0 grow-0 flex flex-col'>
+      <HeaderBar itemViewRef={itemViewRef} />
     </div>
 
     <div
@@ -91,7 +91,7 @@ export const JsonViewer = () => {
     </div>
 
     <div
-      className="shrink-0 grow-0 flex flex-col border-t-2"
+      className="shrink-0 grow-0 flex flex-col"
     >
       <FooterBar itemViewRef={itemViewRef} />
     </div>
