@@ -107,6 +107,7 @@ function flattenDigger(
   stats: JsonStats,
   gauge: {
     columnKeyLengths: number[][];
+    columnIndexLengths: number[][];
   },
   parent?: {
     elementKey: string;
@@ -157,8 +158,13 @@ function flattenDigger(
   if (stats.max_key_length.length < depth + 1) {
     stats.max_key_length.push(0);
     gauge.columnKeyLengths.push([]);
+    gauge.columnIndexLengths.push([]);
   }
-  gauge.columnKeyLengths[depth].push(ownKey.length);
+  if (typeof item.itemKey === "number") {
+    gauge.columnIndexLengths[depth].push(ownKey.length);
+  } else if (typeof item.itemKey === "string") {
+    gauge.columnKeyLengths[depth].push(ownKey.length);
+  }
   if (stats.max_key_length[depth] < elementKey.length) {
     stats.max_key_length[depth] = elementKey.length;
   }
@@ -217,14 +223,19 @@ export function flattenJson(json: any, rawText: string) {
   };
   const gauge: {
     columnKeyLengths: number[][];
+    columnIndexLengths: number[][];
   } = {
     columnKeyLengths: [],
+    columnIndexLengths: [],
   };
   flattenDigger(tree, items, branch, stats, gauge);
-  const maxKeyLengths = gauge.columnKeyLengths.map(ls => {
-    const mean = ls.reduce((s, a) => s + a, 0) / ls.length;
-    const sigma2 = ls.reduce((s, a) => s + (a - mean) ** 2, 0) / ls.length;
-    return Math.ceil(mean + Math.sqrt(sigma2) * 0.66);
+  const maxKeyLengths = gauge.columnKeyLengths.map((kls, i) => {
+    const ils = gauge.columnIndexLengths[i];
+    const kmean = kls.length > 0 ? kls.reduce((s, a) => s + a, 0) / kls.length : 0;
+    const ksigma2 = kls.length > 0 ? kls.reduce((s, a) => s + (a - kmean) ** 2, 0) / kls.length : 0;
+    const kmax = kmean + Math.sqrt(ksigma2) * 0.66;
+    const imax = ils.length > 0 ? Math.max(...ils) : 0;
+    return Math.ceil(Math.max(kmax, imax));
   });
   const g: JsonGauge = {
     maxKeyLengths,
