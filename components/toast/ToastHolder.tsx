@@ -17,7 +17,7 @@ export const ToastHolder = () => {
   return (
     <ToastContainer
       position="bottom-right"
-      autoClose={3000}
+      autoClose={1000}
       hideProgressBar
       newestOnTop
       closeOnClick
