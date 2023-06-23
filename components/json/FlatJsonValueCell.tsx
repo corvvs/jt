@@ -38,9 +38,11 @@ const ValueStringCell = (props: {
   elementKey: string;
   matched?: boolean;
 }) => {
+  // TODO: 非常に長い文字列の場合
+
   return <div
     className="json-structure item-value json-string-structure p-1 flex items-center"
-    title={props.elementKey}
+    title={props.vo.value}
   >
     <p>&quot;{props.vo.value}&quot;</p>
   </div>;
@@ -53,7 +55,7 @@ const ValueNumberCell = (props: {
 }) => {
   return <div
     className="json-structure item-value json-number-structure p-1 flex items-center"
-    title={props.elementKey}
+    title={`${props.vo.value}`}
   >
     <p>{props.vo.value}</p>
   </div>;
@@ -66,7 +68,7 @@ const ValueBooleanCell = (props: {
 }) => {
   return <div
     className="json-structure item-value json-boolean-structure p-1 flex items-center"
-    title={props.elementKey}
+    title={`${props.vo.value}`}
   >
     <p>
       {
@@ -85,7 +87,6 @@ const ValueNullCell = (props: {
 }) => {
   return <div
     className="json-structure item-value json-null-structure p-1"
-    title={props.elementKey}
   >
     <p>(null)</p>
   </div>;
