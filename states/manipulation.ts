@@ -182,6 +182,7 @@ export const useManipulation = () => {
       selectedIndex,
       narrowedRanges,
       simpleFilteringQuery,
+      filteringVisibility,
     },
 
     setSelectedIndex,
@@ -191,7 +192,6 @@ export const useManipulation = () => {
     simpleFilterMaps,
 
     filteringPreference,
-    filteringVisibility,
     setFilteringVisibility,
 
     clearManipulation,

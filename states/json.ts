@@ -121,6 +121,7 @@ export const useVisibleItems = () => {
         .filter(filterBySimpleFilteringQuery)
         .filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
     })();
+    if (visibleItems.length === 0) { return null; }
     return {
       visibleItems,
       gauge: flatJsons.gauge,

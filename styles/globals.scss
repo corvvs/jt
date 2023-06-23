@@ -9,6 +9,7 @@
 
   --foreground: #504b55;
   --foreground-secondary: #807d83;
+  --foreground-bad: #e22f59;
   --background: #e8edec;
   --background-secondary: #d4d4d4;
   --foreground-schema: #888;
@@ -26,7 +27,7 @@
   --background-textarea: 227, 232, 232;
 
   --matched-foreground: #2a86d6;
-  --matched-row: #bfe0fd;
+  --matched-row: #d2e1ee;
   --narrowed-from-row: #bf91ff;
   --selected-row: #c6f1c8;
   --line-number: royalblue;
@@ -42,6 +43,7 @@
 
     --foreground: #eee7f7;
     --foreground-secondary: #66606e;
+    --foreground-bad: #ea5477;
     --background: #1d1d1f;
     --background-secondary: #33333a;
     --foreground-schema: #b3b3b3;
@@ -288,9 +290,9 @@ body {
 }
 
 .filter-matched-items {
-  color: var(--foreground-number);
+  color: var(--matched-foreground);
   &.no-hit {
-    color: var(--foreground-string);
+    color: var(--foreground-bad);
   }
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
 }
