@@ -7,22 +7,22 @@
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 
-  --foreground: #130721;
+  --foreground: #504b55;
   --foreground-secondary: #807d83;
-  --background: #efefef;
+  --background: #e8edec;
   --background-secondary: #d4d4d4;
   --foreground-schema: #888;
   --foreground-key: rgb(60, 57, 213);
-  --foreground-string: #cf5732;
-  --foreground-number: #44a742;
-  --foreground-true: #73ff9d;
-  --foreground-false: #b9d6b1;
+  --foreground-string: #b74731;
+  --foreground-number: #455f45;
+  --foreground-true: #378e51;
+  --foreground-false: #6d7670;
 
-  --background-key-0: #e0e4ee;
-  --background-key-1: #eaefe1;
-  --background-key-2: #eee1ef;
-  --background-key-3: #e1efe8;
-  --background-key-4: #efe3e1;
+  --background-key-0: #e6e9d7;
+  --background-key-1: #cee3c9;
+  --background-key-2: #c6dddf;
+  --background-key-3: #e3d0e7;
+  --background-key-4: #d1d7e7;
   --background-textarea: 227, 232, 232;
 
   --matched-foreground: #2a86d6;
@@ -121,7 +121,7 @@ body {
 }
 
 .line-number {
-  color: var(--line-number);
+  color: var(--foreground-secondary);
   text-align: right;
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
 }
@@ -175,12 +175,12 @@ body {
 
 .value-true {
   font-weight: bold;
-  color: green;
+  color: var(--foreground-true);
 }
 
 .value-false {
   font-weight: bold;
-  color: grey;
+  color: var(--foreground-false);
 }
 
 .json-text {
