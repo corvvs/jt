@@ -11,15 +11,8 @@ export const LineNumberCell = (props: {
   const isSelected = manipulation.selectedIndex === itemIndex;
   return <div
     className={
-      'w-[4em] grow-0 shrink-0 flex flex-row justify-end items-center p-1 line-number text-sm cursor-pointer line-number-cell'
+      'w-[4em] grow-0 shrink-0 flex flex-row justify-end items-center p-1 line-number text-sm line-number-cell'
     }
-    onClick={() => {
-      if (isSelected) {
-        setSelectedIndex(null);
-      } else {
-        setSelectedIndex(itemIndex);
-      }
-    }}
   >
     <div>{lineNumber}</div>
   </div>

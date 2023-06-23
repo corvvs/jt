@@ -32,15 +32,15 @@ export const defaultRawText = JSON.stringify({
         "description": "画面上の\"Fold All\"および\"Unfold All\"ボタンはそれぞれ、表示中の開閉可能な要素すべてを一括して閉じ(開き)ます。"
       }
     },
-    "line_selection": {
-      "description": "行番号をクリックすると、その行の要素が選択状態になります。もう一度同じ行番号をクリックすると選択が解除されます。",
+    "hover": {
+      "description": "マウスカーソルが置かれている(ホバー状態の)行は強調表示されます。",
       "subtree": {
-        "description": "選択状態の要素に対してはいくつかの操作が可能です。",
+        "description": "ホバー状態の要素に対してはいくつかの操作が可能です。",
         "copy_as_text": {
-          "description": "選択状態の要素以下の部分のみを文字列としてクリップボードにコピーします。"
+          "description": "その要素以下の部分のみを文字列としてクリップボードにコピーします。"
         },
         "narrowing": {
-          "description": "選択状態の要素以下の部分のみを画面に表示します。"
+          "description": "その要素以下の部分のみを画面に表示します。"
         }
       }
     },
