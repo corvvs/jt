@@ -11,6 +11,7 @@ import { MutableRefObject, useRef } from "react";
 import { FaRegMehRollingEyes } from 'react-icons/fa';
 import { useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
+import { QueryDebugView } from "./query/QueryDebugView";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -87,7 +88,8 @@ export const JsonViewer = () => {
     <div
       className="shrink grow"
     >
-      <JsonItemsView itemViewRef={itemViewRef}/>
+      <QueryDebugView />
+      {/* <JsonItemsView itemViewRef={itemViewRef}/> */}
     </div>
 
     <div

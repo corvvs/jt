@@ -9,6 +9,7 @@ type Manipulation = {
   selectedIndex: number | null;
   narrowedRanges: IndexRange[];
   simpleFilteringQuery: string;
+  advancedFilteringQuery: string;
 };
 
 type FilteringMap = {
@@ -20,13 +21,14 @@ const defaultManipulation: Manipulation = {
   selectedIndex: null,
   narrowedRanges: [],
   simpleFilteringQuery: "",
+  advancedFilteringQuery: "",
 };
 
 const selectedIndexAtom = atom<Manipulation["selectedIndex"]>(defaultManipulation.selectedIndex);
 const narrowedRangeAtom = atom<Manipulation["narrowedRanges"]>(defaultManipulation.narrowedRanges);
 
 
-type FilteringVisibilityOption = "just" | "ascendant" | "ascendant_descendant";
+type FilteringVisibilityOption = "just" | "ascendant" | "descendant" | "ascendant_descendant";
 
 type FilteringPreference = {
   visibility: FilteringVisibilityOption;
@@ -47,6 +49,10 @@ export const filteringVisibilityAtom = atom(
       case "ascendant": return {
         ascendant: true,
         descendant: false,
+      };
+      case "descendant": return {
+        ascendant: false,
+        descendant: true,
       };
       case "ascendant_descendant": return {
         ascendant: true,
@@ -127,6 +133,7 @@ const simpleFilterMapsAtom = atom<FilteringMap | null>(
   }
 )
 
+export const advancedFilteringQueryAtom = atom<string>(defaultManipulation.advancedFilteringQuery);
 
 const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   const indexFrom = index;
@@ -144,6 +151,7 @@ export const useManipulation = () => {
   const [selectedIndex, setSelectedIndex] = useAtom(selectedIndexAtom);
   const [narrowedRanges, setNarrowedRangesRaw] = useAtom(narrowedRangeAtom);
   const [simpleFilteringQuery, setSimpleFilteringQuery] = useAtom(simpleFilteringQueryAtom);
+  const [advancedFilteringQuery, setAdvancedFilteringQuery] = useAtom(advancedFilteringQueryAtom);
   const [simpleFilterMaps] = useAtom(simpleFilterMapsAtom);
   const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
   const [filteringVisibility] = useAtom(filteringVisibilityAtom);
@@ -182,6 +190,7 @@ export const useManipulation = () => {
       selectedIndex,
       narrowedRanges,
       simpleFilteringQuery,
+      advancedFilteringQuery,
       filteringVisibility,
     },
 
@@ -189,6 +198,7 @@ export const useManipulation = () => {
     pushNarrowedRange,
     popNarrowedRange,
     setSimpleFilteringQuery,
+    setAdvancedFilteringQuery,
     simpleFilterMaps,
 
     filteringPreference,

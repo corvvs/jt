@@ -92,6 +92,11 @@ const PreferencePanel = () => {
         hint: "ヒットした項目とその祖先の項目を表示する",
       },
       {
+        key: "descendant",
+        title: "Descendant",
+        hint: "ヒットした項目とその子孫の項目を表示する",
+      },
+      {
         key: "just",
         title: "Matched",
         hint: "ヒットした項目のみを表示する",

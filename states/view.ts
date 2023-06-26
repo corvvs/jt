@@ -41,7 +41,7 @@ export function useToggleState() {
   ) => {
     setToggleState((prev) => {
       const next = _.cloneDeep(prev);
-      const itemsInRange = range ? _.slice(items, range.from, range.to) : items;
+      const itemsInRange = range ? _.slice(items, range.from + 1, range.to) : items;
       for (const item of itemsInRange) {
         if (item.rowItems.length === 0) { continue; }
         const isTogglable = item.right.type === "array" || item.right.type === "map";

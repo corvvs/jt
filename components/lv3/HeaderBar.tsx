@@ -12,6 +12,7 @@ import { useManipulation } from "@/states/manipulation";
 import { SimpleFilterPanel } from "../lv2/SimpleFilterPanel";
 import { FaChevronRight } from "react-icons/fa";
 import _ from "lodash";
+import { AdvancedFilterPanel } from "../lv2/AdvancedFilterPanel";
 
 const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
@@ -93,13 +94,15 @@ const MassManipulationButtons = () => {
     <MenuButton
       onClick={() => closeAll(items, _.last(manipulation.narrowedRanges))}
     >
-      <InlineIcon i={<HiChevronDoubleUp />} />Fold All
+      <InlineIcon i={<HiChevronDoubleUp />} />
+      Fold All
     </MenuButton>
 
     <MenuButton
       onClick={() => openAll(_.last(manipulation.narrowedRanges))}
     >
-      <InlineIcon i={<HiChevronDoubleDown />} />Unfold All
+      <InlineIcon i={<HiChevronDoubleDown />} />
+      Unfold All
     </MenuButton>
 
     { false &&
@@ -142,7 +145,8 @@ const MainLine = () => {
 
       <MassManipulationButtons />
 
-      <SimpleFilterPanel />
+      <AdvancedFilterPanel />
+      {/* <SimpleFilterPanel /> */}
 
     </div>
   </div>);
