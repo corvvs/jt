@@ -1,4 +1,9 @@
-import { GenericQuery, KeyQuery, QuerySyntaxError, useAdvancedQuery } from "@/libs/advanced_query"
+import { useAdvancedQuery } from "@/libs/advanced_query"
+import { QuerySyntaxError } from "@/libs/advanced_query/QuerySyntaxError";
+import { matchByQuery } from "@/libs/advanced_query/matcher";
+import { GenericQuery, KeyStringQuery } from "@/libs/advanced_query/types";
+import { useJSON } from "@/states";
+import _ from "lodash";
 
 
 const QueryUnitView = (props: {
@@ -60,9 +65,10 @@ const QueryUnitView = (props: {
           className="flex flex-col"
         >
           <h3 className="text-red-400 font-bold">{u.type}</h3>
+          <p>position: { u.position }</p>
           {
-            u.type === "KeyQuery"
-              ? <p>&quot;{(u as KeyQuery).token}&quot;</p>
+            u.string
+              ? <p>&quot;{u.string.token}&quot;</p>
               : null
           }
         </div>)
@@ -175,12 +181,9 @@ const SyntaxErrorContents = (props: {
 };
 
 export const QueryDebugView = () => {
-  const { parsedQuery } = useAdvancedQuery();
-
-  const syntaxErrorContent = (() => {
-    if (!parsedQuery.syntaxError) { return null; }
-    return <SyntaxErrorContents error={parsedQuery.syntaxError} />;
-  })();
+  const { advancedFilteringQuery, parsedQuery, advancedMatcher } = useAdvancedQuery();
+  const { flatJsons } = useJSON();
+  if (!flatJsons) { return null; }
 
   const queryContent = (() => {
     if (!parsedQuery.structure) { return null; }
@@ -203,10 +206,26 @@ export const QueryDebugView = () => {
     </>
   })();
 
+  const syntaxErrorContent = (() => {
+    if (!parsedQuery.syntaxError) { return null; }
+    return <SyntaxErrorContents error={parsedQuery.syntaxError} />;
+  })();
+
+  const filteredItems = advancedMatcher ? flatJsons.items.filter(advancedMatcher) : flatJsons.items;
+
   return (
     <div
-      className="flex flex-col p-2 overflow-hidden"
+      className="query-debug-view shrink grow flex flex-col p-2 overflow-scroll"
     >
+      <h1
+        className="p-2 border-2"
+      >
+        Advanced Query (Debug)
+      </h1>
+
+      <h2 className="font-bold">Query</h2>
+      <p>{advancedFilteringQuery}</p>
+
       <h2 className="font-bold">Tokens</h2>
       <div
         className="flex flex-row flex-wrap p-1 gap-1 items-center"
@@ -226,6 +245,18 @@ export const QueryDebugView = () => {
 
       { queryContent }
       { syntaxErrorContent }
+
+      <h2 className="font-bold">Items</h2>
+
+      <p>
+        {
+          filteredItems
+            ? <><span>{flatJsons.items.length}items</span><span>→</span><span>{filteredItems.length}items</span></>
+            : <span>None</span>
+
+        }
+      </p>
+
     </div>
   )
 }

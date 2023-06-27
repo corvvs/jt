@@ -65,8 +65,8 @@ export const FlatJsonRow = (props: {
 }) => {
   
   const [isHovered, setIsHovered] = useState(false);
-  const { manipulation, filteringPreference, simpleFilterMaps } = useManipulation();
-  const isMatched = !!(simpleFilterMaps && simpleFilterMaps.matched[props.item.index]);
+  const { manipulation, filteringPreference, filterMaps } = useManipulation();
+  const isMatched = !!(filterMaps && filterMaps.matched[props.item.index]);
   const isSelected = manipulation.selectedIndex === props.item.index;
   const isNarrowedFrom = _.last(manipulation.narrowedRanges)?.from === props.item.index;
   const {

@@ -2,6 +2,7 @@ import { JsonRowItem } from "@/libs/jetson";
 import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { jsonFlattenedAtom } from "./json";
+import { advancedMatcherAtom } from "@/libs/advanced_query";
 
 type IndexRange = { from: number; to: number; };
 
@@ -62,35 +63,43 @@ export const filteringVisibilityAtom = atom(
   }
 );
 
-const simpleFilteringQueryAtom = atom<string>(defaultManipulation.simpleFilteringQuery);
-const simpleFilterMapsAtom = atom<FilteringMap | null>(
-  (get) => {
-    const query = get(simpleFilteringQueryAtom);
-    const json = get(jsonFlattenedAtom);
-    const filteringVisibility = get(filteringVisibilityAtom);
 
-    if (query.length === 0 || !json) { return null; }
-    const { items } = json;
-    // item ごとに query にマッチしたかどうかを判定する
-    const matchedMap: { [k: number]: boolean } = {};
-    for (const item of items) {
-      if (typeof item.itemKey !== "undefined") {
-        const key = item.itemKey.toString().toLowerCase();
-        if (key.includes(query)) {
-          matchedMap[item.index] = true;
-          continue;
-        }
-      }
+
+const simpleFilteringQueryAtom = atom<string>(defaultManipulation.simpleFilteringQuery);
+const filterMapsAtom = atom<FilteringMap | null>(
+  (get) => {
+    const simpleQuery = get(simpleFilteringQueryAtom);
+    const json = get(jsonFlattenedAtom);
+    const { matcher: advancedMatcher } = get(advancedMatcherAtom);
+    if (!json) { return null; }
+    if (!advancedMatcher && simpleQuery.length === 0) { return null; }
+
+    const simpleMatcher = (item: JsonRowItem) => {
+      const key = item.itemKey?.toString().toLowerCase();
+      if (key?.includes(simpleQuery)) { return true; }
       if (item.right.type === "string") {
         const key = item.right.value.toLowerCase();
-        if (key.includes(query)) {
+        if (key.includes(simpleQuery)) {
           matchedMap[item.index] = true;
         }
       } else if (item.right.type === "number") {
         const key = item.right.value.toString().toLowerCase();
-        if (key.includes(query)) {
+        if (key.includes(simpleQuery)) {
           matchedMap[item.index] = true;
         }
+      }
+      return false;
+    };
+    const actualMatcher = advancedMatcher ? advancedMatcher : simpleMatcher;
+
+    const filteringVisibility = get(filteringVisibilityAtom);
+
+    const { items } = json;
+    // item ごとに query にマッチしたかどうかを判定する
+    const matchedMap: { [k: number]: boolean } = {};
+    for (const item of items) {
+      if (actualMatcher(item)) {
+        matchedMap[item.index] = true;
       }
     }
     // item ごとに visible かどうかを判定する
@@ -152,7 +161,7 @@ export const useManipulation = () => {
   const [narrowedRanges, setNarrowedRangesRaw] = useAtom(narrowedRangeAtom);
   const [simpleFilteringQuery, setSimpleFilteringQuery] = useAtom(simpleFilteringQueryAtom);
   const [advancedFilteringQuery, setAdvancedFilteringQuery] = useAtom(advancedFilteringQueryAtom);
-  const [simpleFilterMaps] = useAtom(simpleFilterMapsAtom);
+  const [filterMaps] = useAtom(filterMapsAtom);
   const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
   const [filteringVisibility] = useAtom(filteringVisibilityAtom);
 
@@ -199,7 +208,7 @@ export const useManipulation = () => {
     popNarrowedRange,
     setSimpleFilteringQuery,
     setAdvancedFilteringQuery,
-    simpleFilterMaps,
+    filterMaps,
 
     filteringPreference,
     setFilteringVisibility,

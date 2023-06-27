@@ -86,10 +86,14 @@ export const JsonViewer = () => {
     </div>
 
     <div
-      className="shrink grow"
+      className="shrink grow flex flex-row"
     >
-      <QueryDebugView />
-      {/* <JsonItemsView itemViewRef={itemViewRef}/> */}
+      <div
+        className="w-96 flex flex-col justify-stretch"
+      >
+        <QueryDebugView />
+      </div>
+      <JsonItemsView itemViewRef={itemViewRef}/>
     </div>
 
     <div

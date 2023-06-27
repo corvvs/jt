@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useToggleState } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
+import { useAdvancedQuery } from '@/libs/advanced_query';
 
 export const defaultRawText = JSON.stringify({
   "title": "サンプルテキスト 兼 ReadMe",
@@ -97,15 +98,15 @@ export const jsonFlattenedAtom = atom(
 export const useVisibleItems = () => {
   const { flatJsons } = useJSON();
   const { toggleState } = useToggleState();
-  const { manipulation, simpleFilterMaps } = useManipulation();
+  const { manipulation, filterMaps } = useManipulation();
 
   return useMemo((): { visibleItems: JsonRowItem[], gauge: JsonGauge } | null => {
     if (!flatJsons) { return null; }
     const { items } = flatJsons;
   
     // 表示すべきitemを選別する
-    const filterBySimpleFilteringQuery = simpleFilterMaps
-      ? (item: JsonRowItem) => simpleFilterMaps.visible[item.index]
+    const filterByQuery = filterMaps
+      ? (item: JsonRowItem) => filterMaps.visible[item.index]
       : () => true;
   
     const topNarrowingRange = _.last(manipulation.narrowedRanges);
@@ -115,18 +116,16 @@ export const useVisibleItems = () => {
           return from <= item.index && item.index < to;
         }
       : () => true;
-    const visibleItems = (() => {
-      return items
-        .filter(filterByNarrowing)
-        .filter(filterBySimpleFilteringQuery)
-        .filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
-    })();
+    const narrowedItems = items.filter(filterByNarrowing);
+    const filteredItems = narrowedItems.filter(filterByQuery);
+    const openedItems = filteredItems.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+    const visibleItems = openedItems;
     if (visibleItems.length === 0) { return null; }
     return {
       visibleItems,
       gauge: flatJsons.gauge,
     };
-  }, [flatJsons, toggleState, manipulation, simpleFilterMaps]);
+  }, [flatJsons, toggleState, manipulation, filterMaps]);
 };
 
 /**

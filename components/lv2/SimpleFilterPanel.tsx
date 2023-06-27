@@ -4,6 +4,7 @@ import _ from "lodash";
 import { useCallback } from "react";
 import { useManipulation } from "@/states/manipulation";
 import { FaSearch } from "react-icons/fa";
+import { PreferencePanel } from "./FilterPreferencePanel";
 
 const TextField = () => {
   const { setSimpleFilteringQuery } = useManipulation();
@@ -29,84 +30,15 @@ const TextField = () => {
 };
 
 const HitCounter = () => {
-  const { simpleFilterMaps } = useManipulation();
-  if (!simpleFilterMaps) { return null }
-  const hitCount = _.size(simpleFilterMaps.matched);
+  const { filterMaps } = useManipulation();
+  if (!filterMaps) { return null }
+  const hitCount = _.size(filterMaps.matched);
 
   return <p className={`filter-matched-items ${hitCount > 0 ? "" : "no-hit"}`}>
     {hitCount}
     <span className="text-sm">items</span>
   </p>
 }
-
-type MultipleButtonItem<T> = {
-  key: T;
-  title: string;
-  hint?: string;
-};
-
-type MultipleButtonProps<T> = {
-  items: MultipleButtonItem<T>[];
-  currentKey?: T;
-  onClick: (item: MultipleButtonItem<T>) => void;
-};
-
-function MultipleButtons<T extends string>({
-  items,
-  currentKey,
-  onClick,
-}: MultipleButtonProps<T>) {
-  const buttons = items.map(item => {
-    const isActive = currentKey === item.key;
-    return <button
-      key={item.key}
-      className={`multiple-buttons-button ${isActive ? "active" : ""}`}
-      title={item.hint}
-      onClick={() => onClick(item)}
-    >
-      {item.title}
-    </button>
-  });
-
-  return <div className="multiple-buttons">{ buttons }</div>;
-}
-
-const PreferencePanel = () => {
-  const { filteringPreference, setFilteringVisibility } = useManipulation();
-  const { simpleFilterMaps } = useManipulation();
-  if (!simpleFilterMaps) { return null }
-  const hitCount = _.size(simpleFilterMaps.matched);
-  if (hitCount === 0) { return null; }
-
-  return <MultipleButtons
-    currentKey={filteringPreference.visibility}
-    items={[
-      {
-        key: "ascendant_descendant",
-        title: "Related",
-        hint: "ヒットした項目とその祖先および子孫の項目を表示する",
-      },
-      {
-        key: "ascendant",
-        title: "Ascendant",
-        hint: "ヒットした項目とその祖先の項目を表示する",
-      },
-      {
-        key: "descendant",
-        title: "Descendant",
-        hint: "ヒットした項目とその子孫の項目を表示する",
-      },
-      {
-        key: "just",
-        title: "Matched",
-        hint: "ヒットした項目のみを表示する",
-      },
-    ]}
-    onClick={(item) => {
-      setFilteringVisibility(item.key);
-    }}
-  />
-};
 
 export const SimpleFilterPanel = () => {
   const { flatJsons } = useJSON();
