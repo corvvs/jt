@@ -3,7 +3,7 @@ import { JsonRowItem } from "../jetson";
 import { GroupedQuery, KeyPathQuery, KeyQuery, Query, ValueQuery } from "./types";
 
 function matchSubtreeByKeyQueries(item: JsonRowItem, queries: KeyQuery[], i: number): boolean {
-  if (i < 0 || queries.length <= i) { return false; }
+  if (i < 0 || queries.length <= i) { return true; }
   const q = queries[i];
   // q と item.childs が戦う
   if (!item.childs) { return false; }
@@ -97,7 +97,7 @@ export function matchByQuery(
 
     // まだ Key 1つだけしか対応してない
     if (query.tokens.length >= 1) {
-      return item.right.value === query.tokens[0].token;
+      return item.right.value?.toString() === query.tokens[0].token;
     }
     console.error("SOMETHING WRONG???");
 
