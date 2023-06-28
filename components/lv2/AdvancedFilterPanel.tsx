@@ -15,7 +15,7 @@ const TextField = () => {
   const reflectQuery = useCallback(
     _.debounce((value: string) => {
       setQueryString(prev => {
-        const next = value.trim().toLowerCase();
+        const next = value.trim();
         return next === prev ? prev : next;
       });
     }, 100), [setQueryString]

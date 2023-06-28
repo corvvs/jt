@@ -57,7 +57,7 @@ const QueryUnitView = (props: {
     <h3 className="text-red-400 font-bold">{qu.type}</h3>
 
     <div
-      className="flex flex-col items-center border-2 p-2 gap-2"
+      className="flex flex-col items-start border-2 p-2 gap-2"
     >
       { 
         qu.tokens.map((u, i) => <div
@@ -188,7 +188,7 @@ export const QueryDebugView = () => {
   const queryContent = (() => {
     if (!parsedQuery.structure) { return null; }
     return <>
-      <h2 className="font-bold">Queries</h2>
+      <h2 className="font-bold">AST</h2>
       <div
         className="flex flex-row flex-wrap p-1 gap-1 items-center"
       >
