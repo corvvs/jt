@@ -5,7 +5,7 @@ import { Modal } from "@/components/Modal";
 import { EditJsonCard } from "@/components/json/EditJsonCard";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
-import { useToggleState } from "@/states/view";
+import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
@@ -83,7 +83,7 @@ const NarrowingLine = (props: {
 
 const MassManipulationButtons = () => {
   const { flatJsons } = useJSON();
-  const { openAll, closeAll } = useToggleState();
+  const { openAll, closeAll } = useToggleMass();
   const { preference, setPreference } = usePreference();
   if (!flatJsons) { return null; }
 

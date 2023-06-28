@@ -3,7 +3,7 @@ import _ from "lodash";
 import { ActualIconForType } from "../FlatJsonValueCell";
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { ToggleButton } from "@/components/lv1/ToggleButton";
-import { useToggleState } from "@/states/view";
+import { useToggleSingle } from "@/states/view";
 import { SubtreeMenuCell, SubtreeStatCell } from "../subtree/Subtree";
 
 const RightmostKeyCell = (props: {
@@ -19,7 +19,7 @@ const RightmostKeyCell = (props: {
     index,
     isMatched,
   } = props;
-  const { toggleState, toggleItem } = useToggleState();
+  const { toggleState, toggleItem } = useToggleSingle();
   if (typeof right.itemKey === "undefined") { return null; }
   const depth = index % 5;
   const text = typeof right.itemKey === "string" ? right.itemKey : `[${right.itemKey}]`;

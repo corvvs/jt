@@ -2,10 +2,9 @@ import { JsonText } from '@/data/text';
 import { JsonGauge, JsonRowItem, flattenJson } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
-import { useToggleState } from './view';
+import { toggleAtom } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
-import { useAdvancedQuery } from '@/libs/advanced_query';
 
 export const defaultRawText = JSON.stringify({
   "title": "サンプルテキスト 兼 ReadMe",
@@ -97,10 +96,10 @@ export const jsonFlattenedAtom = atom(
 
 export const useVisibleItems = () => {
   const { flatJsons } = useJSON();
-  const { toggleState } = useToggleState();
+  const [toggleState] = useAtom(toggleAtom);
   const { manipulation, filterMaps } = useManipulation();
 
-  return useMemo((): { visibleItems: JsonRowItem[], gauge: JsonGauge } | null => {
+  return useMemo((): { filteredItems: JsonRowItem[]; visibleItems: JsonRowItem[]; gauge: JsonGauge; } | null => {
     if (!flatJsons) { return null; }
     const { items } = flatJsons;
   
@@ -122,6 +121,7 @@ export const useVisibleItems = () => {
     const visibleItems = openedItems;
     if (visibleItems.length === 0) { return null; }
     return {
+      filteredItems,
       visibleItems,
       gauge: flatJsons.gauge,
     };

@@ -1,8 +1,5 @@
 import { useJSON } from "@/states";
 import { FlatJsonRow } from "./json/FlatJsonRow";
-import { JsonRowItem } from "@/libs/jetson";
-import { useToggleState } from "@/states/view";
-import { useManipulation } from "@/states/manipulation";
 import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
