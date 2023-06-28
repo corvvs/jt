@@ -85,21 +85,19 @@ const MassManipulationButtons = () => {
   const { flatJsons } = useJSON();
   const { openAll, closeAll } = useToggleState();
   const { preference, setPreference } = usePreference();
-  const { manipulation } = useManipulation();
-  const items = flatJsons?.items;
-  if (!items) { return null; }
+  if (!flatJsons) { return null; }
 
   return <>
 
     <MenuButton
-      onClick={() => closeAll(items, _.last(manipulation.narrowedRanges))}
+      onClick={() => closeAll()}
     >
       <InlineIcon i={<HiChevronDoubleUp />} />
       Fold All
     </MenuButton>
 
     <MenuButton
-      onClick={() => openAll(_.last(manipulation.narrowedRanges))}
+      onClick={() => openAll()}
     >
       <InlineIcon i={<HiChevronDoubleDown />} />
       Unfold All

@@ -95,12 +95,11 @@ export const jsonFlattenedAtom = atom(
   },
 );
 
-export const useVisibleItems = () => {
+export const useFilteredItems = () => {
   const { flatJsons } = useJSON();
-  const { toggleState } = useToggleState();
   const { manipulation, filterMaps } = useManipulation();
 
-  return useMemo((): { visibleItems: JsonRowItem[], gauge: JsonGauge } | null => {
+  const filteredItems =  useMemo((): JsonRowItem[] | null => {
     if (!flatJsons) { return null; }
     const { items } = flatJsons;
   
@@ -118,6 +117,19 @@ export const useVisibleItems = () => {
       : () => true;
     const narrowedItems = items.filter(filterByNarrowing);
     const filteredItems = narrowedItems.filter(filterByQuery);
+    return filteredItems;
+  }, [flatJsons, manipulation, filterMaps]);
+  return { filteredItems };
+}
+
+export const useVisibleItems = () => {
+  const { flatJsons } = useJSON();
+  const { toggleState } = useToggleState();
+  const { filteredItems } = useFilteredItems();
+
+  return useMemo((): { visibleItems: JsonRowItem[], gauge: JsonGauge } | null => {
+    if (!flatJsons || !filteredItems) { return null; }
+  
     const openedItems = filteredItems.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
     const visibleItems = openedItems;
     if (visibleItems.length === 0) { return null; }
@@ -125,7 +137,7 @@ export const useVisibleItems = () => {
       visibleItems,
       gauge: flatJsons.gauge,
     };
-  }, [flatJsons, toggleState, manipulation, filterMaps]);
+  }, [flatJsons, toggleState, filteredItems]);
 };
 
 /**

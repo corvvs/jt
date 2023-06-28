@@ -1,6 +1,7 @@
 import { JsonRowItem } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 import _ from 'lodash';
+import { useFilteredItems, useJSON } from './json';
 
 export type ToggleState = { [index: number]: boolean };
 
@@ -8,6 +9,8 @@ const toggleAtom = atom<ToggleState>({});
 
 export function useToggleState() {
   const [toggleState, setToggleState] = useAtom(toggleAtom);
+  const { flatJsons } = useJSON();
+  const { filteredItems } = useFilteredItems();
 
   const toggleItem = (item: JsonRowItem, isClosed: boolean) => {
     setToggleState((prev) => {
@@ -21,13 +24,14 @@ export function useToggleState() {
     });
   };
 
-  const openAll = (
-    range?: { from: number; to: number; },
-  ) => {
-    if (range) {
+  const openAll = () => {
+    if (!filteredItems) { return; }
+    if (filteredItems.length === flatJsons?.items.length) {
       setToggleState((prev) => {
         const next = _.cloneDeep(prev);
-        _.range(range.from, range.to).forEach(i => delete next[i]);
+        for (const item of filteredItems) {
+          delete next[item.index];
+        }
         return next;
       });
     } else {
@@ -35,14 +39,11 @@ export function useToggleState() {
     }
   };
 
-  const closeAll = (
-    items: JsonRowItem[],
-    range?: { from: number; to: number; },
-  ) => {
+  const closeAll = () => {
+    if (!filteredItems) { return; }
     setToggleState((prev) => {
       const next = _.cloneDeep(prev);
-      const itemsInRange = range ? _.slice(items, range.from + 1, range.to) : items;
-      for (const item of itemsInRange) {
+      for (const item of filteredItems) {
         if (item.rowItems.length === 0) { continue; }
         const isTogglable = item.right.type === "array" || item.right.type === "map";
         if (isTogglable) {
