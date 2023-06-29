@@ -1,38 +1,46 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 技術メモ
 
-## Getting Started
+どう考えても README に書くものではないのでそのうちファイル名が変わります。
 
-First, run the development server:
+## 行アイテム
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+1 つの JSON が持っているキーパス 1 つが行アイテム 1 つになる。
+
+次の JSON を例にとる:
+
+```json
+{
+  "array": ["abc", "d"],
+  "object": {
+    "subarray": [1],
+    "str": "ing"
+  }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+この JSON は,
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+- `array`
+- `array.0`
+- `array.1`
+- `object`
+- `object.subarray`
+- `object.subarray.0`
+- `object.str`
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+以上 7 個のキーパスを持つ。\
+これにルート(キーパス``)に対応するものを加えて, 合計で 8 個の行アイテムが生成される。
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## 絞り込み階層構造
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+入力 JSON から得られる行アイテムは, 次のリストの順に絞り込みを施され, 最終的に表示される行アイテムが定まる:
 
-## Learn More
+1. ナローイングによる絞り込み
+2. 検索クエリによる絞り込み
+3. フォールディングによる絞り込み
 
-To learn more about Next.js, take a look at the following resources:
+## 各種操作の対象
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- 全フォールド(Fold All)ボタン
+- 全アンフォールド(Unfold All)ボタン
+  - どちらも「検索クエリによる絞り込み」の後、「フォールディングによる絞り込み」の前。

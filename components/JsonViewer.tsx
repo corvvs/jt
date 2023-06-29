@@ -1,8 +1,5 @@
 import { useJSON } from "@/states";
 import { FlatJsonRow } from "./json/FlatJsonRow";
-import { JsonRowItem } from "@/libs/jetson";
-import { useToggleState } from "@/states/view";
-import { useManipulation } from "@/states/manipulation";
 import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
@@ -11,6 +8,9 @@ import { MutableRefObject, useRef } from "react";
 import { FaRegMehRollingEyes } from 'react-icons/fa';
 import { useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
+import { QueryDebugView } from "./query/QueryDebugView";
+import { useManipulation } from "@/states/manipulation";
+import { QueryView } from "./query/QueryView";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -73,6 +73,7 @@ const JsonItemsView = (props: {
 
 export const JsonViewer = () => {
   const { flatJsons }  = useJSON();
+  const { filteringPreference } = useManipulation();
   const itemViewRef = useRef<any>(null);
 
   if (!flatJsons) { return null; }
@@ -85,9 +86,25 @@ export const JsonViewer = () => {
     </div>
 
     <div
-      className="shrink grow"
+      className="shrink grow flex flex-row"
     >
-      <JsonItemsView itemViewRef={itemViewRef}/>
+
+      {
+        filteringPreference.showPanel
+          ? <div
+              className="shrink-0 grow-0 w-96 flex flex-col justify-stretch"
+            >
+              <QueryView />
+            </div>
+          : null
+      }
+
+      <div
+        className="shrink grow"
+      >
+        <JsonItemsView itemViewRef={itemViewRef}/>
+      </div>
+
     </div>
 
     <div

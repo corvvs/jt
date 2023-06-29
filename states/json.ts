@@ -2,7 +2,7 @@ import { JsonText } from '@/data/text';
 import { JsonGauge, JsonRowItem, flattenJson } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
-import { useToggleState } from './view';
+import { toggleAtom } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
 
@@ -96,16 +96,16 @@ export const jsonFlattenedAtom = atom(
 
 export const useVisibleItems = () => {
   const { flatJsons } = useJSON();
-  const { toggleState } = useToggleState();
-  const { manipulation, simpleFilterMaps } = useManipulation();
+  const [toggleState] = useAtom(toggleAtom);
+  const { manipulation, filterMaps } = useManipulation();
 
-  return useMemo((): { visibleItems: JsonRowItem[], gauge: JsonGauge } | null => {
+  return useMemo((): { filteredItems: JsonRowItem[]; visibleItems: JsonRowItem[]; gauge: JsonGauge; } | null => {
     if (!flatJsons) { return null; }
     const { items } = flatJsons;
   
     // 表示すべきitemを選別する
-    const filterBySimpleFilteringQuery = simpleFilterMaps
-      ? (item: JsonRowItem) => simpleFilterMaps.visible[item.index]
+    const filterByQuery = filterMaps
+      ? (item: JsonRowItem) => filterMaps.visible[item.index]
       : () => true;
   
     const topNarrowingRange = _.last(manipulation.narrowedRanges);
@@ -115,18 +115,17 @@ export const useVisibleItems = () => {
           return from <= item.index && item.index < to;
         }
       : () => true;
-    const visibleItems = (() => {
-      return items
-        .filter(filterByNarrowing)
-        .filter(filterBySimpleFilteringQuery)
-        .filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
-    })();
+    const narrowedItems = items.filter(filterByNarrowing);
+    const filteredItems = narrowedItems.filter(filterByQuery);
+    const openedItems = filteredItems.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+    const visibleItems = openedItems;
     if (visibleItems.length === 0) { return null; }
     return {
+      filteredItems,
       visibleItems,
       gauge: flatJsons.gauge,
     };
-  }, [flatJsons, toggleState, manipulation, simpleFilterMaps]);
+  }, [flatJsons, toggleState, manipulation, filterMaps]);
 };
 
 /**
@@ -137,7 +136,7 @@ export const useVisibleItems = () => {
  */
 export const useJSON = () => {
   const [rawText, setRawtext] = useAtom(rawTextAtom);
-  const [baseText, setBaseText] = useAtom(baseTextAtom);
+  const [, setBaseText] = useAtom(baseTextAtom);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
   const [json, setParsedJson] = useAtom(parsedJsonAtom);
   return {

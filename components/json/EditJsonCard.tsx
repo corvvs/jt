@@ -3,7 +3,7 @@ import { VscJson } from 'react-icons/vsc';
 import { InlineIcon } from "../lv1/InlineIcon";
 import { JetButton } from "../lv1/JetButton";
 import { BsIndent } from "react-icons/bs";
-import { useToggleState } from "@/states/view";
+import { useToggleMass } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ const OperationPanel = (props: {
   closeModal: () => void;
 }) => {
   const { rawText, setRawtext, setBaseText, parseJson, setParsedJson }  = useJSON();
-  const { clearToggleState } = useToggleState();
+  const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
 
   const setErrorStr = (e: any) => {

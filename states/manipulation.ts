@@ -2,13 +2,28 @@ import { JsonRowItem } from "@/libs/jetson";
 import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { jsonFlattenedAtom } from "./json";
+import { advancedMatcherAtom } from "@/libs/advanced_query";
 
 type IndexRange = { from: number; to: number; };
 
 type Manipulation = {
+  /**
+   * 行セレクション(今使えない)
+   */
   selectedIndex: number | null;
+  /**
+   * ナローイングスタック
+   */
   narrowedRanges: IndexRange[];
+
+  /**
+   * シンプルクエリ
+   */
   simpleFilteringQuery: string;
+  /**
+   * アドバンストクエリ
+   */
+  advancedFilteringQuery: string;
 };
 
 type FilteringMap = {
@@ -20,20 +35,27 @@ const defaultManipulation: Manipulation = {
   selectedIndex: null,
   narrowedRanges: [],
   simpleFilteringQuery: "",
+  advancedFilteringQuery: "",
 };
 
 const selectedIndexAtom = atom<Manipulation["selectedIndex"]>(defaultManipulation.selectedIndex);
 const narrowedRangeAtom = atom<Manipulation["narrowedRanges"]>(defaultManipulation.narrowedRanges);
 
 
-type FilteringVisibilityOption = "just" | "ascendant" | "ascendant_descendant";
+type FilteringVisibilityOption = "just" | "ascendant" | "descendant" | "ascendant_descendant";
 
 type FilteringPreference = {
+  mode: "simple" | "advanced";
+  showPanel: boolean;
   visibility: FilteringVisibilityOption;
+  showAdvancedDebug: boolean;
 };
 
 const filteringPreferenceAtom = atom<FilteringPreference>({
+  mode: "simple",
+  showPanel: false,
   visibility: "ascendant_descendant",
+  showAdvancedDebug: false,
 });
 
 export const filteringVisibilityAtom = atom(
@@ -48,6 +70,10 @@ export const filteringVisibilityAtom = atom(
         ascendant: true,
         descendant: false,
       };
+      case "descendant": return {
+        ascendant: false,
+        descendant: true,
+      };
       case "ascendant_descendant": return {
         ascendant: true,
         descendant: true,
@@ -56,35 +82,52 @@ export const filteringVisibilityAtom = atom(
   }
 );
 
+
+
 const simpleFilteringQueryAtom = atom<string>(defaultManipulation.simpleFilteringQuery);
-const simpleFilterMapsAtom = atom<FilteringMap | null>(
+const filterMapsAtom = atom<FilteringMap | null>(
   (get) => {
-    const query = get(simpleFilteringQueryAtom);
     const json = get(jsonFlattenedAtom);
+    if (!json) { return null; }
+
+    const actualMatcher = (() => {
+      if (get(filteringPreferenceAtom).mode === "simple") {
+
+        const simpleQuery = get(simpleFilteringQueryAtom).trim();
+        if (simpleQuery.length === 0) { return null; }
+        return (item: JsonRowItem) => {
+          const key = item.itemKey?.toString().toLowerCase();
+          if (key?.includes(simpleQuery)) { return true; }
+          if (item.right.type === "string") {
+            const key = item.right.value.toLowerCase();
+            if (key.includes(simpleQuery)) {
+              matchedMap[item.index] = true;
+            }
+          } else if (item.right.type === "number") {
+            const key = item.right.value.toString().toLowerCase();
+            if (key.includes(simpleQuery)) {
+              matchedMap[item.index] = true;
+            }
+          }
+          return false;
+        };
+
+      } else {
+
+        return get(advancedMatcherAtom).matcher;
+
+      }
+    })();
+    
+    if (!actualMatcher) { return null; }
     const filteringVisibility = get(filteringVisibilityAtom);
 
-    if (query.length === 0 || !json) { return null; }
     const { items } = json;
     // item ごとに query にマッチしたかどうかを判定する
     const matchedMap: { [k: number]: boolean } = {};
     for (const item of items) {
-      if (typeof item.itemKey !== "undefined") {
-        const key = item.itemKey.toString().toLowerCase();
-        if (key.includes(query)) {
-          matchedMap[item.index] = true;
-          continue;
-        }
-      }
-      if (item.right.type === "string") {
-        const key = item.right.value.toLowerCase();
-        if (key.includes(query)) {
-          matchedMap[item.index] = true;
-        }
-      } else if (item.right.type === "number") {
-        const key = item.right.value.toString().toLowerCase();
-        if (key.includes(query)) {
-          matchedMap[item.index] = true;
-        }
+      if (actualMatcher(item)) {
+        matchedMap[item.index] = true;
       }
     }
     // item ごとに visible かどうかを判定する
@@ -127,6 +170,7 @@ const simpleFilterMapsAtom = atom<FilteringMap | null>(
   }
 )
 
+export const advancedFilteringQueryAtom = atom<string>(defaultManipulation.advancedFilteringQuery);
 
 const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   const indexFrom = index;
@@ -144,7 +188,8 @@ export const useManipulation = () => {
   const [selectedIndex, setSelectedIndex] = useAtom(selectedIndexAtom);
   const [narrowedRanges, setNarrowedRangesRaw] = useAtom(narrowedRangeAtom);
   const [simpleFilteringQuery, setSimpleFilteringQuery] = useAtom(simpleFilteringQueryAtom);
-  const [simpleFilterMaps] = useAtom(simpleFilterMapsAtom);
+  const [advancedFilteringQuery, setAdvancedFilteringQuery] = useAtom(advancedFilteringQueryAtom);
+  const [filterMaps] = useAtom(filterMapsAtom);
   const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
   const [filteringVisibility] = useAtom(filteringVisibilityAtom);
 
@@ -165,11 +210,25 @@ export const useManipulation = () => {
     }
     setNarrowedRangesRaw([]);
   };
+
   const setFilteringVisibility = (v: FilteringVisibilityOption) => setFilteringPreference(prev => {
     const next = _.cloneDeep(prev);
     next.visibility = v;
     return  next;
   });
+  const setFilteringMode = (mode: "simple" | "advanced") => setFilteringPreference(prev => {
+    const next = _.cloneDeep(prev);
+    next.mode = mode;
+    return  next;
+  });
+  const setFilteringBooleanPreference = (key: "showPanel" | "showAdvancedDebug", value: boolean) => {
+    setFilteringPreference(prev => {
+      const next = _.cloneDeep(prev);
+      next[key] = value
+      return  next;
+    });
+  }
+  
 
   const clearManipulation = () => {
     setSelectedIndex(defaultManipulation.selectedIndex);
@@ -182,6 +241,7 @@ export const useManipulation = () => {
       selectedIndex,
       narrowedRanges,
       simpleFilteringQuery,
+      advancedFilteringQuery,
       filteringVisibility,
     },
 
@@ -189,10 +249,13 @@ export const useManipulation = () => {
     pushNarrowedRange,
     popNarrowedRange,
     setSimpleFilteringQuery,
-    simpleFilterMaps,
+    setAdvancedFilteringQuery,
+    filterMaps,
 
     filteringPreference,
     setFilteringVisibility,
+    setFilteringMode,
+    setFilteringBooleanPreference,
 
     clearManipulation,
   };

@@ -5,12 +5,11 @@ import { Modal } from "@/components/Modal";
 import { EditJsonCard } from "@/components/json/EditJsonCard";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
-import { useToggleState } from "@/states/view";
+import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
-import { SimpleFilterPanel } from "../lv2/SimpleFilterPanel";
-import { FaChevronRight } from "react-icons/fa";
+import { FaChevronRight, FaSearch } from "react-icons/fa";
 import _ from "lodash";
 
 const NarrowingLine = (props: {
@@ -82,24 +81,24 @@ const NarrowingLine = (props: {
 
 const MassManipulationButtons = () => {
   const { flatJsons } = useJSON();
-  const { openAll, closeAll } = useToggleState();
+  const { openAll, closeAll } = useToggleMass();
   const { preference, setPreference } = usePreference();
-  const { manipulation } = useManipulation();
-  const items = flatJsons?.items;
-  if (!items) { return null; }
+  if (!flatJsons) { return null; }
 
   return <>
 
     <MenuButton
-      onClick={() => closeAll(items, _.last(manipulation.narrowedRanges))}
+      onClick={() => closeAll()}
     >
-      <InlineIcon i={<HiChevronDoubleUp />} />Fold All
+      <InlineIcon i={<HiChevronDoubleUp />} />
+      Fold All
     </MenuButton>
 
     <MenuButton
-      onClick={() => openAll(_.last(manipulation.narrowedRanges))}
+      onClick={() => openAll()}
     >
-      <InlineIcon i={<HiChevronDoubleDown />} />Unfold All
+      <InlineIcon i={<HiChevronDoubleDown />} />
+      Unfold All
     </MenuButton>
 
     { false &&
@@ -113,8 +112,10 @@ const MassManipulationButtons = () => {
   </>
 }
 
+
 const MainLine = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
 
   const closeModal = () => {
     setIsOpen(false);
@@ -142,7 +143,13 @@ const MainLine = () => {
 
       <MassManipulationButtons />
 
-      <SimpleFilterPanel />
+      <MenuToggleButton
+        isToggled={filteringPreference.showPanel}
+        onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
+      >
+        <InlineIcon i={<FaSearch />} />
+        Filter
+      </MenuToggleButton>
 
     </div>
   </div>);
