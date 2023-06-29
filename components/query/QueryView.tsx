@@ -48,7 +48,7 @@ const QueryInputField = () => {
 
   useEffect(() => {
     inputRef.current.value = manipulation.filteringQuery;
-  });
+  }, []);
 
   const placeholder = filteringPreference.mode === "simple"
     ? "キーまたは値に部分一致"
