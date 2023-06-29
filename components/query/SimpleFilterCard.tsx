@@ -1,27 +1,24 @@
 import { useJSON } from "@/states";
-import { InlineIcon } from "../lv1/InlineIcon";
 import _ from "lodash";
 import { useCallback } from "react";
 import { useManipulation } from "@/states/manipulation";
-import { FaSearch } from "react-icons/fa";
-import { PreferencePanel } from "./FilterPreferencePanel";
 
 const TextField = () => {
-  const { setSimpleFilteringQuery } = useManipulation();
+  const { manipulation, setSimpleFilteringQuery } = useManipulation();
   const reflectQuery = useCallback(
     _.debounce((value: string) => {
       setSimpleFilteringQuery(prev => {
-        const next = value.trim().toLowerCase();
-        return next === prev ? prev : next;
+        return value === prev ? prev : value;
       });
-    }, 100), []
+    }, 16), []
   );
 
   return <div>
     <input
       type="text"
-      className="p-1 bg-transparent	border-[1px] outline-0"
+      className="p-1 bg-transparent	border-[1px] outline-0 w-full"
       placeholder="Filter Key or Value"
+      value={manipulation.simpleFilteringQuery}
       onChange={(e) => {
         reflectQuery(e.currentTarget.value);
       }}
@@ -40,21 +37,17 @@ const HitCounter = () => {
   </p>
 }
 
-export const SimpleFilterPanel = () => {
+export const SimpleFilterCard = () => {
   const { flatJsons } = useJSON();
 
   const items = flatJsons?.items;
   if (!items) { return null; }
 
   return <div
-    className="p-1 gap-1 flex flex-row items-center"
+    className="gap-1 flex flex-col items-stretch"
   >
-    <InlineIcon i={<FaSearch />} />
 
     <TextField />
-
     <HitCounter />
-
-    <PreferencePanel />
   </div>;
 }

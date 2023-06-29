@@ -70,6 +70,11 @@ body {
   background-color: var(--background);
 }
 
+.color-inverted {
+  color: var(--background);
+  background-color: var(--foreground);
+}
+
 .secondary-foreground {
   color: var(--foreground-secondary);
 }
@@ -110,6 +115,13 @@ body {
   background-color: var(--foreground);
 }
 
+.flippable-secondary {
+  &:hover {
+    color: var(--background-secondary);
+    background-color: var(--foreground-secondary);
+  }
+}
+
 .flippable-button {
   &:hover {
     color: var(--background);
@@ -121,6 +133,13 @@ body {
   &:hover {
     color: var(--background-secondary);
     background-color: var(--foreground-secondary);
+  }
+}
+
+.menu-toggle-button {
+  &:hover {
+    color: var(--background);
+    background-color: var(--foreground);
   }
 }
 
@@ -316,10 +335,11 @@ body {
     &.active {
       color: var(--background);
       background-color: var(--foreground);
+      text-decoration: underline;
     }
   }
 }
 
-.query-debug-view {
+.query-view, .query-debug-view {
   background-color: var(--background-secondary);
 }

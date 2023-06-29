@@ -1,21 +1,20 @@
 import React, { ReactNode } from "react";
 
 export const MenuButton = (
-  props: React.DetailedHTMLProps<
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    HTMLButtonElement
-  >
+  props: {
+    onClick: () => void;
+    children: ReactNode;
+  }
 ) => {
   return (
     <button
-      {...{ ...props }}
       className={
-        'flippable-button h-[2.4em] py-1 px-2' + (props.className || '')
+        `flippable-button h-[2.4em] py-1 px-2`
       }
-      style={{
-        ...(props.style || {}),
-      }}
-    />
+      onClick={() => props.onClick()}
+    >
+      {props.children}
+    </button>
   );
 };
 

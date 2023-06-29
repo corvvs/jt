@@ -9,10 +9,8 @@ import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
 import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
-import { SimpleFilterPanel } from "../lv2/SimpleFilterPanel";
-import { FaChevronRight } from "react-icons/fa";
+import { FaChevronRight, FaSearch } from "react-icons/fa";
 import _ from "lodash";
-import { AdvancedFilterPanel } from "../lv2/AdvancedFilterPanel";
 
 const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
@@ -114,8 +112,10 @@ const MassManipulationButtons = () => {
   </>
 }
 
+
 const MainLine = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
 
   const closeModal = () => {
     setIsOpen(false);
@@ -143,8 +143,13 @@ const MainLine = () => {
 
       <MassManipulationButtons />
 
-      <AdvancedFilterPanel />
-      {/* <SimpleFilterPanel /> */}
+      <MenuToggleButton
+        isToggled={filteringPreference.showPanel}
+        onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
+      >
+        <InlineIcon i={<FaSearch />} />
+        Filter
+      </MenuToggleButton>
 
     </div>
   </div>);

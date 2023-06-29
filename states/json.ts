@@ -136,7 +136,7 @@ export const useVisibleItems = () => {
  */
 export const useJSON = () => {
   const [rawText, setRawtext] = useAtom(rawTextAtom);
-  const [baseText, setBaseText] = useAtom(baseTextAtom);
+  const [, setBaseText] = useAtom(baseTextAtom);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
   const [json, setParsedJson] = useAtom(parsedJsonAtom);
   return {

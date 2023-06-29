@@ -3,10 +3,7 @@ import _ from "lodash";
 import { MultipleButtons } from "../lv1/MultipleButtons";
 
 export const PreferencePanel = () => {
-  const { filteringPreference, setFilteringVisibility, filterMaps } = useManipulation();
-  if (!filterMaps) { return null }
-  const hitCount = _.size(filterMaps.matched);
-  if (hitCount === 0) { return null; }
+  const { filteringPreference, setFilteringVisibility } = useManipulation();
 
   return <MultipleButtons
     currentKey={filteringPreference.visibility}

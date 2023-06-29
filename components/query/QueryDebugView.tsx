@@ -215,17 +215,8 @@ export const QueryDebugView = () => {
 
   return (
     <div
-      className="query-debug-view shrink grow flex flex-col p-2 overflow-scroll"
+      className="shrink grow flex flex-col overflow-scroll"
     >
-      <h1
-        className="p-2 border-2"
-      >
-        Advanced Query (Debug)
-      </h1>
-
-      <h2 className="font-bold">Query</h2>
-      <p>{advancedFilteringQuery}</p>
-
       <h2 className="font-bold">Tokens</h2>
       <div
         className="flex flex-row flex-wrap p-1 gap-1 items-center"

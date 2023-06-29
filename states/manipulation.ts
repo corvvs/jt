@@ -7,9 +7,22 @@ import { advancedMatcherAtom } from "@/libs/advanced_query";
 type IndexRange = { from: number; to: number; };
 
 type Manipulation = {
+  /**
+   * 行セレクション(今使えない)
+   */
   selectedIndex: number | null;
+  /**
+   * ナローイングスタック
+   */
   narrowedRanges: IndexRange[];
+
+  /**
+   * シンプルクエリ
+   */
   simpleFilteringQuery: string;
+  /**
+   * アドバンストクエリ
+   */
   advancedFilteringQuery: string;
 };
 
@@ -32,11 +45,17 @@ const narrowedRangeAtom = atom<Manipulation["narrowedRanges"]>(defaultManipulati
 type FilteringVisibilityOption = "just" | "ascendant" | "descendant" | "ascendant_descendant";
 
 type FilteringPreference = {
+  mode: "simple" | "advanced";
+  showPanel: boolean;
   visibility: FilteringVisibilityOption;
+  showAdvancedDebug: boolean;
 };
 
 const filteringPreferenceAtom = atom<FilteringPreference>({
+  mode: "simple",
+  showPanel: false,
   visibility: "ascendant_descendant",
+  showAdvancedDebug: false,
 });
 
 export const filteringVisibilityAtom = atom(
@@ -68,30 +87,39 @@ export const filteringVisibilityAtom = atom(
 const simpleFilteringQueryAtom = atom<string>(defaultManipulation.simpleFilteringQuery);
 const filterMapsAtom = atom<FilteringMap | null>(
   (get) => {
-    const simpleQuery = get(simpleFilteringQueryAtom);
     const json = get(jsonFlattenedAtom);
-    const { matcher: advancedMatcher } = get(advancedMatcherAtom);
     if (!json) { return null; }
-    if (!advancedMatcher && simpleQuery.length === 0) { return null; }
 
-    const simpleMatcher = (item: JsonRowItem) => {
-      const key = item.itemKey?.toString().toLowerCase();
-      if (key?.includes(simpleQuery)) { return true; }
-      if (item.right.type === "string") {
-        const key = item.right.value.toLowerCase();
-        if (key.includes(simpleQuery)) {
-          matchedMap[item.index] = true;
-        }
-      } else if (item.right.type === "number") {
-        const key = item.right.value.toString().toLowerCase();
-        if (key.includes(simpleQuery)) {
-          matchedMap[item.index] = true;
-        }
+    const actualMatcher = (() => {
+      if (get(filteringPreferenceAtom).mode === "simple") {
+
+        const simpleQuery = get(simpleFilteringQueryAtom).trim();
+        if (simpleQuery.length === 0) { return null; }
+        return (item: JsonRowItem) => {
+          const key = item.itemKey?.toString().toLowerCase();
+          if (key?.includes(simpleQuery)) { return true; }
+          if (item.right.type === "string") {
+            const key = item.right.value.toLowerCase();
+            if (key.includes(simpleQuery)) {
+              matchedMap[item.index] = true;
+            }
+          } else if (item.right.type === "number") {
+            const key = item.right.value.toString().toLowerCase();
+            if (key.includes(simpleQuery)) {
+              matchedMap[item.index] = true;
+            }
+          }
+          return false;
+        };
+
+      } else {
+
+        return get(advancedMatcherAtom).matcher;
+
       }
-      return false;
-    };
-    const actualMatcher = advancedMatcher ? advancedMatcher : simpleMatcher;
-
+    })();
+    
+    if (!actualMatcher) { return null; }
     const filteringVisibility = get(filteringVisibilityAtom);
 
     const { items } = json;
@@ -182,11 +210,25 @@ export const useManipulation = () => {
     }
     setNarrowedRangesRaw([]);
   };
+
   const setFilteringVisibility = (v: FilteringVisibilityOption) => setFilteringPreference(prev => {
     const next = _.cloneDeep(prev);
     next.visibility = v;
     return  next;
   });
+  const setFilteringMode = (mode: "simple" | "advanced") => setFilteringPreference(prev => {
+    const next = _.cloneDeep(prev);
+    next.mode = mode;
+    return  next;
+  });
+  const setFilteringBooleanPreference = (key: "showPanel" | "showAdvancedDebug", value: boolean) => {
+    setFilteringPreference(prev => {
+      const next = _.cloneDeep(prev);
+      next[key] = value
+      return  next;
+    });
+  }
+  
 
   const clearManipulation = () => {
     setSelectedIndex(defaultManipulation.selectedIndex);
@@ -212,6 +254,8 @@ export const useManipulation = () => {
 
     filteringPreference,
     setFilteringVisibility,
+    setFilteringMode,
+    setFilteringBooleanPreference,
 
     clearManipulation,
   };

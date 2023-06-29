@@ -9,7 +9,7 @@ import { matchByQuery } from "./advanced_query/matcher";
 
 const parsedAdvancedQueryAtom = atom(
   (get) => {
-    const query = get(advancedFilteringQueryAtom);
+    const query = get(advancedFilteringQueryAtom).trim();
     return parseQuery(query);
   }
 );
