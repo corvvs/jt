@@ -141,8 +141,6 @@ const MainLine = () => {
         <InlineIcon i={<VscEdit />} />Edit Text
       </MenuButton>
 
-      <MassManipulationButtons />
-
       <MenuToggleButton
         isToggled={filteringPreference.showPanel}
         onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
@@ -150,6 +148,8 @@ const MainLine = () => {
         <InlineIcon i={<FaSearch />} />
         Filter
       </MenuToggleButton>
+
+      <MassManipulationButtons />
 
     </div>
   </div>);

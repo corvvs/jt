@@ -181,7 +181,7 @@ const SyntaxErrorContents = (props: {
 };
 
 export const QueryDebugView = () => {
-  const { advancedFilteringQuery, parsedQuery, advancedMatcher } = useAdvancedQuery();
+  const { parsedQuery, advancedMatcher } = useAdvancedQuery();
   const { flatJsons } = useJSON();
   if (!flatJsons) { return null; }
 

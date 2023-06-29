@@ -8,7 +8,6 @@ import { MutableRefObject, useRef } from "react";
 import { FaRegMehRollingEyes } from 'react-icons/fa';
 import { useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
-import { QueryDebugView } from "./query/QueryDebugView";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
 

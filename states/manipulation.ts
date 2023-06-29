@@ -16,14 +16,16 @@ type Manipulation = {
    */
   narrowedRanges: IndexRange[];
 
-  /**
-   * シンプルクエリ
-   */
-  simpleFilteringQuery: string;
-  /**
-   * アドバンストクエリ
-   */
-  advancedFilteringQuery: string;
+  filteringQuery: string;
+
+  // /**
+  //  * シンプルクエリ
+  //  */
+  // simpleFilteringQuery: string;
+  // /**
+  //  * アドバンストクエリ
+  //  */
+  // advancedFilteringQuery: string;
 };
 
 type FilteringMap = {
@@ -34,8 +36,9 @@ type FilteringMap = {
 const defaultManipulation: Manipulation = {
   selectedIndex: null,
   narrowedRanges: [],
-  simpleFilteringQuery: "",
-  advancedFilteringQuery: "",
+  filteringQuery: "",
+  // simpleFilteringQuery: "",
+  // advancedFilteringQuery: "",
 };
 
 const selectedIndexAtom = atom<Manipulation["selectedIndex"]>(defaultManipulation.selectedIndex);
@@ -84,7 +87,7 @@ export const filteringVisibilityAtom = atom(
 
 
 
-const simpleFilteringQueryAtom = atom<string>(defaultManipulation.simpleFilteringQuery);
+export const filteringQueryAtom = atom<string>(defaultManipulation.filteringQuery);
 const filterMapsAtom = atom<FilteringMap | null>(
   (get) => {
     const json = get(jsonFlattenedAtom);
@@ -93,7 +96,7 @@ const filterMapsAtom = atom<FilteringMap | null>(
     const actualMatcher = (() => {
       if (get(filteringPreferenceAtom).mode === "simple") {
 
-        const simpleQuery = get(simpleFilteringQueryAtom).trim();
+        const simpleQuery = get(filteringQueryAtom).trim();
         if (simpleQuery.length === 0) { return null; }
         return (item: JsonRowItem) => {
           const key = item.itemKey?.toString().toLowerCase();
@@ -170,8 +173,6 @@ const filterMapsAtom = atom<FilteringMap | null>(
   }
 )
 
-export const advancedFilteringQueryAtom = atom<string>(defaultManipulation.advancedFilteringQuery);
-
 const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   const indexFrom = index;
   const itemFrom = items[indexFrom];
@@ -187,8 +188,7 @@ const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
 export const useManipulation = () => {
   const [selectedIndex, setSelectedIndex] = useAtom(selectedIndexAtom);
   const [narrowedRanges, setNarrowedRangesRaw] = useAtom(narrowedRangeAtom);
-  const [simpleFilteringQuery, setSimpleFilteringQuery] = useAtom(simpleFilteringQueryAtom);
-  const [advancedFilteringQuery, setAdvancedFilteringQuery] = useAtom(advancedFilteringQueryAtom);
+  const [filteringQuery, setFilteringQuery] = useAtom(filteringQueryAtom);
   const [filterMaps] = useAtom(filterMapsAtom);
   const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
   const [filteringVisibility] = useAtom(filteringVisibilityAtom);
@@ -233,23 +233,21 @@ export const useManipulation = () => {
   const clearManipulation = () => {
     setSelectedIndex(defaultManipulation.selectedIndex);
     setNarrowedRangesRaw(defaultManipulation.narrowedRanges);
-    setSimpleFilteringQuery(defaultManipulation.simpleFilteringQuery);
+    setFilteringQuery(defaultManipulation.filteringQuery);
   };
 
   return {
     manipulation: {
       selectedIndex,
       narrowedRanges,
-      simpleFilteringQuery,
-      advancedFilteringQuery,
+      filteringQuery,
       filteringVisibility,
     },
 
     setSelectedIndex,
     pushNarrowedRange,
     popNarrowedRange,
-    setSimpleFilteringQuery,
-    setAdvancedFilteringQuery,
+    setFilteringQuery,
     filterMaps,
 
     filteringPreference,
