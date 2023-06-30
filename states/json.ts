@@ -85,7 +85,6 @@ const parsedJsonAtom = atom<ParsedJSONData | null>(null);
 const parseJson = (baseText: string) => {
   const text = baseText.replace(/[\u0000-\u0019]+/g, "");
   const json = JSON.parse(text);
-  JsonText.saveTextLocal(baseText);
   return json;
 }
 

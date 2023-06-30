@@ -6,6 +6,7 @@ import { BsIndent } from "react-icons/bs";
 import { useToggleMass } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
 import { useState } from "react";
+import { JsonText } from "@/data/text";
 
 const OperationPanel = (props: {
   setErrorStr: (str: string) => void;
@@ -32,6 +33,7 @@ const OperationPanel = (props: {
             const json = parseJson(rawText);
             // パース成功時
             setParsedJson({ status: "accepted", json });
+            JsonText.saveTextLocal(rawText);
             clearManipulation();
             clearToggleState();
             props.closeModal()
