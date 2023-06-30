@@ -16,8 +16,8 @@ export default function Home() {
       setRawtext(jsonText);
       setBaseText(jsonText);
       const json = parseJson(jsonText);
-      if (json) {
-        setParsedJson(json);
+      if (typeof json !== "undefined") {
+        setParsedJson({ json });
       }
     }
   }, []);
