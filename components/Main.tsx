@@ -5,11 +5,12 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
 import { MutableRefObject, useRef } from "react";
-import { FaRegMehRollingEyes } from 'react-icons/fa';
+import { FaRegFrown, FaRegMehBlank, FaRegMehRollingEyes, FaRegSadTear } from 'react-icons/fa';
 import { useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
+import { useEditJson } from "@/states/modal";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -48,14 +49,30 @@ function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualSc
 const JsonItemsView = (props: {
   itemViewRef: MutableRefObject<any>;
 }) => {
+  const { json } = useJSON();
   const visibles = useVisibleItems();
+  const { openModal  } = useEditJson();
+
+  if (!json) {
+    return null;
+  }
+
+  if (json.status !== "accepted") {
+    return <div
+      className="h-full shrink grow gap-2 flex flex-col justify-center items-center cursor-pointer"
+      onClick={() => openModal()}
+    >
+      <FaRegFrown className="text-4xl" />
+      <p className="text-xl">I have an Invalid Data.</p>
+    </div>
+  }
 
   if (!visibles) {
     return <div
       className="h-full shrink grow gap-2 flex flex-col justify-center items-center"
     >
       <FaRegMehRollingEyes className="text-4xl" />
-      <p className="text-xl">no visible items</p>
+      <p className="text-xl">No Visible Items.</p>
     </div>
   }
 
@@ -70,12 +87,10 @@ const JsonItemsView = (props: {
   );
 }
 
-export const JsonViewer = () => {
-  const { flatJsons }  = useJSON();
+export const Main = () => {
   const { filteringPreference } = useManipulation();
   const itemViewRef = useRef<any>(null);
 
-  if (!flatJsons) { return null; }
   return (<div
     className="shrink grow flex flex-col"
   >

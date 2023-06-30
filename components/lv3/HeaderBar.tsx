@@ -1,8 +1,6 @@
-import React, { MutableRefObject, useState } from "react";
+import React, { MutableRefObject } from "react";
 import { VscEdit } from 'react-icons/vsc';
 import { InlineIcon } from "@/components/lv1/InlineIcon";
-import { Modal } from "@/components/Modal";
-import { EditJsonCard } from "@/components/json/EditJsonCard";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { useToggleMass } from "@/states/view";
@@ -11,6 +9,7 @@ import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
 import { FaChevronRight, FaSearch } from "react-icons/fa";
 import _ from "lodash";
+import { useEditJson } from "@/states/modal";
 
 const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
@@ -79,13 +78,22 @@ const NarrowingLine = (props: {
   </div>)
 }
 
-const MassManipulationButtons = () => {
+const ManipulationButtons = () => {
   const { flatJsons } = useJSON();
   const { openAll, closeAll } = useToggleMass();
   const { preference, setPreference } = usePreference();
+  const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   if (!flatJsons) { return null; }
 
   return <>
+
+    <MenuToggleButton
+      isToggled={filteringPreference.showPanel}
+      onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
+    >
+      <InlineIcon i={<FaSearch />} />
+      Filter
+    </MenuToggleButton>
 
     <MenuButton
       onClick={() => closeAll()}
@@ -112,31 +120,21 @@ const MassManipulationButtons = () => {
   </>
 }
 
+const AppTitle = () => {
+  return <h2
+    className="px-2 whitespace-nowrap break-keep"
+  >
+    JSON Analyzer(alpha)
+  </h2>
+};
 
 const MainLine = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
-
-  const closeModal = () => {
-    setIsOpen(false);
-  };
-
-  const openModal = () => {
-    setIsOpen(true);
-  };
+  const { openModal } = useEditJson();
 
   return (<div
     className="shrink-0 grow-0 gap-2 flex flex-row items-center"
   >
-    <Modal closeModal={closeModal} isOpen={isOpen}>
-      <EditJsonCard closeModal={closeModal} />
-    </Modal>
-
-    <h2
-      className="px-2 whitespace-nowrap break-keep"
-    >
-      JSON Analyzer(alpha)
-    </h2>
+    <AppTitle />
 
     <div className='flex flex-row items-center gap-2'>
       <MenuButton
@@ -145,15 +143,7 @@ const MainLine = () => {
         <InlineIcon i={<VscEdit />} />Edit Text
       </MenuButton>
 
-      <MenuToggleButton
-        isToggled={filteringPreference.showPanel}
-        onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
-      >
-        <InlineIcon i={<FaSearch />} />
-        Filter
-      </MenuToggleButton>
-
-      <MassManipulationButtons />
+      <ManipulationButtons />
 
     </div>
   </div>);

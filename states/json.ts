@@ -72,7 +72,15 @@ const rawTextAtom = atom<string>("null");
  */
 const baseTextAtom = atom<string>("null");
 
-const parsedJsonAtom = atom<{ json: any } | null>(null);
+type ParsedJSONData = {
+  status: "accepted";
+  json: any;
+} | {
+  status: "rejected";
+  error: any;
+};
+
+const parsedJsonAtom = atom<ParsedJSONData | null>(null);
 
 const parseJson = (baseText: string) => {
   const text = baseText.replace(/[\u0000-\u0019]+/g, "");
@@ -86,6 +94,7 @@ export const jsonFlattenedAtom = atom(
     try {
       const parsed = get(parsedJsonAtom);
       if (!parsed) { return null; }
+      if (parsed.status !== "accepted") { return null; }
       return flattenJson(parsed.json, get(baseTextAtom))
     } catch (e) {
       console.error(e);
