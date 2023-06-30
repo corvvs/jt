@@ -48,6 +48,7 @@ const QueryInputField = () => {
 
   useEffect(() => {
     inputRef.current.value = manipulation.filteringQuery;
+    inputRef.current.focus();
   }, []);
 
   const placeholder = filteringPreference.mode === "simple"
@@ -118,7 +119,9 @@ export const QueryView = () => {
       <div
         className="flex flex-row justify-between items-center"
       >
-        <h3>
+        <h3
+          className="font-bold text-sm"
+        >
           検索モード
         </h3>
         <div>
@@ -133,7 +136,9 @@ export const QueryView = () => {
       <div
         className="flex flex-col items-stretch"
       >
-        <h3>
+        <h3
+          className="font-bold text-sm"
+        >
           結果の表示方法
         </h3>
         <div className="flex flex-row justify-end">
