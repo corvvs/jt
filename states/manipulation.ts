@@ -8,24 +8,14 @@ type IndexRange = { from: number; to: number; };
 
 type Manipulation = {
   /**
-   * 行セレクション(今使えない)
-   */
-  selectedIndex: number | null;
-  /**
    * ナローイングスタック
    */
   narrowedRanges: IndexRange[];
 
+  /**
+   * 検索クエリ文字列
+   */
   filteringQuery: string;
-
-  // /**
-  //  * シンプルクエリ
-  //  */
-  // simpleFilteringQuery: string;
-  // /**
-  //  * アドバンストクエリ
-  //  */
-  // advancedFilteringQuery: string;
 };
 
 type FilteringMap = {
@@ -34,16 +24,11 @@ type FilteringMap = {
 };
 
 const defaultManipulation: Manipulation = {
-  selectedIndex: null,
   narrowedRanges: [],
   filteringQuery: "",
-  // simpleFilteringQuery: "",
-  // advancedFilteringQuery: "",
 };
 
-const selectedIndexAtom = atom<Manipulation["selectedIndex"]>(defaultManipulation.selectedIndex);
 const narrowedRangeAtom = atom<Manipulation["narrowedRanges"]>(defaultManipulation.narrowedRanges);
-
 
 type FilteringVisibilityOption = "just" | "ascendant" | "descendant" | "ascendant_descendant";
 
@@ -54,7 +39,7 @@ type FilteringPreference = {
   showAdvancedDebug: boolean;
 };
 
-const filteringPreferenceAtom = atom<FilteringPreference>({
+export const filteringPreferenceAtom = atom<FilteringPreference>({
   mode: "simple",
   showPanel: false,
   visibility: "ascendant_descendant",
@@ -186,7 +171,6 @@ const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
 };
 
 export const useManipulation = () => {
-  const [selectedIndex, setSelectedIndex] = useAtom(selectedIndexAtom);
   const [narrowedRanges, setNarrowedRangesRaw] = useAtom(narrowedRangeAtom);
   const [filteringQuery, setFilteringQuery] = useAtom(filteringQueryAtom);
   const [filterMaps] = useAtom(filterMapsAtom);
@@ -231,20 +215,17 @@ export const useManipulation = () => {
   
 
   const clearManipulation = () => {
-    setSelectedIndex(defaultManipulation.selectedIndex);
     setNarrowedRangesRaw(defaultManipulation.narrowedRanges);
     setFilteringQuery(defaultManipulation.filteringQuery);
   };
 
   return {
     manipulation: {
-      selectedIndex,
       narrowedRanges,
       filteringQuery,
       filteringVisibility,
     },
 
-    setSelectedIndex,
     pushNarrowedRange,
     popNarrowedRange,
     setFilteringQuery,

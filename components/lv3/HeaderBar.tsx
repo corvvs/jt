@@ -132,7 +132,11 @@ const MainLine = () => {
       <EditJsonCard closeModal={closeModal} />
     </Modal>
 
-    <h2 className="px-2">JSON Analyzer(alpha)</h2>
+    <h2
+      className="px-2 whitespace-nowrap break-keep"
+    >
+      JSON Analyzer(alpha)
+    </h2>
 
     <div className='flex flex-row items-center gap-2'>
       <MenuButton

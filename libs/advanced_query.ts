@@ -1,4 +1,4 @@
-import { filteringQueryAtom } from "@/states/manipulation";
+import { filteringPreferenceAtom, filteringQueryAtom } from "@/states/manipulation";
 import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { QuerySyntaxError } from "./advanced_query/QuerySyntaxError";
@@ -9,6 +9,9 @@ import { matchByQuery } from "./advanced_query/matcher";
 
 const parsedAdvancedQueryAtom = atom(
   (get) => {
+    if (get(filteringPreferenceAtom).mode !== "advanced") {
+      return null; 
+    }
     const query = get(filteringQueryAtom).trim();
     return parseQuery(query);
   }
@@ -39,6 +42,9 @@ const parseQuery = (query: string) => {
 export const advancedMatcherAtom = atom(
   (get) => {
     const parsedQuery = get(parsedAdvancedQueryAtom);
+    if (!parsedQuery) {
+      return { matcher: null };
+    }
     if (parsedQuery.syntaxError) {
       return { matcher: null };
     }
