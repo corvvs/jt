@@ -31,7 +31,7 @@ const OperationPanel = (props: {
           try {
             const json = parseJson(rawText);
             // パース成功時
-            setParsedJson(json);
+            setParsedJson({ json });
             clearManipulation();
             clearToggleState();
             props.closeModal()

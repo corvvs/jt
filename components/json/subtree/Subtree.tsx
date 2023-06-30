@@ -16,7 +16,8 @@ export const SubtreeMenuCell = (props: {
   const { manipulation, pushNarrowedRange, popNarrowedRange } = useManipulation();
   const { json, flatJsons } = useJSON();
   const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
-  if (!props.isHovered && !isNarrowed) { return null; }
+  if (!json || !props.isHovered && !isNarrowed) { return null; }
+  const rawJson = json.json;
 
   return (<div
     className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
@@ -27,7 +28,7 @@ export const SubtreeMenuCell = (props: {
         alt="この要素以下をJSONとしてクリップボードにコピーする"
         onClick={async () => {
           const keyPath = props.item.elementKey;
-          const subJson = keyPath ? _.get(json, keyPath) : json;
+          const subJson = keyPath ? _.get(rawJson, keyPath) : rawJson;
           if (!subJson) { return; }
           const subText = JSON.stringify(subJson, null, 2);
           try {
