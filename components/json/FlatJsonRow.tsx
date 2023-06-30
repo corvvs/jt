@@ -11,7 +11,6 @@ const LeadingCells = (props: {
   gauge?: JsonGauge;
   isHovered: boolean;
   isMatched: boolean;
-  isSelected: boolean;
   isNarrowedFrom: boolean;
 }) => {
   const {
@@ -19,7 +18,6 @@ const LeadingCells = (props: {
     gauge,
     isHovered,
     isMatched,
-    isSelected,
     isNarrowedFrom,
   } = props;
   const {
@@ -52,7 +50,6 @@ const LeadingCells = (props: {
         typeIndex={rowItems.length > 0 ? i + 1 : i}
         isHovered={isHovered}
         isMatched={isMatched}
-        isSelected={isSelected}
         isNarrowedFrom={isNarrowedFrom}
       />
     })
@@ -67,7 +64,6 @@ export const FlatJsonRow = (props: {
   const [isHovered, setIsHovered] = useState(false);
   const { manipulation, filteringPreference, filterMaps } = useManipulation();
   const isMatched = !!(filterMaps && filterMaps.matched[props.item.index]);
-  const isSelected = manipulation.selectedIndex === props.item.index;
   const isNarrowedFrom = _.last(manipulation.narrowedRanges)?.from === props.item.index;
   const {
     item,
@@ -82,11 +78,9 @@ export const FlatJsonRow = (props: {
     ? "matched-row"
     : isNarrowedFrom
       ? "narrowed-from-row"
-      : isSelected
-        ? "selected-row"
-        : isHovered
-          ? "secondary-background"
-          : "";
+      : isHovered
+        ? "secondary-background"
+        : "";
 
   return (<div
     className={
@@ -102,7 +96,6 @@ export const FlatJsonRow = (props: {
       gauge={gauge}
       isHovered={isHovered}
       isMatched={isMatched}
-      isSelected={isSelected}
       isNarrowedFrom={isNarrowedFrom}
     />
 

@@ -94,7 +94,6 @@ export const FlatJsonLeadingCell = (props: {
   typeIndex: number;
   isHovered: boolean;
   isMatched: boolean;
-  isSelected: boolean;
   isNarrowedFrom: boolean;
   /**
    * その行に本来表示したいアイテム
@@ -122,7 +121,7 @@ export const FlatJsonLeadingCell = (props: {
       style={{ width: `${currentColumnLength}em` }}
     >
       {
-        (props.isHovered || props.isSelected || props.isNarrowedFrom)
+        (props.isHovered || props.isNarrowedFrom)
           ? <RightmostKeyCell index={props.index} gauge={gauge} right={props.nextItem} isTogglable={isTogglable} />
           : null
       }
