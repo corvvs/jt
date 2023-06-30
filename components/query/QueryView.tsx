@@ -72,6 +72,7 @@ export const QueryView = () => {
   const { parsedQuery } = useAdvancedQuery();
 
   const syntaxErrorContent = (() => {
+    if (!parsedQuery) { return null; }
     if (!parsedQuery.syntaxError) { return null; }
     return <>
       <p
