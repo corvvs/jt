@@ -16,7 +16,7 @@ export const SubtreeMenuCell = (props: {
   const { manipulation, pushNarrowedRange, popNarrowedRange } = useManipulation();
   const { json, flatJsons } = useJSON();
   const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
-  if (!json || !props.isHovered && !isNarrowed) { return null; }
+  if (!json || json.status !== "accepted" || !props.isHovered && !isNarrowed) { return null; }
   const rawJson = json.json;
 
   return (<div

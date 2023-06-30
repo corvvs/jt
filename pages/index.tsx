@@ -1,4 +1,4 @@
-import { JsonViewer } from "@/components/JsonViewer";
+import { Main } from "@/components/Main";
 import Layout from "@/components/Layout";
 import { ToastHolder } from "@/components/toast/ToastHolder";
 import { JsonText } from "@/data/text";
@@ -6,6 +6,7 @@ import { useJSON } from "@/states";
 import { defaultRawText } from "@/states/json";
 import { useEffect } from "react";
 import { GoogleAnalytics } from '../components/gtag'
+import { EditJsonCardHolder } from "@/components/holders/modal/EditJsonCard";
 
 export default function Home() {
 
@@ -15,9 +16,11 @@ export default function Home() {
       const jsonText = JsonText.loadTextLocal() || defaultRawText;
       setRawtext(jsonText);
       setBaseText(jsonText);
-      const json = parseJson(jsonText);
-      if (typeof json !== "undefined") {
-        setParsedJson({ json });
+      try {
+        const json = parseJson(jsonText);
+        setParsedJson({ status: "accepted", json });
+      } catch (e) {
+        setParsedJson({ status: "rejected", error: e });
       }
     }
   }, []);
@@ -25,8 +28,9 @@ export default function Home() {
   return (
     <Layout>
       <GoogleAnalytics />
-      <JsonViewer />
+      <Main />
       <ToastHolder />
+      <EditJsonCardHolder />
     </Layout>
   )
 }
