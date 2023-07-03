@@ -109,14 +109,6 @@ const ManipulationButtons = () => {
       Unfold All
     </MenuButton>
 
-    { false &&
-      <MenuToggleButton
-        isToggled={preference.visible_subtree_stat}
-        onClick={(isToggled) => setPreference((prev) => ({ ...prev, visible_subtree_stat: isToggled }))}
-      >
-        {preference.visible_subtree_stat ? "Hide" : "Show"} Subtree Stats
-      </MenuToggleButton>
-    }
   </>
 }
 

@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { MultipleButtons } from "../lv1/MultipleButtons";
-import { useManipulation } from "@/states/manipulation";
+import { useManipulation, useQuery } from "@/states/manipulation";
 import { PreferencePanel } from "../lv2/FilterPreferencePanel";
 import { SimpleFilterCard } from "./SimpleFilterCard";
 import { AdvancedFilterCard } from "./AdvancedFilterCard";
@@ -32,10 +32,10 @@ const ModePanel = () => {
 
 const QueryInputField = () => {
   const {
-    manipulation,
     filteringPreference,
+    filteringQuery,
     setFilteringQuery,
-  } = useManipulation();
+  } = useQuery();
 
   const inputRef = useRef<any>();
   const reflectQuery = useCallback(
@@ -47,7 +47,7 @@ const QueryInputField = () => {
   );
 
   useEffect(() => {
-    inputRef.current.value = manipulation.filteringQuery;
+    inputRef.current.value = filteringQuery;
     inputRef.current.focus();
   }, []);
 
