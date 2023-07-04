@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { toggleAtom } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
-import { JsonPartialDocument } from '@/data/indexed_db';
+import { JsonPartialDocument } from '@/data/document';
 
 export const defaultRawText = JSON.stringify({
   "title": "サンプルテキスト 兼 ReadMe",
