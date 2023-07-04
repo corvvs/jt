@@ -13,8 +13,9 @@ export async function getTransaction<TT extends "readwrite" | "readonly">(
 ) {
   const db = await openDB(JetDatabaseName, version, {
     upgrade(db) {
-      stores.forEach(store => {
-        db.createObjectStore(store, { keyPath: 'id', autoIncrement: true });
+      stores.forEach(storeName => {
+        const store = db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
+        store.createIndex("updated_at", "updated_at", { unique: false });
       });
     },
   });
@@ -49,7 +50,7 @@ export async function fetchItemsIDB(
   store: string,
   scope: { skip: number; limit: number; },
 ) {
-  const index = transaction.objectStore(store).index('created_at');
+  const index = transaction.objectStore(store).index('updated_at');
   let cursor = await index.openCursor(null, 'prev');
   if (!cursor) {
     // FAIL
