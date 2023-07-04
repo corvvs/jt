@@ -1,5 +1,5 @@
 import React, { MutableRefObject } from "react";
-import { VscEdit } from 'react-icons/vsc';
+import { VscEdit, VscNewFile } from 'react-icons/vsc';
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
@@ -10,6 +10,7 @@ import { useManipulation } from "@/states/manipulation";
 import { FaChevronRight, FaSearch } from "react-icons/fa";
 import _ from "lodash";
 import { useEditJson } from "@/states/modal";
+import Link from "next/link";
 
 const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
@@ -129,6 +130,16 @@ const MainLine = () => {
     <AppTitle />
 
     <div className='flex flex-row items-center gap-2'>
+      <Link
+        className="flippable h-[2.4em] flex flex-row items-center py-1 px-2 whitespace-nowrap break-keep"
+        href="/new"
+        target="_blank"
+      >
+        <InlineIcon i={<VscNewFile />} />
+        New
+      </Link>
+
+
       <MenuButton
         onClick={() => openModal()}
       >

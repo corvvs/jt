@@ -10,7 +10,7 @@ export const JetButton = (
     <button
       {...{ ...props }}
       className={
-        'flippable-button h-[3em] border-[1px] py-1 px-2' + (props.className || '')
+        'flippable h-[3em] border-[1px] py-1 px-2' + (props.className || '')
       }
       style={{
         ...(props.style || {}),

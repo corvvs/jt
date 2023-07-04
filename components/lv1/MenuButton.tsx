@@ -9,7 +9,7 @@ export const MenuButton = (
   return (
     <button
       className={
-        `flippable-button h-[2.4em] py-1 px-2 whitespace-nowrap break-keep`
+        `flippable h-[2.4em] py-1 px-2 whitespace-nowrap break-keep`
       }
       onClick={() => props.onClick()}
     >
