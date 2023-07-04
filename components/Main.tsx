@@ -4,13 +4,16 @@ import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
-import { MutableRefObject, useRef } from "react";
-import { FaRegFrown, FaRegMehBlank, FaRegMehRollingEyes, FaRegSadTear } from 'react-icons/fa';
-import { useVisibleItems } from "@/states/json";
+import { MutableRefObject, useEffect, useRef } from "react";
+import { FaRegFrown, FaRegMehRollingEyes } from 'react-icons/fa';
+import { defaultRawText, useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
 import { useEditJson } from "@/states/modal";
+import { useToggleSingle } from "@/states/view";
+import { useRouter } from "next/router";
+import { JsonPartialDocument, useJsonDocument } from "@/data/document";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -52,6 +55,8 @@ const JsonItemsView = (props: {
   const { json } = useJSON();
   const visibles = useVisibleItems();
   const { openModal  } = useEditJson();
+  const manipulationHook = useManipulation();
+  const toggleSingleHook = useToggleSingle();
 
   if (!json) {
     return null;
@@ -81,15 +86,67 @@ const JsonItemsView = (props: {
     <VirtualScroll
       itemViewRef={props.itemViewRef}
       data={visibleItems} // データ
-      renderItem={(item) => <FlatJsonRow key={item.elementKey} item={item} gauge={gauge} />}
+      renderItem={(item) => <FlatJsonRow
+          key={item.elementKey}
+          item={item}
+          manipulationHook={manipulationHook}
+          toggleSingleHook={toggleSingleHook}
+          gauge={gauge}
+        />
+      }
       itemSize={32} // 各アイテムの高さ
     />
   );
 }
 
-export const Main = () => {
+export const Main = (props: {
+  docId?: string;
+}) => {
+  const { docId } = props;
+  const {
+    document, setDocument,
+    parseJson,
+    setParsedJson,
+  } = useJSON();
   const { filteringPreference } = useManipulation();
   const itemViewRef = useRef<any>(null);
+  const {
+    fetchLatest,
+    fetchDocument,
+  } = useJsonDocument();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady) { return; }
+    const f = async () => {
+      const newDocument = {
+        name: "",
+        json_string: defaultRawText,
+      };
+
+      let doc: JsonPartialDocument = newDocument
+      if (docId === "new") {
+        setDocument(newDocument);
+      } else {
+        const d = await (docId ? fetchDocument(docId) : fetchLatest())
+        if (d) {
+          router.replace(`/${d.id}`);
+          setDocument(d);
+          doc = d;
+        } else {
+          router.replace('/new');
+          setDocument(newDocument);
+        }
+      }
+      try {
+        const json = parseJson(doc.json_string);
+        setParsedJson({ status: "accepted", json, text: doc.json_string });
+      } catch (e) {
+        setParsedJson({ status: "rejected", error: e, text: doc.json_string });
+      }
+    };
+    f();
+  }, [router.isReady, docId]);
 
   return (<div
     className="shrink grow flex flex-col"
@@ -114,7 +171,7 @@ export const Main = () => {
       }
 
       <div
-        className="shrink grow"
+        className="shrink grow text-base"
       >
         <JsonItemsView itemViewRef={itemViewRef}/>
       </div>

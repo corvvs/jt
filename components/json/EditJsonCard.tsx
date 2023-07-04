@@ -6,14 +6,24 @@ import { BsIndent } from "react-icons/bs";
 import { useToggleMass } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
 import { useState } from "react";
+import { useRouter } from "next/router";
+import { useJsonDocument } from "@/data/document";
 
 const OperationPanel = (props: {
+  rawText: string;
+  setRawText: (next: string) => void;
   setErrorStr: (str: string) => void;
   closeModal: () => void;
 }) => {
-  const { rawText, setRawtext, setBaseText, parseJson, setParsedJson }  = useJSON();
+  const { document, setBaseText, parseJson, setParsedJson }  = useJSON();
   const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
+  const { saveDocument } = useJsonDocument();
+  const router = useRouter();
+
+  if (!document) {
+    return null;
+  }
 
   const setErrorStr = (e: any) => {
     if (e instanceof Error) {
@@ -26,16 +36,24 @@ const OperationPanel = (props: {
   return <>
     <div>
       <JetButton
-        onClick={() => {
-          setBaseText(rawText)
+        onClick={async () => {
           try {
-            const json = parseJson(rawText);
+            const json = parseJson(props.rawText);
             // パース成功時
-            setParsedJson({ status: "accepted", json });
+            setParsedJson({ status: "accepted", json, text: props.rawText });
+            setBaseText(props.rawText);
+
             clearManipulation();
             clearToggleState();
-            props.closeModal()
+            const id = await saveDocument({ ...document, json_string: props.rawText });
+            const [docId] = (router.query.docId || []) as string[];
+            if (id !== docId) {
+              router.replace(`/${id}`);
+            }
+
+            props.closeModal();
           } catch (e) {
+            console.error(e);
             setErrorStr(e);
           }
         }}
@@ -49,7 +67,7 @@ const OperationPanel = (props: {
       <JetButton
         onClick={() => {
           try {
-            setRawtext(JSON.stringify(JSON.parse(rawText), null, 2))
+            props.setRawText(JSON.stringify(JSON.parse(props.rawText), null, 2))
           } catch (e) {
             setErrorStr(e);
           }
@@ -64,7 +82,7 @@ const OperationPanel = (props: {
       <JetButton
         onClick={() => {
           try {
-            setRawtext(JSON.stringify(JSON.parse(rawText), null, 0))
+            props.setRawText(JSON.stringify(JSON.parse(props.rawText), null, 0))
           } catch (e) {
             setErrorStr(e);
           }
@@ -102,7 +120,8 @@ const FooterBar = (props: {
 export const EditJsonCard = (props: {
   closeModal: () => void;
 }) => {
-  const { rawText, setRawtext }  = useJSON();
+  const { baseText }  = useJSON();
+  const [rawText, setRawText] = useState(baseText);
   const [errorStr, setErrorStr] = useState("");
 
   return (
@@ -114,6 +133,8 @@ export const EditJsonCard = (props: {
       >
         <OperationPanel
           {...props}
+          rawText={rawText}
+          setRawText={setRawText}
           setErrorStr={setErrorStr}
         />
       </div>
@@ -125,7 +146,7 @@ export const EditJsonCard = (props: {
           className="w-full h-[24em] outline-none p-2 json-text-textarea"
           style={{ resize: "none" }}
           value={rawText}
-          onChange={(e) => setRawtext(e.target.value)}
+          onChange={(e) => setRawText(e.target.value)}
         />
       </div>
 

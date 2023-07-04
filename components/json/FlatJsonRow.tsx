@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useManipulation } from "@/states/manipulation";
 import { FlatJsonLeadingCell } from "./leading/Leading";
 import { LineNumberCell } from "./LineNumberCell";
+import { useToggleSingle } from "@/states/view";
 
 const LeadingCells = (props: {
   item: JsonRowItem;
@@ -12,6 +13,8 @@ const LeadingCells = (props: {
   isHovered: boolean;
   isMatched: boolean;
   isNarrowedFrom: boolean;
+  manipulationHook: ReturnType<typeof useManipulation>;
+  toggleSingleHook: ReturnType<typeof useToggleSingle>;
 }) => {
   const {
     item,
@@ -19,6 +22,8 @@ const LeadingCells = (props: {
     isHovered,
     isMatched,
     isNarrowedFrom,
+    toggleSingleHook,
+    manipulationHook,
   } = props;
   const {
     rowItems
@@ -51,6 +56,8 @@ const LeadingCells = (props: {
         isHovered={isHovered}
         isMatched={isMatched}
         isNarrowedFrom={isNarrowedFrom}
+        manipulationHook={manipulationHook}
+        toggleSingleHook={toggleSingleHook}
       />
     })
   }</>
@@ -58,20 +65,23 @@ const LeadingCells = (props: {
 
 export const FlatJsonRow = (props: {
   item: JsonRowItem;
+  manipulationHook: ReturnType<typeof useManipulation>;
+  toggleSingleHook: ReturnType<typeof useToggleSingle>;
   gauge?: JsonGauge;
 }) => {
   
   const [isHovered, setIsHovered] = useState(false);
-  const { manipulation, filteringPreference, filterMaps } = useManipulation();
+  const { manipulation, filteringPreference, filterMaps } = props.manipulationHook;
   const isMatched = !!(filterMaps && filterMaps.matched[props.item.index]);
   const isNarrowedFrom = _.last(manipulation.narrowedRanges)?.from === props.item.index;
   const {
     item,
     gauge,
+    manipulationHook,
+    toggleSingleHook,
   } = props;
   const {
     right,
-    rowItems,
     elementKey,
   } = item;
   const backgroundClass = (isMatched && filteringPreference.visibility !== "just")
@@ -97,6 +107,8 @@ export const FlatJsonRow = (props: {
       isHovered={isHovered}
       isMatched={isMatched}
       isNarrowedFrom={isNarrowedFrom}
+      manipulationHook={manipulationHook}
+      toggleSingleHook={toggleSingleHook}
     />
 
     <FlatJsonValueCell

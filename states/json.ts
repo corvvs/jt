@@ -1,10 +1,10 @@
-import { JsonText } from '@/data/text';
 import { JsonGauge, JsonRowItem, flattenJson } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
 import { toggleAtom } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
+import { JsonPartialDocument } from '@/data/document';
 
 export const defaultRawText = JSON.stringify({
   "title": "サンプルテキスト 兼 ReadMe",
@@ -62,40 +62,36 @@ export const defaultRawText = JSON.stringify({
   "notice": "アルファ版のため、予告なく大規模・破壊的な変更をします。",
 }, null, 2);
 
-/**
- * 編集エリアのテキスト
- */
-const rawTextAtom = atom<string>("null");
-
-/**
- * JSON変換を行う対象のテキスト
- */
-const baseTextAtom = atom<string>("null");
-
 type ParsedJSONData = {
   status: "accepted";
   json: any;
+  text: string;
 } | {
   status: "rejected";
   error: any;
+  text: string;
 };
 
-const parsedJsonAtom = atom<ParsedJSONData | null>(null);
+const baseAtoms = {
+
+  document: atom<JsonPartialDocument | null>(null),
+  parsedJson: atom<ParsedJSONData | null>(null),
+};
+
 
 const parseJson = (baseText: string) => {
   const text = baseText.replace(/[\u0000-\u0019]+/g, "");
   const json = JSON.parse(text);
-  JsonText.saveTextLocal(baseText);
   return json;
 }
 
 export const jsonFlattenedAtom = atom(
   (get) => {
     try {
-      const parsed = get(parsedJsonAtom);
+      const parsed = get(baseAtoms.parsedJson);
       if (!parsed) { return null; }
       if (parsed.status !== "accepted") { return null; }
-      return flattenJson(parsed.json, get(baseTextAtom))
+      return flattenJson(parsed.json, parsed.text);
     } catch (e) {
       console.error(e);
       return null;
@@ -113,10 +109,6 @@ export const useVisibleItems = () => {
     const { items } = flatJsons;
   
     // 表示すべきitemを選別する
-    const filterByQuery = filterMaps
-      ? (item: JsonRowItem) => filterMaps.visible[item.index]
-      : () => true;
-  
     const topNarrowingRange = _.last(manipulation.narrowedRanges);
     const filterByNarrowing = topNarrowingRange
       ? (item: JsonRowItem) => {
@@ -125,9 +117,16 @@ export const useVisibleItems = () => {
         }
       : () => true;
     const narrowedItems = items.filter(filterByNarrowing);
+
+    const filterByQuery = filterMaps
+      ? (item: JsonRowItem) => filterMaps.visible[item.index]
+      : () => true;
     const filteredItems = narrowedItems.filter(filterByQuery);
+
     const openedItems = filteredItems.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+
     const visibleItems = openedItems;
+
     if (visibleItems.length === 0) { return null; }
     return {
       filteredItems,
@@ -139,19 +138,19 @@ export const useVisibleItems = () => {
 
 /**
  * JSONフック
- * – rawText: テキストエリアの生テキスト
- * - baseText: ある時点での rawText のスナップショット
- * - json: JSON.parse(baseText) の結果得られるもの
  */
 export const useJSON = () => {
-  const [rawText, setRawtext] = useAtom(rawTextAtom);
-  const [, setBaseText] = useAtom(baseTextAtom);
+  const [document, setDocument] = useAtom(baseAtoms.document);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
-  const [json, setParsedJson] = useAtom(parsedJsonAtom);
+  const [json, setParsedJson] = useAtom(baseAtoms.parsedJson);
   return {
-    rawText,
-    setRawtext,
-    setBaseText,
+    document, setDocument,
+
+    baseText: document ? document.json_string : "",
+    setBaseText(next: string) {
+      if (!document) { return; }
+      setDocument({ ...document, json_string: next });
+    },
     flatJsons,
     json,
     parseJson,

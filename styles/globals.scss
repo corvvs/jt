@@ -122,14 +122,14 @@ body {
   }
 }
 
-.flippable-button {
+.flippable {
   &:hover {
     color: var(--background);
     background-color: var(--foreground);
   }
 }
 
-.flippable-button-secondary {
+.flippable-secondary {
   &:hover {
     color: var(--background-secondary);
     background-color: var(--foreground-secondary);

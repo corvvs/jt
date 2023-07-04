@@ -170,13 +170,8 @@ const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   };
 };
 
-export const useManipulation = () => {
+export const useNarrowing = () => {
   const [narrowedRanges, setNarrowedRangesRaw] = useAtom(narrowedRangeAtom);
-  const [filteringQuery, setFilteringQuery] = useAtom(filteringQueryAtom);
-  const [filterMaps] = useAtom(filterMapsAtom);
-  const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
-  const [filteringVisibility] = useAtom(filteringVisibilityAtom);
-
   const pushNarrowedRange = (index: number, allItems: JsonRowItem[]) => {
     const range = deriveNarrowdRange(index, allItems);
     if (!range) { return; }
@@ -194,6 +189,42 @@ export const useManipulation = () => {
     }
     setNarrowedRangesRaw([]);
   };
+
+  return {
+    narrowedRanges,
+    setNarrowedRangesRaw,
+    pushNarrowedRange,
+    popNarrowedRange,
+  };
+}
+
+export const useQuery = () => {
+  const [filteringQuery, setFilteringQuery] = useAtom(filteringQueryAtom);
+  const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
+
+  return {
+    filteringPreference,
+    setFilteringPreference,
+    filteringQuery,
+    setFilteringQuery,
+  };
+};
+
+export const useManipulation = () => {
+  const {
+    narrowedRanges,
+    setNarrowedRangesRaw,
+    pushNarrowedRange,
+    popNarrowedRange,
+  } = useNarrowing();
+  const {
+    filteringPreference,
+    setFilteringPreference,
+    filteringQuery,
+    setFilteringQuery,
+  } = useQuery();
+  const [filterMaps] = useAtom(filterMapsAtom);
+  const [filteringVisibility] = useAtom(filteringVisibilityAtom);
 
   const setFilteringVisibility = (v: FilteringVisibilityOption) => setFilteringPreference(prev => {
     const next = _.cloneDeep(prev);
