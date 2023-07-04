@@ -6,7 +6,8 @@ import { BsIndent } from "react-icons/bs";
 import { useToggleMass } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
 import { useState } from "react";
-import { useDocumentStorage } from "@/data/indexed_db";
+import { useRouter } from "next/router";
+import { useJsonDocument } from "@/data/document";
 
 const OperationPanel = (props: {
   rawText: string;
@@ -17,7 +18,8 @@ const OperationPanel = (props: {
   const { document, setBaseText, parseJson, setParsedJson }  = useJSON();
   const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
-  const { saveDocument } = useDocumentStorage();
+  const { saveDocument } = useJsonDocument();
+  const router = useRouter();
 
   if (!document) {
     return null;
@@ -34,7 +36,7 @@ const OperationPanel = (props: {
   return <>
     <div>
       <JetButton
-        onClick={() => {
+        onClick={async () => {
           try {
             const json = parseJson(props.rawText);
             // パース成功時
@@ -43,10 +45,15 @@ const OperationPanel = (props: {
 
             clearManipulation();
             clearToggleState();
-            saveDocument({ ...document, json_string: props.rawText });
+            const id = await saveDocument({ ...document, json_string: props.rawText });
+            const [docId] = (router.query.docId || []) as string[];
+            if (id !== docId) {
+              router.replace(`/${id}`);
+            }
 
             props.closeModal();
           } catch (e) {
+            console.error(e);
             setErrorStr(e);
           }
         }}

@@ -4,15 +4,16 @@ import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
-import { MutableRefObject, Suspense, useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import { FaRegFrown, FaRegMehRollingEyes } from 'react-icons/fa';
 import { defaultRawText, useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
 import { useEditJson } from "@/states/modal";
-import { useDocumentStorage } from "@/data/indexed_db";
 import { useToggleSingle } from "@/states/view";
+import { useRouter } from "next/router";
+import { JsonPartialDocument, useJsonDocument } from "@/data/document";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -98,7 +99,10 @@ const JsonItemsView = (props: {
   );
 }
 
-export const Main = () => {
+export const Main = (props: {
+  docId?: string;
+}) => {
+  const { docId } = props;
   const {
     document, setDocument,
     parseJson,
@@ -108,25 +112,41 @@ export const Main = () => {
   const itemViewRef = useRef<any>(null);
   const {
     fetchLatest,
-  } = useDocumentStorage();
+    fetchDocument,
+  } = useJsonDocument();
+  const router = useRouter();
 
-  if (!document) {
-    throw (async () => {
-      const latest = await fetchLatest();
-
-      const doc = latest || {
+  useEffect(() => {
+    if (!router.isReady) { return; }
+    const f = async () => {
+      const newDocument = {
         name: "",
         json_string: defaultRawText,
       };
-      setDocument(doc);
+
+      let doc: JsonPartialDocument = newDocument
+      if (docId === "new") {
+        setDocument(newDocument);
+      } else {
+        const d = await (docId ? fetchDocument(docId) : fetchLatest())
+        if (d) {
+          router.replace(`/${d.id}`);
+          setDocument(d);
+          doc = d;
+        } else {
+          router.replace('/new');
+          setDocument(newDocument);
+        }
+      }
       try {
         const json = parseJson(doc.json_string);
         setParsedJson({ status: "accepted", json, text: doc.json_string });
       } catch (e) {
         setParsedJson({ status: "rejected", error: e, text: doc.json_string });
       }
-    })();
-  }
+    };
+    f();
+  }, [router.isReady, docId]);
 
   return (<div
     className="shrink grow flex flex-col"
