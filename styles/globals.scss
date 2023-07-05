@@ -27,6 +27,8 @@
   --narrowing-base: #9e62f3;
   --selected-row: #c6f1c8;
   --line-number: royalblue;
+
+  --theme-transition-time: 0.33s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,19 +62,25 @@
 body {
   color: var(--foreground);
   background-color: var(--background);
+  transition: color var(--theme-transition-time) ease-in-out;
+  transition: background-color var(--theme-transition-time) ease-in-out;
 }
 
 .color-inverted {
   color: var(--background);
   background-color: var(--foreground);
+  transition: color var(--theme-transition-time) ease-in-out;
+  transition: background-color var(--theme-transition-time) ease-in-out;
 }
 
 .secondary-foreground {
   color: var(--foreground-secondary);
+  transition: color var(--theme-transition-time) ease-in-out;
 }
 
 .secondary-background {
   background-color: var(--background-secondary);
+  transition: background-color var(--theme-transition-time) ease-in-out;
 }
 
 .header-bar {
@@ -191,6 +199,7 @@ body {
 
 .item-key, .item-index {
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+  transition: background-color var(--theme-transition-time) ease-in-out;
   &.depth-0{ background-color: var(--background-key-0); }
   &.depth-1{ background-color: var(--background-key-1); }
   &.depth-2{ background-color: var(--background-key-2); }
@@ -346,4 +355,5 @@ body {
 
 .query-view, .query-debug-view {
   background-color: var(--background-secondary);
+  transition: background-color var(--theme-transition-time) ease-in-out;
 }
