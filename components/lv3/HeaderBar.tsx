@@ -108,7 +108,6 @@ const ManipulationButtons = () => {
       <span>Unfold</span>
     </MenuButton>
 
-    <ThemeSelector />
   </>
 }
 
@@ -146,6 +145,8 @@ const MainLine = () => {
       </MenuButton>
 
       <ManipulationButtons />
+
+      <ThemeSelector />
 
     </div>
   </div>);
