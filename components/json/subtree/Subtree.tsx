@@ -44,16 +44,15 @@ const NarrowSubtreeButton = (props: {
 }) => {
   if (props.isNarrowed) { return null; }
   const { pushNarrowedRange } = props.manipulationHook;
-  const { toggleItem, toggleState } = props.toggleSingleHook;
+  const { toggleItem } = props.toggleSingleHook;
   return (<p>
     <IconButton
       icon={CgArrowsShrinkV}
       alt="この要素以下だけを表示する(ナローイング)"
       onClick={() => {
         pushNarrowedRange(props.item.index, props.allItems);
-        if (toggleState[props.item.index]) {
-          toggleItem(props.item, false);
-        }
+        // 閉じているなら開く
+        toggleItem(props.item, false);
       }}
     />
   </p>);

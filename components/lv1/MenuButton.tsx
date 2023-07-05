@@ -9,7 +9,7 @@ export const MenuButton = (
   return (
     <button
       className={
-        `flippable h-[2.4em] py-1 px-2 whitespace-nowrap break-keep`
+        `flippable h-[2.4em] py-1 whitespace-nowrap break-keep`
       }
       onClick={() => props.onClick()}
     >
@@ -27,7 +27,7 @@ export const MenuToggleButton = (
 ) => {
   return (
     <button
-      className={`menu-toggle-button h-[2.4em] py-1 px-2 whitespace-nowrap break-keep ${ props.isToggled ? "is-toggled" : "is-not-toggled"}`}
+      className={`menu-toggle-button h-[2.4em] py-1 whitespace-nowrap break-keep ${ props.isToggled ? "is-toggled" : "is-not-toggled"}`}
       onClick={() => props.onClick(!props.isToggled)}
     >
       {props.children}
