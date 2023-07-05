@@ -56,7 +56,9 @@ export async function fetchItemsIDB(
     // FAIL
     return null;
   }
-  cursor = await cursor.advance(scope.skip)
+  if (scope.skip > 0) {
+    cursor = await cursor.advance(scope.skip)
+  }
   const data: any[] = [];
   
   while (cursor && data.length < scope.limit) {
