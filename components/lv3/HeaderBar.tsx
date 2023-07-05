@@ -5,7 +5,6 @@ import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
-import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
 import { FaChevronRight, FaSearch } from "react-icons/fa";
 import _ from "lodash";
@@ -20,7 +19,6 @@ const NarrowingLine = (props: {
   if (!flatJsons) { return null; }
   if (manipulation.narrowedRanges.length === 0) { return null; }
   const allItems = flatJsons.items;
-  const { stats } = flatJsons;
 
   let lastKeyPath = "";
   const narrowingItems = manipulation.narrowedRanges.map(range => {
@@ -82,7 +80,6 @@ const NarrowingLine = (props: {
 const ManipulationButtons = () => {
   const { flatJsons } = useJSON();
   const { openAll, closeAll } = useToggleMass();
-  const { preference, setPreference } = usePreference();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   if (!flatJsons) { return null; }
 
@@ -93,21 +90,21 @@ const ManipulationButtons = () => {
       onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
     >
       <InlineIcon i={<FaSearch />} />
-      Filter
+      <span>Filter</span>
     </MenuToggleButton>
 
     <MenuButton
       onClick={() => closeAll()}
     >
       <InlineIcon i={<HiChevronDoubleUp />} />
-      Fold All
+      <span>Fold</span>
     </MenuButton>
 
     <MenuButton
       onClick={() => openAll()}
     >
       <InlineIcon i={<HiChevronDoubleDown />} />
-      Unfold All
+      <span>Unfold</span>
     </MenuButton>
 
   </>
@@ -129,21 +126,21 @@ const MainLine = () => {
   >
     <AppTitle />
 
-    <div className='flex flex-row items-center gap-2'>
+    <div className='header-bar flex flex-row items-center gap-1'>
       <Link
-        className="flippable h-[2.4em] flex flex-row items-center py-1 px-2 whitespace-nowrap break-keep"
+        className="flippable h-[2.4em] flex flex-row py-1 whitespace-nowrap break-keep"
         href="/new"
         target="_blank"
       >
         <InlineIcon i={<VscNewFile />} />
-        New
+        <span>New</span>
       </Link>
-
 
       <MenuButton
         onClick={() => openModal()}
       >
-        <InlineIcon i={<VscEdit />} />Edit Text
+        <InlineIcon i={<VscEdit />} />
+        <span>Edit</span>
       </MenuButton>
 
       <ManipulationButtons />
