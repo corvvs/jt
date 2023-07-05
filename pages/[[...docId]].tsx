@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { GoogleAnalytics } from '../components/gtag'
 import { EditJsonCardHolder } from "@/components/holders/modal/EditJsonCard";
 import { useRouter } from "next/router";
+import { ThemeObserver } from "@/components/holders/ThemeObserver";
 
 export default function Home() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function Home() {
       <Main docId={docId} />
       <ToastHolder />
       <EditJsonCardHolder />
+      <ThemeObserver />
     </Layout>
   )
 }

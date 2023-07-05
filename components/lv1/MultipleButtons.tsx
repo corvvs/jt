@@ -1,7 +1,8 @@
 type MultipleButtonItem<T> = {
   key: T;
-  title: string;
   hint?: string;
+  title?: string;
+  content?: JSX.Element;
 };
 
 type MultipleButtonProps<T> = {
@@ -17,13 +18,14 @@ export function MultipleButtons<T extends string>({
 }: MultipleButtonProps<T>) {
   const buttons = items.map(item => {
     const isActive = currentKey === item.key;
+    item
     return <button
       key={item.key}
       className={`multiple-buttons-button ${isActive ? "active" : ""}`}
       title={item.hint}
       onClick={() => onClick(item)}
     >
-      {item.title}
+      {item.content ? item.content : item.title || null}
     </button>
   });
 

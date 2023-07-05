@@ -1,4 +1,4 @@
-import { GaugeStats, JsonGauge, JsonRowItem, flattenJson, makeGauge } from '@/libs/jetson';
+import { JsonGauge, JsonRowItem, flattenJson, makeGauge } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
 import { toggleAtom } from './view';

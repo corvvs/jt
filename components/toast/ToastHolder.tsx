@@ -1,8 +1,8 @@
-import { useColorScheme } from '@/hooks/colorScheme';
-import { Slide, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { cssTransition } from 'react-toastify';
+import { useColorTheme } from '@/states/theme';
 
 const MySlide = cssTransition({
   enter: 'my-enter',
@@ -13,7 +13,10 @@ const MySlide = cssTransition({
 });
 
 export const ToastHolder = () => {
-  const colorScheme = useColorScheme();
+  const {
+    preferredColorTheme: colorScheme,
+  } = useColorTheme();
+
   return (
     <ToastContainer
       position="bottom-right"

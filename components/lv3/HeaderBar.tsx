@@ -10,6 +10,7 @@ import { FaChevronRight, FaSearch } from "react-icons/fa";
 import _ from "lodash";
 import { useEditJson } from "@/states/modal";
 import Link from "next/link";
+import { ThemeSelector } from "../lv2/ThemeSelector";
 
 const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
@@ -107,6 +108,7 @@ const ManipulationButtons = () => {
       <span>Unfold</span>
     </MenuButton>
 
+    <ThemeSelector />
   </>
 }
 
