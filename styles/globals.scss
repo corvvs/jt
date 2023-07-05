@@ -3,17 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-
   --foreground: #504b55;
   --foreground-secondary: #807d83;
   --foreground-bad: #e22f59;
   --background: #e8edec;
   --background-secondary: #d4d4d4;
   --foreground-schema: #888;
-  --foreground-key: rgb(60, 57, 213);
+  --foreground-key: #3c39d5;
   --foreground-string: #b74731;
   --foreground-number: #468f46;
   --foreground-true: #378e51;
@@ -24,7 +20,7 @@
   --background-key-2: #c6dddf;
   --background-key-3: #e3d0e7;
   --background-key-4: #d1d7e7;
-  --background-textarea: 227, 232, 232;
+  --background-textarea: #e3e8e8;
 
   --matched-foreground: #2a86d6;
   --matched-row: #d2e1ee;
@@ -35,10 +31,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-
     --foreground: #eee7f7;
     --foreground-secondary: #66606e;
     --foreground-bad: #ea5477;
@@ -56,12 +48,12 @@
     --background-key-2: #3b313b;
     --background-key-3: #323b37;
     --background-key-4: #3d3432;
-    --background-textarea: 48, 48, 48;
+    --background-textarea: #303030;
 
     --matched-row: #2f463e;
     --narrowing-base: #5822a3;
     --selected-row: #096865;
-    --line-number: rgb(133, 141, 255);
+    --line-number: #858dff;
   }
 }
 
