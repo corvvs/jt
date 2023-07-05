@@ -152,7 +152,9 @@ export const FlatJsonLeadingCell = (props: {
         index={props.typeIndex} gauge={gauge} right={right}
       />
       <SubtreeMenuCell
-        item={right} isHovered={props.isHovered} manipulationHook={manipulationHook}
+        item={right} isHovered={props.isHovered}
+        toggleSingleHook={toggleSingleHook}
+        manipulationHook={manipulationHook}
       />
     </>
   } else {

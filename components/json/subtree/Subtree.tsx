@@ -8,6 +8,7 @@ import { VscCopy } from "react-icons/vsc";
 import { useJSON } from "@/states";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
+import { useToggleSingle } from "@/states/view";
 
 const CopySubtreeButton = (props: {
   item: JsonRowItem;
@@ -38,16 +39,22 @@ const NarrowSubtreeButton = (props: {
   isNarrowed: boolean;
   item: JsonRowItem;
   allItems: JsonRowItem[];
+  toggleSingleHook: ReturnType<typeof useToggleSingle>;
   manipulationHook: ReturnType<typeof useManipulation>;
 }) => {
   if (props.isNarrowed) { return null; }
   const { pushNarrowedRange } = props.manipulationHook;
-
+  const { toggleItem, toggleState } = props.toggleSingleHook;
   return (<p>
     <IconButton
       icon={CgArrowsShrinkV}
       alt="この要素以下だけを表示する(ナローイング)"
-      onClick={() => pushNarrowedRange(props.item.index, props.allItems)}
+      onClick={() => {
+        pushNarrowedRange(props.item.index, props.allItems);
+        if (toggleState[props.item.index]) {
+          toggleItem(props.item, false);
+        }
+      }}
     />
   </p>);
 }
@@ -73,6 +80,7 @@ const UnnarrowSubtreeButton = (props: {
 export const SubtreeMenuCell = (props: {
   item: JsonRowItem;
   isHovered: boolean;
+  toggleSingleHook: ReturnType<typeof useToggleSingle>;
   manipulationHook: ReturnType<typeof useManipulation>;
 }) => {
   const { manipulation } = props.manipulationHook;
@@ -87,6 +95,7 @@ export const SubtreeMenuCell = (props: {
     <CopySubtreeButton item={props.item} rawJson={rawJson} />
     <NarrowSubtreeButton
       isNarrowed={isNarrowed} item={props.item} allItems={flatJsons!.items}
+      toggleSingleHook={props.toggleSingleHook}
       manipulationHook={props.manipulationHook}
     />
     <UnnarrowSubtreeButton
