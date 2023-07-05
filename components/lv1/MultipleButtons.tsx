@@ -1,3 +1,6 @@
+import { useTransientBackdrop } from "@/features/TransientBackdrop";
+import { SyntheticEvent, useRef, useState } from "react";
+
 type MultipleButtonItem<T> = {
   key: T;
   hint?: string;
@@ -16,19 +19,31 @@ export function MultipleButtons<T extends string>({
   currentKey,
   onClick,
 }: MultipleButtonProps<T>) {
+  const {
+    handleMouseEnter,
+    handleMouseLeave,
+    backdrop,
+  } = useTransientBackdrop();
+
   const buttons = items.map(item => {
     const isActive = currentKey === item.key;
-    item
     return <button
       key={item.key}
       className={`multiple-buttons-button ${isActive ? "active" : ""}`}
       title={item.hint}
       onClick={() => onClick(item)}
+      onMouseEnter={handleMouseEnter}
     >
       {item.content ? item.content : item.title || null}
     </button>
   });
 
-  return <div className="multiple-buttons">{ buttons }</div>;
+  return <div
+    className="multiple-buttons relative"
+    onMouseLeave={handleMouseLeave}
+  >
+    { backdrop }
+    { buttons }
+  </div>;
 }
 

@@ -28,7 +28,10 @@
   --selected-row: #c6f1c8;
   --line-number: royalblue;
 
+  --theme-transition: 0.33s ease-in-out;
   --theme-transition-time: 0.33s;
+  --flippable-transition: 0.16s ease-out;
+  --flippable-transition-time: 0.096s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -62,29 +65,30 @@
 body {
   color: var(--foreground);
   background-color: var(--background);
-  transition: color var(--theme-transition-time) ease-in-out;
-  transition: background-color var(--theme-transition-time) ease-in-out;
+  transition: color var(--theme-transition);
+  transition: background-color var(--theme-transition);
 }
 
 .color-inverted {
   color: var(--background);
   background-color: var(--foreground);
-  transition: color var(--theme-transition-time) ease-in-out;
-  transition: background-color var(--theme-transition-time) ease-in-out;
+  transition: color var(--theme-transition);
+  transition: background-color var(--theme-transition);
 }
 
 .secondary-foreground {
   color: var(--foreground-secondary);
-  transition: color var(--theme-transition-time) ease-in-out;
+  transition: color var(--theme-transition);
 }
 
 .secondary-background {
   background-color: var(--background-secondary);
-  transition: background-color var(--theme-transition-time) ease-in-out;
+  transition: background-color var(--theme-transition);
 }
 
 .header-bar {
   > * {
+    z-index: 1;
     align-items: center;
     justify-content: center;
     padding: 0 0.25rem;
@@ -137,7 +141,9 @@ body {
 .flippable {
   &:hover {
     color: var(--background);
-    background-color: var(--foreground);
+    // background-color: var(--foreground);
+    transition: color var(--flippable-transition);
+    // transition: background-color var(--flippable-transition);
   }
 }
 
@@ -145,13 +151,17 @@ body {
   &:hover {
     color: var(--background-secondary);
     background-color: var(--foreground-secondary);
+    transition: color var(--flippable-transition);
+    transition: background-color var(--flippable-transition);
   }
 }
 
 .menu-toggle-button {
   &:hover {
     color: var(--background);
-    background-color: var(--foreground);
+    // background-color: var(--foreground);
+    transition: color var(--flippable-transition);
+    transition: background-color var(--flippable-transition);
   }
 }
 
@@ -199,7 +209,7 @@ body {
 
 .item-key, .item-index {
   font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
-  transition: background-color var(--theme-transition-time) ease-in-out;
+  transition: background-color var(--theme-transition);
   &.depth-0{ background-color: var(--background-key-0); }
   &.depth-1{ background-color: var(--background-key-1); }
   &.depth-2{ background-color: var(--background-key-2); }
@@ -336,14 +346,20 @@ body {
 .multiple-buttons {
   display: flex;
   flex-direction: row;
+  justify-content: normal;
+  align-items: normal;
+  row-gap: 0;
+  padding: 0;
 
   .multiple-buttons-button {
+    z-index: 1;
     padding: 0.15rem 0.40rem;
+    height: 2rem;
     color: var(--foreground);
-    background-color: var(--background);
     &:hover {
       color: var(--background);
-      background-color: var(--foreground);
+      transition: color var(--flippable-transition);
+      transition: background-color var(--flippable-transition);
     }
     &.active {
       color: var(--background);
@@ -353,7 +369,16 @@ body {
   }
 }
 
+.transient-backdrop {
+  position: absolute;
+  z-index: 0;
+  height: 100%;
+  padding: 0.15rem 0.40rem;
+  pointer-events: none;
+  background-color: var(--foreground);
+}
+
 .query-view, .query-debug-view {
   background-color: var(--background-secondary);
-  transition: background-color var(--theme-transition-time) ease-in-out;
+  transition: background-color var(--theme-transition);
 }

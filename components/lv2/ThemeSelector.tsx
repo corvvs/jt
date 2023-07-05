@@ -27,7 +27,7 @@ export const ThemeSelector = () => {
           content: <div
             className="h-[1.5rem]"
           >
-            <span className="p-1">System</span>
+            <span className="p-1">Auto</span>
           </div>
         },
         {
