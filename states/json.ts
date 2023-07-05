@@ -1,4 +1,4 @@
-import { JsonGauge, JsonRowItem, flattenJson } from '@/libs/jetson';
+import { GaugeStats, JsonGauge, JsonRowItem, flattenJson, makeGauge } from '@/libs/jetson';
 import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
 import { toggleAtom } from './view';
@@ -128,10 +128,11 @@ export const useVisibleItems = () => {
     const visibleItems = openedItems;
 
     if (visibleItems.length === 0) { return null; }
+
     return {
       filteredItems,
       visibleItems,
-      gauge: flatJsons.gauge,
+      gauge: makeGauge(narrowedItems),
     };
   }, [flatJsons, toggleState, manipulation, filterMaps]);
 };
