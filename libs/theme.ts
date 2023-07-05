@@ -94,7 +94,7 @@ const ColorSets: {
   },
 }
 
-function colorSetForTheme(theme: ColorTheme) {
+function colorSetForTheme(theme: ColorTheme): ColorSet {
   if (theme === "system") {
     return colorSetForTheme("light");
   }
