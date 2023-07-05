@@ -11,6 +11,7 @@ import _ from "lodash";
 import { useEditJson } from "@/states/modal";
 import Link from "next/link";
 import { ThemeSelector } from "../lv2/ThemeSelector";
+import { useTransientBackdrop } from "@/features/TransientBackdrop";
 
 const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
@@ -78,17 +79,45 @@ const NarrowingLine = (props: {
   </div>)
 }
 
-const ManipulationButtons = () => {
+const OpetationButtons = () => {
+  const { openModal } = useEditJson();
   const { flatJsons } = useJSON();
   const { openAll, closeAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
+  const {
+    handleMouseEnter,
+    handleMouseLeave,
+    backdrop,
+  } = useTransientBackdrop();
   if (!flatJsons) { return null; }
 
-  return <>
+  return <div
+    className='header-bar relative flex flex-row items-center gap-1'
+    onMouseLeave={handleMouseLeave}
+  >
+    { backdrop }
+    <Link
+      className="flippable h-[2.4em] flex flex-row py-1 whitespace-nowrap break-keep"
+      href="/new"
+      target="_blank"
+      onMouseEnter={handleMouseEnter}
+    >
+      <InlineIcon i={<VscNewFile />} />
+      <span>New</span>
+    </Link>
+
+    <MenuButton
+      onClick={() => openModal()}
+      onMouseEnter={handleMouseEnter}
+    >
+      <InlineIcon i={<VscEdit />} />
+      <span>Edit</span>
+    </MenuButton>
 
     <MenuToggleButton
       isToggled={filteringPreference.showPanel}
       onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
+      onMouseEnter={handleMouseEnter}
     >
       <InlineIcon i={<FaSearch />} />
       <span>Filter</span>
@@ -96,6 +125,7 @@ const ManipulationButtons = () => {
 
     <MenuButton
       onClick={() => closeAll()}
+      onMouseEnter={handleMouseEnter}
     >
       <InlineIcon i={<HiChevronDoubleUp />} />
       <span>Fold</span>
@@ -103,12 +133,13 @@ const ManipulationButtons = () => {
 
     <MenuButton
       onClick={() => openAll()}
+      onMouseEnter={handleMouseEnter}
     >
       <InlineIcon i={<HiChevronDoubleDown />} />
       <span>Unfold</span>
     </MenuButton>
 
-  </>
+  </div>;
 }
 
 const AppTitle = () => {
@@ -120,35 +151,13 @@ const AppTitle = () => {
 };
 
 const MainLine = () => {
-  const { openModal } = useEditJson();
 
   return (<div
     className="shrink-0 grow-0 gap-2 flex flex-row items-center"
   >
     <AppTitle />
-
-    <div className='header-bar flex flex-row items-center gap-1'>
-      <Link
-        className="flippable h-[2.4em] flex flex-row py-1 whitespace-nowrap break-keep"
-        href="/new"
-        target="_blank"
-      >
-        <InlineIcon i={<VscNewFile />} />
-        <span>New</span>
-      </Link>
-
-      <MenuButton
-        onClick={() => openModal()}
-      >
-        <InlineIcon i={<VscEdit />} />
-        <span>Edit</span>
-      </MenuButton>
-
-      <ManipulationButtons />
-
-      <ThemeSelector />
-
-    </div>
+    <OpetationButtons />
+    <ThemeSelector />
   </div>);
 };
 

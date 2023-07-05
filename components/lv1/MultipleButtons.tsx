@@ -25,8 +25,6 @@ export function MultipleButtons<T extends string>({
     backdrop,
   } = useTransientBackdrop();
 
-
-
   const buttons = items.map(item => {
     const isActive = currentKey === item.key;
     return <button

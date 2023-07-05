@@ -88,6 +88,7 @@ body {
 
 .header-bar {
   > * {
+    z-index: 1;
     align-items: center;
     justify-content: center;
     padding: 0 0.25rem;
@@ -140,9 +141,9 @@ body {
 .flippable {
   &:hover {
     color: var(--background);
-    background-color: var(--foreground);
+    // background-color: var(--foreground);
     transition: color var(--flippable-transition);
-    transition: background-color var(--flippable-transition);
+    // transition: background-color var(--flippable-transition);
   }
 }
 
@@ -158,7 +159,7 @@ body {
 .menu-toggle-button {
   &:hover {
     color: var(--background);
-    background-color: var(--foreground);
+    // background-color: var(--foreground);
     transition: color var(--flippable-transition);
     transition: background-color var(--flippable-transition);
   }
@@ -371,7 +372,7 @@ body {
 .transient-backdrop {
   position: absolute;
   z-index: 0;
-  height: 2rem;
+  height: 100%;
   padding: 0.15rem 0.40rem;
   pointer-events: none;
   background-color: var(--foreground);
