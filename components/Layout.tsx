@@ -1,9 +1,16 @@
+import { useJSON } from "@/states";
 import Head from "next/head";
 import { ReactNode } from "react";
 
 export default function Layout(props: {
   children: ReactNode;
 }) {
+  const {
+    document,
+  } = useJSON();
+
+  const docTitle = document?.name;
+
   return (
     <main
       className='
@@ -11,7 +18,7 @@ export default function Layout(props: {
       '
     >
       <Head>
-        <title>JSON Analyzer</title>
+        <title>{ docTitle || "JSON Analyzer" }</title>
       </Head>
 
       <div

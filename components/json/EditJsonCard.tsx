@@ -5,20 +5,20 @@ import { JetButton } from "../lv1/JetButton";
 import { BsIndent } from "react-icons/bs";
 import { useToggleMass } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { useJsonDocument } from "@/data/document";
+import { JsonDocumentStore } from "@/data/document";
 
 const OperationPanel = (props: {
   rawText: string;
   setRawText: (next: string) => void;
+  title: string;
   setErrorStr: (str: string) => void;
   closeModal: () => void;
 }) => {
-  const { document, setBaseText, parseJson, setParsedJson }  = useJSON();
+  const { document, setDocumentData, parseJson, setParsedJson }  = useJSON();
   const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
-  const { saveDocument } = useJsonDocument();
   const router = useRouter();
 
   if (!document) {
@@ -41,11 +41,15 @@ const OperationPanel = (props: {
             const json = parseJson(props.rawText);
             // パース成功時
             setParsedJson({ status: "accepted", json, text: props.rawText });
-            setBaseText(props.rawText);
+            setDocumentData(props.title, props.rawText);
 
             clearManipulation();
             clearToggleState();
-            const id = await saveDocument({ ...document, json_string: props.rawText });
+            const id = await JsonDocumentStore.saveDocument({
+              ...document,
+              name: props.title,
+              json_string: props.rawText,
+            });
             const [docId] = (router.query.docId || []) as string[];
             if (id !== docId) {
               router.replace(`/${id}`);
@@ -120,9 +124,14 @@ const FooterBar = (props: {
 export const EditJsonCard = (props: {
   closeModal: () => void;
 }) => {
-  const { baseText }  = useJSON();
+  const { document, baseText }  = useJSON();
+  const [title, setTitle] = useState(document?.name || "");
   const [rawText, setRawText] = useState(baseText);
   const [errorStr, setErrorStr] = useState("");
+  const inputRef = useRef<any>();
+  useEffect(() => {
+    inputRef.current.value = title;
+  }, []);
 
   return (
     <div
@@ -134,16 +143,34 @@ export const EditJsonCard = (props: {
         <OperationPanel
           {...props}
           rawText={rawText}
+          title={title}
           setRawText={setRawText}
           setErrorStr={setErrorStr}
         />
       </div>
 
       <div
-        className="shrink grow relative"
+        className="shrink-0 grow-0 relative p-2"
       >
+        <input
+          type="text"
+          ref={inputRef}
+          className="p-2 bg-transparent	border-[1px] outline-0 w-full"
+          placeholder="タイトルを入力"
+          onChange={(e) => {
+            setTitle(e.currentTarget.value);
+          }}
+        />
+      </div>
+
+      <div
+        className="shrink grow relative p-2"
+      >
+        <h3
+          className="text-lg"
+        >本文</h3>
         <textarea
-          className="w-full h-[24em] outline-none p-2 json-text-textarea"
+          className="w-full h-[24em] outline-none json-text-textarea"
           style={{ resize: "none" }}
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}

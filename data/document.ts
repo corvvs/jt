@@ -27,6 +27,9 @@ async function saveDocument(data: JsonPartialDocument) {
 
   const id = data.id || uuidv4();
   const now = new Date();
+  if (!data.name) {
+    data.name = (new Date()).toLocaleString();
+  }
   const savedDocument: JsonDocument = {
     ...data,
     id,
@@ -90,11 +93,9 @@ async function listPreviews(scope: { skip: number; limit: number; } = { skip: 0,
 }
 
 
-export const useJsonDocument = () => {
-  return {
+export const JsonDocumentStore = {
     fetchLatest,
     fetchDocument,
     saveDocument,
     listPreviews,
-  };
 };

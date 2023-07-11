@@ -13,7 +13,7 @@ import { QueryView } from "./query/QueryView";
 import { useEditJson } from "@/states/modal";
 import { useToggleSingle } from "@/states/view";
 import { useRouter } from "next/router";
-import { JsonPartialDocument, useJsonDocument } from "@/data/document";
+import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -104,16 +104,12 @@ export const Main = (props: {
 }) => {
   const { docId } = props;
   const {
-    document, setDocument,
+    setDocument,
     parseJson,
     setParsedJson,
   } = useJSON();
   const { filteringPreference } = useManipulation();
   const itemViewRef = useRef<any>(null);
-  const {
-    fetchLatest,
-    fetchDocument,
-  } = useJsonDocument();
   const router = useRouter();
 
   useEffect(() => {
@@ -128,7 +124,7 @@ export const Main = (props: {
       if (docId === "new") {
         setDocument(newDocument);
       } else {
-        const d = await (docId ? fetchDocument(docId) : fetchLatest())
+        const d = await (docId ? JsonDocumentStore.fetchDocument(docId) : JsonDocumentStore.fetchLatest())
         if (d) {
           router.replace(`/${d.id}`);
           setDocument(d);
