@@ -61,7 +61,7 @@ const QueryInputField = () => {
       ref={inputRef}
       className="p-1 bg-transparent	border-[1px] outline-0 w-full"
       placeholder={placeholder}
-        onChange={(e) => {
+      onChange={(e) => {
         reflectQuery(e.currentTarget.value);
       }}
     />

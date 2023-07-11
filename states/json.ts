@@ -148,9 +148,9 @@ export const useJSON = () => {
     document, setDocument,
 
     baseText: document ? document.json_string : "",
-    setBaseText(next: string) {
+    setDocumentData(title: string, text: string) {
       if (!document) { return; }
-      setDocument({ ...document, json_string: next });
+      setDocument({ ...document, name: title, json_string: text });
     },
     flatJsons,
     json,
