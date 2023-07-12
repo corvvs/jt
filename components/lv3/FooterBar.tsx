@@ -8,7 +8,7 @@ const MainLine = (props: {
   stats: JsonStats;
   itemViewRef: MutableRefObject<any>;
 }) => {
-  const { flatJsons } = useJSON();
+  const { document, flatJsons } = useJSON();
   const visibles = useVisibleItems();
   if (!flatJsons || !visibles) { return null; }
 
@@ -29,6 +29,21 @@ const MainLine = (props: {
       <span>Characters:</span>
       <span className="stats-value">{props.stats.char_count}</span>
     </p>
+
+    <div
+      className="shrink grow flex flex-row justify-end items-center"
+    >
+      {
+        document && document.name
+          ? <div
+            className="document-name flex flex-row items-center px-2"
+          >
+            <p>Document Name:</p>
+            <p>{ document.name }</p>
+          </div>
+          : null
+      }
+    </div>
   </div>);
 }
 

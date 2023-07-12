@@ -312,6 +312,10 @@ body {
   }
 }
 
+.document-name {
+  gap: 0.5rem;
+}
+
 .selecting-status {
   border-radius: 0.25rem;
   padding: 0rem 0.5rem;
@@ -381,3 +385,4 @@ body {
   background-color: var(--background-secondary);
   transition: background-color var(--theme-transition);
 }
+
