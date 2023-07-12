@@ -11,10 +11,24 @@ type FilteringMap = {
   visible: { [k: number]: boolean };
 };
 
+type QueryMode = "simple" | "advanced";
+
+export const ModeDescription = {
+  "simple":   "キー・値に対する部分一致検索",
+  "advanced": "JSONの構造自体に対する検索",
+};
+
 export type FilteringResultAppearanceOption = "just" | "ascendant" | "descendant" | "ascendant_descendant";
 
+export const AppearanceDescription = {
+  "ascendant_descendant": "ヒットした項目とその祖先および子孫の項目を表示する",
+  "ascendant":            "ヒットした項目とその祖先の項目を表示する",
+  "descendant":           "ヒットした項目とその子孫の項目を表示する",
+  "just":                 "ヒットした項目のみを表示する",
+};
+
 type FilteringPreference = {
-  mode: "simple" | "advanced";
+  mode: QueryMode;
   showPanel: boolean;
   resultAppearance: FilteringResultAppearanceOption;
   showAdvancedDebug: boolean;

@@ -6,9 +6,9 @@ import { SimpleFilterCard } from "./SimpleFilterCard";
 import { AdvancedFilterCard } from "./AdvancedFilterCard";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { FaSearch } from "react-icons/fa";
-import { useCallback, useEffect, useRef } from "react";
+import { ReactNode, useCallback, useEffect, useRef } from "react";
 import { useAdvancedQuery } from "@/libs/advanced_query";
-import { useQuery } from "@/states/manipulation/query";
+import { ModeDescription, useQuery } from "@/states/manipulation/query";
 
 const ModePanel = () => {
   const { filteringPreference, setFilteringMode } = useManipulation();
@@ -19,12 +19,12 @@ const ModePanel = () => {
       {
         key: "simple",
         title: "Simple",
-        hint: "キー・値に対する部分一致検索",
+        hint: ModeDescription["simple"],
       },
       {
         key: "advanced",
         title: "Advanced",
-        hint: "JSONの構造自体に対する検索",
+        hint: ModeDescription["advanced"],
       },
     ]}
     onClick={(item) => setFilteringMode(item.key)}
@@ -69,8 +69,29 @@ const QueryInputField = () => {
   </div>
 };
 
+const FootHinted = (props: {
+  hint?: string;
+  children: ReactNode;
+}) => {
+  return <div
+    className="flex flex-col items-end"
+  >
+    <div>{props.children}</div>
+
+    <div
+      className="hint-footer"
+    >
+      { props.hint || "" }
+    </div>
+  </div>;
+};
+
 export const QueryView = () => {
-  const { filteringPreference } = useManipulation();
+  const {
+    filteringPreference,
+    queryModeDescription,
+    appearanceDescription,
+  } = useManipulation();
   const { parsedQuery } = useAdvancedQuery();
 
   const syntaxErrorContent = (() => {
@@ -120,14 +141,24 @@ export const QueryView = () => {
       <div
         className="flex flex-row justify-between items-center"
       >
-        <h3
-          className="font-bold text-sm"
+        <div
+          className="flex flex-col"
         >
-          検索モード
-        </h3>
-        <div>
-          <ModePanel />
+
+          <h3
+            className="font-bold text-sm"
+          >
+            検索モード
+          </h3>
+
+          <div
+            className="hint-footer hint-footer-blank"
+          ></div>
+
         </div>
+
+        <FootHinted hint={queryModeDescription}><ModePanel /></FootHinted>
+
       </div>
     </div>
 
@@ -142,9 +173,7 @@ export const QueryView = () => {
         >
           結果の表示方法
         </h3>
-        <div className="flex flex-row justify-end">
-          <FilteringResultAppearancePanel />
-        </div>
+        <FootHinted hint={appearanceDescription}><FilteringResultAppearancePanel /></FootHinted>
       </div>
     </div>
 

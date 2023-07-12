@@ -3,7 +3,7 @@ import { atom, useAtom } from "jotai";
 import _ from "lodash";
 
 type IndexRange = { from: number; to: number; };
-export type NarrowingStack = IndexRange[];
+type NarrowingStack = IndexRange[];
 export const defaultNarrowedRange: NarrowingStack = [];
 
 const narrowedRangeAtom = atom<NarrowingStack>(defaultNarrowedRange);

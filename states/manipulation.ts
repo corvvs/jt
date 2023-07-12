@@ -1,7 +1,7 @@
 import { useAtom } from "jotai";
 import _ from "lodash";
-import { NarrowingStack, defaultNarrowedRange, useNarrowing } from "./manipulation/narrowing";
-import { FilteringResultAppearanceOption, defaultFilteringQuery, filterMapsAtom, filteringResultAppearanceAtom, useQuery } from "./manipulation/query";
+import { defaultNarrowedRange, useNarrowing } from "./manipulation/narrowing";
+import { AppearanceDescription, FilteringResultAppearanceOption, ModeDescription, defaultFilteringQuery, filterMapsAtom, filteringResultAppearanceAtom, useQuery } from "./manipulation/query";
 
 type Manipulation = {
   /**
@@ -75,6 +75,8 @@ export const useManipulation = () => {
     setFilteringResultAppearance,
     setFilteringMode,
     setFilteringBooleanPreference,
+    queryModeDescription: ModeDescription[filteringPreference.mode],
+    appearanceDescription: AppearanceDescription[filteringPreference.resultAppearance],
 
     clearManipulation,
   };
