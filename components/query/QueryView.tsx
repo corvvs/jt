@@ -1,13 +1,14 @@
 import _ from "lodash";
 import { MultipleButtons } from "../lv1/MultipleButtons";
-import { useManipulation, useQuery } from "@/states/manipulation";
-import { PreferencePanel } from "../lv2/FilterPreferencePanel";
+import { useManipulation } from "@/states/manipulation";
+import { FilteringResultAppearancePanel } from "../lv2/FilterPreferencePanel";
 import { SimpleFilterCard } from "./SimpleFilterCard";
 import { AdvancedFilterCard } from "./AdvancedFilterCard";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { FaSearch } from "react-icons/fa";
 import { useCallback, useEffect, useRef } from "react";
 import { useAdvancedQuery } from "@/libs/advanced_query";
+import { useQuery } from "@/states/manipulation/query";
 
 const ModePanel = () => {
   const { filteringPreference, setFilteringMode } = useManipulation();
@@ -142,7 +143,7 @@ export const QueryView = () => {
           結果の表示方法
         </h3>
         <div className="flex flex-row justify-end">
-          <PreferencePanel />
+          <FilteringResultAppearancePanel />
         </div>
       </div>
     </div>

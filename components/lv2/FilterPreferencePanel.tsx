@@ -2,11 +2,11 @@ import { useManipulation } from "@/states/manipulation";
 import _ from "lodash";
 import { MultipleButtons } from "../lv1/MultipleButtons";
 
-export const PreferencePanel = () => {
-  const { filteringPreference, setFilteringVisibility } = useManipulation();
+export const FilteringResultAppearancePanel = () => {
+  const { filteringPreference, setFilteringResultAppearance } = useManipulation();
 
   return <MultipleButtons
-    currentKey={filteringPreference.visibility}
+    currentKey={filteringPreference.resultAppearance}
     items={[
       {
         key: "ascendant_descendant",
@@ -30,7 +30,7 @@ export const PreferencePanel = () => {
       },
     ]}
     onClick={(item) => {
-      setFilteringVisibility(item.key);
+      setFilteringResultAppearance(item.key);
     }}
   />
 };

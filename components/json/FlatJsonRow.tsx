@@ -84,7 +84,7 @@ export const FlatJsonRow = (props: {
     right,
     elementKey,
   } = item;
-  const backgroundClass = (isMatched && filteringPreference.visibility !== "just")
+  const backgroundClass = (isMatched && filteringPreference.resultAppearance !== "just")
     ? "matched-row"
     : isNarrowedFrom
       ? "narrowed-from-row"
