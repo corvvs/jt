@@ -76,7 +76,7 @@ export const filterMapsAtom = atom<FilteringMap | null>(
     const actualMatcher = (() => {
       if (get(filteringPreferenceAtom).mode === "simple") {
 
-        const simpleQuery = get(filteringQueryAtom).trim();
+        const simpleQuery = get(filteringQueryAtom).trim().toLowerCase();
         if (simpleQuery.length === 0) { return null; }
         return (item: JsonRowItem) => {
           const key = item.itemKey?.toString().toLowerCase();
