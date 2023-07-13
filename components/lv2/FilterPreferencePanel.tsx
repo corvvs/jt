@@ -1,36 +1,37 @@
 import { useManipulation } from "@/states/manipulation";
 import _ from "lodash";
 import { MultipleButtons } from "../lv1/MultipleButtons";
+import { AppearanceDescription } from "@/states/manipulation/query";
 
-export const PreferencePanel = () => {
-  const { filteringPreference, setFilteringVisibility } = useManipulation();
+export const FilteringResultAppearancePanel = () => {
+  const { filteringPreference, setFilteringResultAppearance } = useManipulation();
 
   return <MultipleButtons
-    currentKey={filteringPreference.visibility}
+    currentKey={filteringPreference.resultAppearance}
     items={[
       {
         key: "ascendant_descendant",
         title: "Related",
-        hint: "ヒットした項目とその祖先および子孫の項目を表示する",
+        hint: AppearanceDescription["ascendant_descendant"],
       },
       {
         key: "ascendant",
         title: "Ascendant",
-        hint: "ヒットした項目とその祖先の項目を表示する",
+        hint: AppearanceDescription["ascendant"],
       },
       {
         key: "descendant",
         title: "Descendant",
-        hint: "ヒットした項目とその子孫の項目を表示する",
+        hint: AppearanceDescription["descendant"],
       },
       {
         key: "just",
         title: "Matched",
-        hint: "ヒットした項目のみを表示する",
+        hint: AppearanceDescription["just"],
       },
     ]}
     onClick={(item) => {
-      setFilteringVisibility(item.key);
+      setFilteringResultAppearance(item.key);
     }}
   />
 };

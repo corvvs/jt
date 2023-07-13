@@ -9,6 +9,7 @@ import { useJSON } from "@/states";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 import { useToggleSingle } from "@/states/view";
+import { extractSubtree } from "@/libs/partial_tree";
 
 const CopySubtreeButton = (props: {
   item: JsonRowItem;
@@ -21,7 +22,7 @@ const CopySubtreeButton = (props: {
       onClick={async () => {
         const { rawJson } = props;
         const keyPath = props.item.elementKey;
-        const subJson = keyPath ? _.get(rawJson, keyPath) : rawJson;
+        const subJson = extractSubtree(rawJson, props.item.elementKey);
         if (!subJson) { return; }
         const subText = JSON.stringify(subJson, null, 2);
         try {

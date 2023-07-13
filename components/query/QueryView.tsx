@@ -1,13 +1,15 @@
 import _ from "lodash";
 import { MultipleButtons } from "../lv1/MultipleButtons";
-import { useManipulation, useQuery } from "@/states/manipulation";
-import { PreferencePanel } from "../lv2/FilterPreferencePanel";
-import { SimpleFilterCard } from "./SimpleFilterCard";
+import { useManipulation } from "@/states/manipulation";
+import { FilteringResultAppearancePanel } from "../lv2/FilterPreferencePanel";
 import { AdvancedFilterCard } from "./AdvancedFilterCard";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { FaSearch } from "react-icons/fa";
-import { useCallback, useEffect, useRef } from "react";
+import { ReactNode, useCallback, useEffect, useRef } from "react";
 import { useAdvancedQuery } from "@/libs/advanced_query";
+import { ModeDescription, useQuery } from "@/states/manipulation/query";
+import { HitCard } from "./HitCard";
+import { FootHinted } from "./FootHinted";
 
 const ModePanel = () => {
   const { filteringPreference, setFilteringMode } = useManipulation();
@@ -18,12 +20,12 @@ const ModePanel = () => {
       {
         key: "simple",
         title: "Simple",
-        hint: "キー・値に対する部分一致検索",
+        hint: ModeDescription["simple"],
       },
       {
         key: "advanced",
         title: "Advanced",
-        hint: "JSONの構造自体に対する検索",
+        hint: ModeDescription["advanced"],
       },
     ]}
     onClick={(item) => setFilteringMode(item.key)}
@@ -69,7 +71,11 @@ const QueryInputField = () => {
 };
 
 export const QueryView = () => {
-  const { filteringPreference } = useManipulation();
+  const {
+    filteringPreference,
+    queryModeDescription,
+    appearanceDescription,
+  } = useManipulation();
   const { parsedQuery } = useAdvancedQuery();
 
   const syntaxErrorContent = (() => {
@@ -86,8 +92,8 @@ export const QueryView = () => {
   })();
 
   const FilterCard = filteringPreference.mode === "simple"
-    ? SimpleFilterCard
-    : AdvancedFilterCard;
+    ? null
+    : <AdvancedFilterCard />;
 
   return <div
     className="query-view shrink grow flex flex-col gap-2 overflow-hidden"
@@ -119,14 +125,24 @@ export const QueryView = () => {
       <div
         className="flex flex-row justify-between items-center"
       >
-        <h3
-          className="font-bold text-sm"
+        <div
+          className="flex flex-col"
         >
-          検索モード
-        </h3>
-        <div>
-          <ModePanel />
+
+          <h3
+            className="font-bold text-sm"
+          >
+            検索モード
+          </h3>
+
+          <div
+            className="hint-footer hint-footer-blank"
+          ></div>
+
         </div>
+
+        <FootHinted hint={queryModeDescription}><ModePanel /></FootHinted>
+
       </div>
     </div>
 
@@ -141,16 +157,20 @@ export const QueryView = () => {
         >
           結果の表示方法
         </h3>
-        <div className="flex flex-row justify-end">
-          <PreferencePanel />
-        </div>
+        <FootHinted hint={appearanceDescription}><FilteringResultAppearancePanel /></FootHinted>
       </div>
+    </div>
+
+    <div
+      className="px-2 shrink-0 grow-0"
+    >
+      <HitCard />
     </div>
 
     <div
       className="px-2 shrink grow"
     >
-      <FilterCard />
+      { FilterCard }
     </div>
 
   </div>;

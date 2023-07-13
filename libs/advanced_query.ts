@@ -1,4 +1,3 @@
-import { filteringPreferenceAtom, filteringQueryAtom } from "@/states/manipulation";
 import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { QuerySyntaxError } from "./advanced_query/QuerySyntaxError";
@@ -6,6 +5,7 @@ import { tokenizeQuery } from "./advanced_query/tokenizer";
 import { structurizeQuery } from "./advanced_query/parser";
 import { JsonRowItem } from "./jetson";
 import { matchByQuery } from "./advanced_query/matcher";
+import { filteringPreferenceAtom, filteringQueryAtom } from "@/states/manipulation/query";
 
 const parsedAdvancedQueryAtom = atom(
   (get) => {
