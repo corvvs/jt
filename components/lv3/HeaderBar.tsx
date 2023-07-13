@@ -82,7 +82,7 @@ const NarrowingLine = (props: {
 const OpetationButtons = () => {
   const { openModal } = useEditJson();
   const { flatJsons } = useJSON();
-  const { openAll, closeAll } = useToggleMass();
+  const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   const {
     handleMouseEnter,
@@ -124,7 +124,7 @@ const OpetationButtons = () => {
     </MenuToggleButton>
 
     <MenuButton
-      onClick={() => closeAll()}
+      onClick={() => foldAll()}
       onMouseEnter={handleMouseEnter}
     >
       <InlineIcon i={<HiChevronDoubleUp />} />
@@ -132,7 +132,7 @@ const OpetationButtons = () => {
     </MenuButton>
 
     <MenuButton
-      onClick={() => openAll()}
+      onClick={() => unfoldAll()}
       onMouseEnter={handleMouseEnter}
     >
       <InlineIcon i={<HiChevronDoubleDown />} />
