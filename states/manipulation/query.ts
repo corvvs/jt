@@ -6,7 +6,7 @@ import { advancedMatcherAtom } from "@/libs/advanced_query";
 
 export const defaultFilteringQuery = "";
 
-type FilteringMap = {
+export type FilteringMap = {
   matched: { [k: number]: boolean };
   visible: { [k: number]: boolean };
 };

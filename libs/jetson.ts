@@ -67,6 +67,10 @@ export type JsonRowItem = {
   stats: TreeStats;
   childs?: JsonRowItem[];
   itemKey?: string | number;
+
+  previousSibling?: JsonRowItem;
+  parent?: JsonRowItem;
+  nextSibling?: JsonRowItem;
 };
 
 function makeVOTree(subtree: any): JsonValueObject {
@@ -105,6 +109,10 @@ function makeVOTree(subtree: any): JsonValueObject {
   }
 }
 
+/**
+ * `flattenJson` の補助関数.
+ * JsonValueObject からなるツリー構造を再帰的にたどり, JsonRowItem の配列に変換する.
+ */
 function flattenDigger(
   subtree: JsonValueObject,
   items: JsonRowItem[],
@@ -115,12 +123,13 @@ function flattenDigger(
     item: JsonRowItem;
     itemKey: string | number;
   }
-): void {
-  const ownKey = typeof parent?.elementKey === "string"
+): JsonRowItem {
+  const parentIsContainer = typeof parent?.elementKey === "string";
+  const ownKey = parentIsContainer
     ? `${parent.itemKey ?? items.length}`
     : "";
 
-  const elementKey = typeof parent?.elementKey === "string"
+  const elementKey = parentIsContainer
     ? (parent.elementKey.length > 0
       ? parent.elementKey + "." + ownKey
       : ownKey
@@ -141,6 +150,7 @@ function flattenDigger(
       max_depth: 0,
     },
     itemKey: parent?.itemKey,
+    parent: parent?.item,
   };
   items.push(item);
 
@@ -185,9 +195,12 @@ function flattenDigger(
 
       item.childs = [];
       branch.push(item);
-      subtree.value.forEach((value, index) => {
-        flattenDigger(value, items, branch, jsonStats, { item, itemKey: index, elementKey });
-      });
+      const children = subtree.value
+        .map((value, index) => flattenDigger(value, items, branch, jsonStats, { item, itemKey: index, elementKey }));
+      for (let i = 1; i < children.length; ++i) {
+        children[i - 1].nextSibling = children[i];
+        children[i].previousSibling = children[i - 1];
+      }
       branch.pop();
       break;
     }
@@ -196,13 +209,19 @@ function flattenDigger(
       item.childs = [];
 
       branch.push(item);
-      _.forEach(subtree.value, (value, itemKey) => {
-        flattenDigger(value, items, branch, jsonStats, { item, itemKey, elementKey });
-      });
+      const children = _.map(
+        subtree.value,
+        (value, itemKey) => flattenDigger(value, items, branch, jsonStats, { item, itemKey, elementKey })
+      );
+      for (let i = 1; i < children.length; ++i) {
+        children[i - 1].nextSibling = children[i];
+        children[i].previousSibling = children[i - 1];
+      }
       branch.pop();
       break;
     }
   }
+  return item;
 }
 
 export function flattenJson(json: any, rawText: string) {

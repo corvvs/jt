@@ -2,13 +2,14 @@ import _ from "lodash";
 import { MultipleButtons } from "../lv1/MultipleButtons";
 import { useManipulation } from "@/states/manipulation";
 import { FilteringResultAppearancePanel } from "../lv2/FilterPreferencePanel";
-import { SimpleFilterCard } from "./SimpleFilterCard";
 import { AdvancedFilterCard } from "./AdvancedFilterCard";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { FaSearch } from "react-icons/fa";
 import { ReactNode, useCallback, useEffect, useRef } from "react";
 import { useAdvancedQuery } from "@/libs/advanced_query";
 import { ModeDescription, useQuery } from "@/states/manipulation/query";
+import { HitCard } from "./HitCard";
+import { FootHinted } from "./FootHinted";
 
 const ModePanel = () => {
   const { filteringPreference, setFilteringMode } = useManipulation();
@@ -69,23 +70,6 @@ const QueryInputField = () => {
   </div>
 };
 
-const FootHinted = (props: {
-  hint?: string;
-  children: ReactNode;
-}) => {
-  return <div
-    className="flex flex-col items-end"
-  >
-    <div>{props.children}</div>
-
-    <div
-      className="hint-footer"
-    >
-      { props.hint || "" }
-    </div>
-  </div>;
-};
-
 export const QueryView = () => {
   const {
     filteringPreference,
@@ -108,8 +92,8 @@ export const QueryView = () => {
   })();
 
   const FilterCard = filteringPreference.mode === "simple"
-    ? SimpleFilterCard
-    : AdvancedFilterCard;
+    ? null
+    : <AdvancedFilterCard />;
 
   return <div
     className="query-view shrink grow flex flex-col gap-2 overflow-hidden"
@@ -178,9 +162,15 @@ export const QueryView = () => {
     </div>
 
     <div
+      className="px-2 shrink-0 grow-0"
+    >
+      <HitCard />
+    </div>
+
+    <div
       className="px-2 shrink grow"
     >
-      <FilterCard />
+      { FilterCard }
     </div>
 
   </div>;
