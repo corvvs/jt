@@ -34,12 +34,12 @@ export function useToggleMass() {
   const { flatJsons } = useJSON();
   const visibles = useVisibleItems();
 
-  const openAll = () => {
+  const unfoldAll = () => {
     if (!visibles) { return; }
-    if (visibles.filteredItems.length === flatJsons?.items.length) {
+    if (visibles.filteredItems.length !== flatJsons?.items.length) {
       setToggleState((prev) => {
         const next = _.cloneDeep(prev);
-        for (const item of flatJsons.items) {
+        for (const item of visibles.filteredItems) {
           delete next[item.index];
         }
         return next;
@@ -49,7 +49,7 @@ export function useToggleMass() {
     }
   };
 
-  const closeAll = () => {
+  const foldAll = () => {
     if (!visibles) { return; }
     setToggleState((prev) => {
       const next = _.cloneDeep(prev);
@@ -64,12 +64,12 @@ export function useToggleMass() {
     });
   };
 
-  const clearToggleState = () => openAll();
+  const clearToggleState = () => unfoldAll();
 
   return {
     toggleState,
-    openAll,
-    closeAll,
+    unfoldAll,
+    foldAll,
     clearToggleState,
   };
 }
