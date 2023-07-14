@@ -18,7 +18,7 @@ export default function Layout(props: {
       '
     >
       <Head>
-        <title>{ docTitle || "JSON Analyzer" }</title>
+        <title>{ docTitle ? `[Jet] ${ docTitle }` : "JSON Analyzer" }</title>
       </Head>
 
       <div
