@@ -254,6 +254,7 @@ body {
 .Toastify__toast {
   border: 2px solid #888;
   border-radius: 0;
+  color: var(--foreground);
 }
 
 .Toastify__toast--error {
