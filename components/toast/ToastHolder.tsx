@@ -14,7 +14,7 @@ const MySlide = cssTransition({
 
 export const ToastHolder = () => {
   const {
-    preferredColorTheme: colorScheme,
+    colorTheme: colorScheme,
   } = useColorTheme();
 
   return (
