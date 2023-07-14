@@ -6,9 +6,10 @@ import { extractFilteredResult } from "@/libs/partial_tree";
 import { useJSON } from "@/states";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
+import { useVisibleItems } from "@/states/json";
 
 const HitCounter = () => {
-  const { filteringPreference, filterMaps } = useManipulation();
+  const { filterMaps } = useManipulation();
   if (!filterMaps) { return null }
   const hitCount = _.size(filterMaps.matched);
 
@@ -25,11 +26,11 @@ const CopyResultsBlock = () => {
   } = useManipulation();
   const {
     json,
-    flatJsons
   } = useJSON();
+  const visibles = useVisibleItems();
   if (!filterMaps) { return null; }
   const hitCount = _.size(filterMaps.matched);
-  if (hitCount === 0 || !flatJsons || json?.status !== "accepted") { return null; }
+  if (hitCount === 0 || !visibles || json?.status !== "accepted") { return null; }
 
   const copyDescription = {
     "ascendant_descendant": "表示範囲をコピー",
@@ -57,7 +58,7 @@ const CopyResultsBlock = () => {
           const partialJson = extractFilteredResult(
             filteringPreference.resultAppearance,
             json.json,
-            flatJsons.items,
+            visibles.filteredItems,
             filterMaps
           );
           if (!partialJson) { return; }
