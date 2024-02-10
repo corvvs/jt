@@ -10,7 +10,7 @@ import { defaultRawText, useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
-import { useEditJson } from "@/states/modal";
+import { useEditJsonModal } from "@/states/modal";
 import { useToggleSingle } from "@/states/view";
 import { useRouter } from "next/router";
 import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
@@ -54,7 +54,7 @@ const JsonItemsView = (props: {
 }) => {
   const { json } = useJSON();
   const visibles = useVisibleItems();
-  const { openModal  } = useEditJson();
+  const { openModal } = useEditJsonModal();
   const manipulationHook = useManipulation();
   const toggleSingleHook = useToggleSingle();
 
@@ -87,12 +87,12 @@ const JsonItemsView = (props: {
       itemViewRef={props.itemViewRef}
       data={visibleItems} // データ
       renderItem={(item) => <FlatJsonRow
-          key={item.elementKey}
-          item={item}
-          manipulationHook={manipulationHook}
-          toggleSingleHook={toggleSingleHook}
-          gauge={gauge}
-        />
+        key={item.elementKey}
+        item={item}
+        manipulationHook={manipulationHook}
+        toggleSingleHook={toggleSingleHook}
+        gauge={gauge}
+      />
       }
       itemSize={32} // 各アイテムの高さ
     />
@@ -159,17 +159,17 @@ export const Main = (props: {
       {
         filteringPreference.showPanel
           ? <div
-              className="shrink-0 grow-0 w-96 flex flex-col justify-stretch"
-            >
-              <QueryView />
-            </div>
+            className="shrink-0 grow-0 w-96 flex flex-col justify-stretch"
+          >
+            <QueryView />
+          </div>
           : null
       }
 
       <div
         className="shrink grow text-base"
       >
-        <JsonItemsView itemViewRef={itemViewRef}/>
+        <JsonItemsView itemViewRef={itemViewRef} />
       </div>
 
     </div>

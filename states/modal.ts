@@ -4,7 +4,7 @@ export const modalAtom = {
   edit_json: atom(false),
 };
 
-export function useEditJson() {
+export function useEditJsonModal() {
   const [isOpen, setIsOpen] = useAtom(modalAtom.edit_json)
   const closeModal = () => {
     setIsOpen(false);
