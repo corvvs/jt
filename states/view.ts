@@ -31,22 +31,17 @@ export function useToggleSingle() {
 
 export function useToggleMass() {
   const [toggleState, setToggleState] = useAtom(toggleAtom);
-  const { flatJsons } = useJSON();
   const visibles = useVisibleItems();
 
   const unfoldAll = () => {
     if (!visibles) { return; }
-    if (visibles.filteredItems.length !== flatJsons?.items.length) {
-      setToggleState((prev) => {
-        const next = _.cloneDeep(prev);
-        for (const item of visibles.filteredItems) {
-          delete next[item.index];
-        }
-        return next;
-      });
-    } else {
-      setToggleState({});
-    }
+    setToggleState((prev) => {
+      const next = _.cloneDeep(prev);
+      for (const item of visibles.filteredItems) {
+        delete next[item.index];
+      }
+      return next;
+    });
   };
 
   const foldAll = () => {
