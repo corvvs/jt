@@ -6,6 +6,7 @@ import { GoogleAnalytics } from '../components/gtag'
 import { EditJsonCardHolder } from "@/components/holders/modal/EditJsonCard";
 import { useRouter } from "next/router";
 import { ThemeObserver } from "@/components/holders/ThemeObserver";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export default function Home() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function Home() {
       <ToastHolder />
       <EditJsonCardHolder />
       <ThemeObserver />
+      <SpeedInsights />
     </Layout>
   )
 }
