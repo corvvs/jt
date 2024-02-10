@@ -16,7 +16,7 @@ const OperationPanel = (props: {
   setErrorStr: (str: string) => void;
   closeModal: () => void;
 }) => {
-  const { document, setDocumentData, parseJson, setParsedJson }  = useJSON();
+  const { document, setDocumentData, parseJson, setParsedJson } = useJSON();
   const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
   const router = useRouter();
@@ -108,29 +108,32 @@ const FooterBar = (props: {
     {
       props.errorStr
         ? <p
-            className="p-2 text-red-500"
-          >
-            {props.errorStr}
-          </p>
+          className="p-2 text-red-500"
+        >
+          {props.errorStr}
+        </p>
         : null
     }
 
     <p
       className="p-2"
-    >{ props.rawText.length } 文字</p>
+    >{props.rawText.length} 文字</p>
   </>
 };
 
 export const EditJsonCard = (props: {
   closeModal: () => void;
 }) => {
-  const { document, baseText }  = useJSON();
+  const { document, baseText } = useJSON();
   const [title, setTitle] = useState(document?.name || "");
   const [rawText, setRawText] = useState(baseText);
   const [errorStr, setErrorStr] = useState("");
   const inputRef = useRef<any>();
+  const textareaRef = useRef<any>();
+
   useEffect(() => {
     inputRef.current.value = title;
+    textareaRef.current.focus();
   }, []);
 
   return (
@@ -170,6 +173,7 @@ export const EditJsonCard = (props: {
           className="text-lg"
         >本文</h3>
         <textarea
+          ref={textareaRef}
           className="w-full h-[24em] outline-none json-text-textarea"
           style={{ resize: "none" }}
           value={rawText}

@@ -8,7 +8,7 @@ import { useJSON } from "@/states";
 import { useManipulation } from "@/states/manipulation";
 import { FaChevronRight, FaSearch } from "react-icons/fa";
 import _ from "lodash";
-import { useEditJson } from "@/states/modal";
+import { useEditJsonModal } from "@/states/modal";
 import Link from "next/link";
 import { ThemeSelector } from "../lv2/ThemeSelector";
 import { useTransientBackdrop } from "@/features/TransientBackdrop";
@@ -80,7 +80,7 @@ const NarrowingLine = (props: {
 }
 
 const OpetationButtons = () => {
-  const { openModal } = useEditJson();
+  const { openModal } = useEditJsonModal();
   const { flatJsons } = useJSON();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
@@ -95,7 +95,7 @@ const OpetationButtons = () => {
     className='header-bar relative flex flex-row items-center gap-1'
     onMouseLeave={handleMouseLeave}
   >
-    { backdrop }
+    {backdrop}
     <Link
       className="flippable h-[2.4em] flex flex-row py-1 whitespace-nowrap break-keep"
       href="/new"
