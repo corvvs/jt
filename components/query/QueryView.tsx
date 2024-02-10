@@ -61,7 +61,7 @@ const QueryInputField = () => {
     <input
       type="text"
       ref={inputRef}
-      className="p-1 bg-transparent	border-[1px] outline-0 w-full"
+      className="p-1 bg-transparent	border-[1px] outline-0 w-full font-monospacy"
       placeholder={placeholder}
       onChange={(e) => {
         reflectQuery(e.currentTarget.value);
@@ -98,7 +98,7 @@ export const QueryView = () => {
   return <div
     className="query-view shrink grow flex flex-col gap-2 overflow-hidden"
   >
-    
+
     <h2
       className="color-inverted px-2 py-1 flex flex-row gap-1 items-center font-bold"
     >
@@ -170,7 +170,7 @@ export const QueryView = () => {
     <div
       className="px-2 shrink grow"
     >
-      { FilterCard }
+      {FilterCard}
     </div>
 
   </div>;
