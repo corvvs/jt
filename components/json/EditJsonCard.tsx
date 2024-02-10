@@ -8,6 +8,8 @@ import { useManipulation } from "@/states/manipulation";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { JsonDocumentStore } from "@/data/document";
+import { FaSortAlphaDown } from "react-icons/fa";
+import { sortKeysJson } from "@/libs/tree_manipulation";
 
 const OperationPanel = (props: {
   rawText: string;
@@ -94,6 +96,23 @@ const OperationPanel = (props: {
       >
         <InlineIcon i={<BsIndent />} />
         JSONをMinify
+      </JetButton>
+    </div>
+
+    <div>
+      <JetButton
+        onClick={() => {
+          try {
+            const sortedText = sortKeysJson(props.rawText);
+            props.setRawText(JSON.stringify(JSON.parse(sortedText), null, 2));
+          } catch (e) {
+            console.error(e);
+            setErrorStr(e);
+          }
+        }}
+      >
+        <InlineIcon i={<FaSortAlphaDown />} />
+        Mapをキーでソート
       </JetButton>
     </div>
   </>
