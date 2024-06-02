@@ -35,6 +35,24 @@ const OperationPanel = (props: {
     }
   }
 
+  const parseAndClose = async (title: string, text: string) => {
+    setDocumentData(title, text);
+
+    clearManipulation();
+    clearToggleState();
+    const id = await JsonDocumentStore.saveDocument({
+      ...document,
+      name: title,
+      json_string: text,
+    });
+    const [docId] = (router.query.docId || []) as string[];
+    if (id !== docId) {
+      router.replace(`/${id}`);
+    }
+
+    props.closeModal();
+  };
+
   return <>
     <div>
       <JetButton
@@ -43,21 +61,7 @@ const OperationPanel = (props: {
             const json = parseJson(props.rawText);
             // パース成功時
             setParsedJson({ status: "accepted", json, text: props.rawText });
-            setDocumentData(props.title, props.rawText);
-
-            clearManipulation();
-            clearToggleState();
-            const id = await JsonDocumentStore.saveDocument({
-              ...document,
-              name: props.title,
-              json_string: props.rawText,
-            });
-            const [docId] = (router.query.docId || []) as string[];
-            if (id !== docId) {
-              router.replace(`/${id}`);
-            }
-
-            props.closeModal();
+            await parseAndClose(props.title, props.rawText);
           } catch (e) {
             console.error(e);
             setErrorStr(e);
@@ -71,16 +75,18 @@ const OperationPanel = (props: {
 
     <div>
       <JetButton
-        onClick={() => {
+        onClick={async () => {
           try {
-            props.setRawText(JSON.stringify(JSON.parse(props.rawText), null, 2))
+            const shapedText = JSON.stringify(JSON.parse(props.rawText), null, 2);
+            props.setRawText(shapedText)
+            await parseAndClose(props.title, shapedText);
           } catch (e) {
             setErrorStr(e);
           }
         }}
       >
         <InlineIcon i={<BsIndent />} />
-        JSONを整形
+        JSONを整形して変換
       </JetButton>
     </div>
 
@@ -101,10 +107,12 @@ const OperationPanel = (props: {
 
     <div>
       <JetButton
-        onClick={() => {
+        onClick={async () => {
           try {
             const sortedText = sortKeysJson(props.rawText);
-            props.setRawText(JSON.stringify(JSON.parse(sortedText), null, 2));
+            const shapedText = JSON.stringify(JSON.parse(sortedText), null, 2);
+            props.setRawText(shapedText);
+            await parseAndClose(props.title, shapedText);
           } catch (e) {
             console.error(e);
             setErrorStr(e);
@@ -112,7 +120,7 @@ const OperationPanel = (props: {
         }}
       >
         <InlineIcon i={<FaSortAlphaDown />} />
-        Mapをキーでソート
+        Mapをキーでソートして変換
       </JetButton>
     </div>
   </>
