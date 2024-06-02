@@ -36,6 +36,8 @@ const OperationPanel = (props: {
   }
 
   const parseAndClose = async (title: string, text: string) => {
+    const json = parseJson(text);
+    setParsedJson({ status: "accepted", json, text });
     setDocumentData(title, text);
 
     clearManipulation();
@@ -58,9 +60,7 @@ const OperationPanel = (props: {
       <JetButton
         onClick={async () => {
           try {
-            const json = parseJson(props.rawText);
             // パース成功時
-            setParsedJson({ status: "accepted", json, text: props.rawText });
             await parseAndClose(props.title, props.rawText);
           } catch (e) {
             console.error(e);
