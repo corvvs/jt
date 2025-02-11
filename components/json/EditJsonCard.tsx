@@ -1,5 +1,4 @@
 import { useJSON } from "@/states";
-import { VscJson } from 'react-icons/vsc';
 import { InlineIcon } from "../lv1/InlineIcon";
 import { JetButton } from "../lv1/JetButton";
 import { BsIndent } from "react-icons/bs";
@@ -60,23 +59,6 @@ const OperationPanel = (props: {
       <JetButton
         onClick={async () => {
           try {
-            // パース成功時
-            await parseAndClose(props.title, props.rawText);
-          } catch (e) {
-            console.error(e);
-            setErrorStr(e);
-          }
-        }}
-      >
-        <InlineIcon i={<VscJson />} />
-        変換
-      </JetButton>
-    </div>
-
-    <div>
-      <JetButton
-        onClick={async () => {
-          try {
             const shapedText = JSON.stringify(JSON.parse(props.rawText), null, 2);
             props.setRawText(shapedText)
             await parseAndClose(props.title, shapedText);
@@ -86,7 +68,7 @@ const OperationPanel = (props: {
         }}
       >
         <InlineIcon i={<BsIndent />} />
-        JSONを整形して変換
+        変換
       </JetButton>
     </div>
 
@@ -198,10 +180,10 @@ export const EditJsonCard = (props: {
       >
         <h3
           className="text-lg"
-        >本文</h3>
+        >JSON Text</h3>
         <textarea
           ref={textareaRef}
-          className="w-full h-[24em] outline-none json-text-textarea"
+          className="w-full h-[24em] outline-none border-[1px] p-1 json-text-textarea"
           style={{ resize: "none" }}
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
