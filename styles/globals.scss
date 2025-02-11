@@ -265,6 +265,11 @@ body {
     color: var(--foreground);
     background-color: rgba(var(--background-textarea), 0.75);
   }
+  .json-text-ineditable {
+    color: var(--foreground);
+    background-color: rgba(var(--background-textarea), 0.75);
+    opacity: 0.5;
+  }
 }
 
 .json-type-button {

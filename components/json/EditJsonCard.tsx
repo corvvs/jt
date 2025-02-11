@@ -9,6 +9,9 @@ import { useRouter } from "next/router";
 import { JsonDocumentStore } from "@/data/document";
 import { FaSortAlphaDown } from "react-icons/fa";
 import { sortKeysJson } from "@/libs/tree_manipulation";
+import { TiArrowMinimise } from "react-icons/ti";
+import { MdContentPasteGo, MdOutlineDeleteOutline } from "react-icons/md";
+import { ClipboardAccess } from "@/libs/sideeffect";
 
 const OperationPanel = (props: {
   rawText: string;
@@ -74,21 +77,6 @@ const OperationPanel = (props: {
 
     <div>
       <JetButton
-        onClick={() => {
-          try {
-            props.setRawText(JSON.stringify(JSON.parse(props.rawText), null, 0))
-          } catch (e) {
-            setErrorStr(e);
-          }
-        }}
-      >
-        <InlineIcon i={<BsIndent />} />
-        JSONをMinify
-      </JetButton>
-    </div>
-
-    <div>
-      <JetButton
         onClick={async () => {
           try {
             const sortedText = sortKeysJson(props.rawText);
@@ -108,9 +96,97 @@ const OperationPanel = (props: {
   </>
 };
 
+const EditorPanel = (props: {
+  rawText: string;
+  setRawText: (next: string) => void;
+  title: string;
+  setErrorStr: (str: string) => void;
+  closeModal: () => void;
+}) => {
+  const { document, setDocumentData, parseJson, setParsedJson } = useJSON();
+  const { clearToggleState } = useToggleMass();
+  const { clearManipulation } = useManipulation();
+  const router = useRouter();
+
+  if (!document) {
+    return null;
+  }
+
+  const setErrorStr = (e: any) => {
+    if (e instanceof Error) {
+      props.setErrorStr(e.message);
+    } else {
+      props.setErrorStr("some error has occurred");
+    }
+  }
+
+  const parseAndClose = async (title: string, text: string) => {
+    const json = parseJson(text);
+    setParsedJson({ status: "accepted", json, text });
+    setDocumentData(title, text);
+
+    clearManipulation();
+    clearToggleState();
+    const id = await JsonDocumentStore.saveDocument({
+      ...document,
+      name: title,
+      json_string: text,
+    });
+    const [docId] = (router.query.docId || []) as string[];
+    if (id !== docId) {
+      router.replace(`/${id}`);
+    }
+
+    props.closeModal();
+  };
+
+  return <>
+    <div>
+      <JetButton
+        onClick={() => {
+          try {
+            props.setRawText(JSON.stringify(JSON.parse(props.rawText), null, 0))
+          } catch (e) {
+            setErrorStr(e);
+          }
+        }}
+      >
+        <InlineIcon i={<TiArrowMinimise />} />
+        Minify
+      </JetButton>
+    </div>
+
+    <div>
+      <JetButton
+        onClick={async () => {
+          try {
+            props.setRawText(await ClipboardAccess.pasteText())
+          } catch (e) {
+            setErrorStr(e);
+          }
+        }}
+      >
+        <InlineIcon i={<MdContentPasteGo />} />
+        From Clipboard
+      </JetButton>
+    </div>
+
+    <div>
+      <JetButton
+        onClick={() => props.setRawText("")}
+      >
+        <InlineIcon i={<MdOutlineDeleteOutline />} />
+        Del
+      </JetButton>
+    </div>
+
+  </>
+};
+
 const FooterBar = (props: {
   rawText: string;
   errorStr: string;
+  isTooLargeToEdit: boolean;
 }) => {
 
   return <>
@@ -125,8 +201,8 @@ const FooterBar = (props: {
     }
 
     <p
-      className="p-2"
-    >{props.rawText.length} 文字</p>
+      className={props.isTooLargeToEdit ? "p-2 text-red-500 break-keep whitespace-nowrap" : "p-2 break-keep whitespace-nowrap"}
+    >{props.isTooLargeToEdit ? "(直接編集不可)" : ""}{props.rawText.length} 文字</p>
   </>
 };
 
@@ -139,10 +215,11 @@ export const EditJsonCard = (props: {
   const [errorStr, setErrorStr] = useState("");
   const inputRef = useRef<any>();
   const textareaRef = useRef<any>();
+  const isTooLargeToEdit = rawText.length > 10 * 1024;
 
   useEffect(() => {
     inputRef.current.value = title;
-    textareaRef.current.focus();
+    textareaRef.current?.focus();
   }, []);
 
   return (
@@ -176,24 +253,41 @@ export const EditJsonCard = (props: {
       </div>
 
       <div
+        className="shrink-0 grow-0 flex flex-row gap-2 p-2 text-md"
+      >
+        <EditorPanel
+          {...props}
+          rawText={rawText}
+          title={title}
+          setRawText={setRawText}
+          setErrorStr={setErrorStr}
+        />
+      </div>
+
+      <div
         className="shrink grow relative p-2"
       >
-        <h3
-          className="text-lg"
-        >JSON Text</h3>
-        <textarea
-          ref={textareaRef}
-          className="w-full h-[24em] outline-none border-[1px] p-1 json-text-textarea"
-          style={{ resize: "none" }}
-          value={rawText}
-          onChange={(e) => setRawText(e.target.value)}
-        />
+        {isTooLargeToEdit
+          ? <div
+              className="w-full h-[24em] outline-none p-1 json-text-ineditable overflow-hidden"
+              style={{ resize: "none" }}
+            >
+              {rawText.substring(0, 10 * 1024)}
+            </div>
+          : <textarea
+              ref={textareaRef}
+              className="w-full h-[24em] outline-none border-[1px] p-1 json-text-textarea"
+              style={{ resize: "none" }}
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+            />
+        }
       </div>
 
       <div
         className="shrink-0 grow-0 flex flex-row justify-end items-center gap-2 text-md"
       >
-        <FooterBar rawText={rawText} errorStr={errorStr} />
+        <FooterBar rawText={rawText} errorStr={errorStr} isTooLargeToEdit={isTooLargeToEdit} />
       </div>
     </div>
   )
