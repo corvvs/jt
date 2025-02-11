@@ -4,7 +4,7 @@ import { ActualIconForType } from "../FlatJsonValueCell";
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { ToggleButton } from "@/components/lv1/ToggleButton";
 import { useToggleSingle } from "@/states/view";
-import { SubtreeMenuCell, SubtreeStatCell } from "../subtree/Subtree";
+import { SubtreeMenuCell } from "../subtree/Subtree";
 import { useManipulation } from "@/states/manipulation";
 
 const RightmostKeyCell = (props: {
@@ -152,7 +152,8 @@ export const FlatJsonLeadingCell = (props: {
         index={props.typeIndex} gauge={gauge} right={right}
       />
       <SubtreeMenuCell
-        item={right} isHovered={props.isHovered}
+        item={right}
+        isHovered={props.isHovered}
         toggleSingleHook={toggleSingleHook}
         manipulationHook={manipulationHook}
       />

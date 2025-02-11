@@ -4,36 +4,26 @@ import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
 import { IconButton } from "@/components/lv1/IconButton";
 import { CgArrowsBreakeV, CgArrowsShrinkV } from "react-icons/cg";
-import { VscCopy } from "react-icons/vsc";
 import { useJSON } from "@/states";
-import { ClipboardAccess } from "@/libs/sideeffect";
-import { toast } from "react-toastify";
 import { useToggleSingle } from "@/states/view";
 import { extractSubtree } from "@/libs/partial_tree";
+import { CopyButton } from "@/components/lv3/CopyButton";
 
 const CopySubtreeButton = (props: {
   item: JsonRowItem;
   rawJson: any;
 }) => {
-  return (<p>
-    <IconButton
-      icon={VscCopy}
-      alt="この要素以下をJSONとしてクリップボードにコピーする"
-      onClick={async () => {
-        const { rawJson } = props;
-        const keyPath = props.item.elementKey;
-        const subJson = extractSubtree(rawJson, props.item.elementKey);
-        if (!subJson) { return; }
-        const subText = JSON.stringify(subJson, null, 2);
-        try {
-          await ClipboardAccess.copyText(subText);
-          toast(`キーパス ${keyPath} 以下のJSONをクリップボードにコピーしました`);
-        } catch (e) {
-          console.error(e);
-        }
-      }}
-    />
-  </p>);
+
+  return <CopyButton
+    getSubtext={() => {
+      const { rawJson } = props;
+      const keyPath = props.item.elementKey;
+      const subJson = extractSubtree(rawJson, props.item.elementKey);
+      if (!subJson) { return null; }
+      return JSON.stringify(subJson, null, 2);
+    }}
+    getToastText={() => `キーパス ${props.item.elementKey} 以下のJSONをクリップボードにコピーしました`}
+  />
 }
 
 const NarrowSubtreeButton = (props: {

@@ -6,6 +6,7 @@ import { useManipulation } from "@/states/manipulation";
 import { FlatJsonLeadingCell } from "./leading/Leading";
 import { LineNumberCell } from "./LineNumberCell";
 import { useToggleSingle } from "@/states/view";
+import { CopyButton } from "../lv3/CopyButton";
 
 const LeadingCells = (props: {
   item: JsonRowItem;
@@ -63,6 +64,39 @@ const LeadingCells = (props: {
   }</>
 }
 
+const CopyValueButton = (props: {
+  item: JsonRowItem;
+}) => <CopyButton
+  getSubtext={() => {
+    return JSON.stringify(props.item.right.value, null, 2);
+  }}
+  getToastText={() => `値をクリップボードにコピーしました`}
+/>
+
+const CopyKeyPathButton = (props: {
+  item: JsonRowItem;
+}) => <CopyButton
+  getSubtext={() => {
+    return props.item.elementKey;
+  }}
+  getToastText={() => `KeyPath ${props.item.elementKey} をクリップボードにコピーしました`}
+/>
+
+const ValueMenuCell = (props: {
+  item: JsonRowItem;
+}) => {
+  const vo = props.item.right;
+  const showCopyValueButton = vo.type !== "null" && vo.type !== "boolean";
+  const showCopyKeyPathButton = true;
+
+  return <div
+    className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
+  >
+    {showCopyValueButton && <CopyValueButton item={props.item} />}
+    {showCopyKeyPathButton && <CopyKeyPathButton item={props.item} />}
+    </div>
+}
+
 export const FlatJsonRow = (props: {
   item: JsonRowItem;
   manipulationHook: ReturnType<typeof useManipulation>;
@@ -84,6 +118,7 @@ export const FlatJsonRow = (props: {
     right,
     elementKey,
   } = item;
+  const isLeaf = right.type === "string" || right.type === "number" || right.type === "boolean" || right.type === "null";
   const backgroundClass = (isMatched && filteringPreference.resultAppearance !== "just")
     ? "matched-row"
     : isNarrowedFrom
@@ -116,5 +151,7 @@ export const FlatJsonRow = (props: {
       elementKey={elementKey}
       matched={isMatched}
     />
+
+    {isLeaf && isHovered && <ValueMenuCell item={item} />}
   </div>)
 }
