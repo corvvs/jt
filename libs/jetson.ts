@@ -49,7 +49,13 @@ export type JsonStats = TreeStats & {
 };
 
 export type GaugeStats = {
+  /**
+   * objectフィールドにおけるキーの長さ
+   */
   columnKeyLengths: number[][];
+  /**
+   * arrayフィールドにおけるインデックスの長さ
+   */
   columnIndexLengths: number[][];
 };
 
@@ -280,14 +286,16 @@ export function makeGauge(items: JsonRowItem[]) {
     const ils = gaugeStats.columnIndexLengths[i];
     const imax = ils.length > 0 ? Math.max(...ils) : 0;
     // キー
+    const kvmax = kls.length > 0 ? Math.max(...kls) : 0;
     const kmean = kls.length > 0 ? kls.reduce((s, a) => s + a, 0) / kls.length : 0;
-    const ksigma2 = kls.length > 0 ? kls.reduce((s, a) => s + (a - kmean) ** 2, 0) / kls.length : 0;
-    const kmax = kmean + Math.sqrt(ksigma2) * 0.66;
-    return Math.ceil(Math.max(kmax, imax));
+    const ksigma = kls.length > 0 ? Math.sqrt(kls.reduce((s, a) => s + (a - kmean) ** 2, 0) / kls.length) : 0;
+    const kmax = (kvmax - kmean) / ksigma < 0.5 ? kvmax : kmean + ksigma;
+
+    return Math.ceil(Math.max(kmax + 2, imax + 3));
   });
   const gauge: JsonGauge = {
     maxKeyLengths,
-    crampedKeyLengths: maxKeyLengths.map(x => Math.max(4, Math.min(x + 2, 10))),
+    crampedKeyLengths: maxKeyLengths.map(x => Math.max(4, Math.min(x, 18))),
   };
   return gauge;
 }
