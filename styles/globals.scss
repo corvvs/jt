@@ -107,6 +107,10 @@ body {
   background-color: var(--matched-row);
 }
 
+.weaken-row {
+  opacity: 0.20;
+}
+
 .matched-cell {
   color: var(--matched-foreground);
 }

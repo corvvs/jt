@@ -16,18 +16,23 @@ export const FilteringResultAppearancePanel = () => {
       },
       {
         key: "ascendant",
-        title: "Ascendant",
+        title: "Asc",
         hint: AppearanceDescription["ascendant"],
       },
       {
         key: "descendant",
-        title: "Descendant",
+        title: "Desc",
         hint: AppearanceDescription["descendant"],
       },
       {
         key: "just",
-        title: "Matched",
+        title: "Only",
         hint: AppearanceDescription["just"],
+      },
+      {
+        key: "lightup",
+        title: "LightUp",
+        hint: AppearanceDescription["lightup"],
       },
     ]}
     onClick={(item) => {

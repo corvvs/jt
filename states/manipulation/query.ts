@@ -18,13 +18,14 @@ export const ModeDescription = {
   "advanced": "JSONの構造自体に対する検索",
 };
 
-export type FilteringResultAppearanceOption = "just" | "ascendant" | "descendant" | "ascendant_descendant";
+export type FilteringResultAppearanceOption = "just" | "ascendant" | "descendant" | "ascendant_descendant" | "lightup";
 
 export const AppearanceDescription = {
   "ascendant_descendant": "ヒットした項目とその祖先および子孫の項目を表示する",
   "ascendant":            "ヒットした項目とその祖先の項目を表示する",
   "descendant":           "ヒットした項目とその子孫の項目を表示する",
   "just":                 "ヒットした項目のみを表示する",
+  "lightup":              "ヒットした項目を強調して表示する"
 };
 
 type FilteringPreference = {
@@ -61,6 +62,11 @@ export const filteringResultAppearanceAtom = atom(
       case "ascendant_descendant": return {
         ascendant: true,
         descendant: true,
+      };
+      case "lightup": return {
+        ascendant: true,
+        descendant: true,
+        everything: true,
       };
     }
   }
@@ -116,29 +122,33 @@ export const filterMapsAtom = atom<FilteringMap | null>(
     // item ごとに visible かどうかを判定する
     const upperVisibleMap: { [k: number]: boolean } = {};
     const lowerVisibleMap: { [k: number]: boolean } = {};
-    for (const item of items) {
-      // item 自身がマッチした -> 自身と祖先が visible
-      if (matchedMap[item.index]) {
-        upperVisibleMap[item.index] = true;
-        lowerVisibleMap[item.index] = true;
-        // まだ visible でない祖先まで下から順に visible にしていく
-        for (let i = item.rowItems.length - 1; 0 <= i; i -= 1) {
-          const an = item.rowItems[i];
-          if (upperVisibleMap[an.index]) { break; }
-          upperVisibleMap[an.index] = true;
+    if (!filteringResultAppearance.everything) {
+      for (const item of items) {
+        // item 自身がマッチした -> 自身と祖先が visible
+        if (matchedMap[item.index]) {
+          upperVisibleMap[item.index] = true;
+          lowerVisibleMap[item.index] = true;
+          // まだ visible でない祖先まで下から順に visible にしていく
+          for (let i = item.rowItems.length - 1; 0 <= i; i -= 1) {
+            const an = item.rowItems[i];
+            if (upperVisibleMap[an.index]) { break; }
+            upperVisibleMap[an.index] = true;
+          }
+          continue;
         }
-        continue;
-      }
-      // 祖先にマッチしたものがいる -> 自身が visible
-      const parent = _.last(item.rowItems);
-      if (parent && lowerVisibleMap[parent.index]) {
-        lowerVisibleMap[item.index] = true;
+        // 祖先にマッチしたものがいる -> 自身が visible
+        const parent = _.last(item.rowItems);
+        if (parent && lowerVisibleMap[parent.index]) {
+          lowerVisibleMap[item.index] = true;
+        }
       }
     }
 
     const visibleMap: { [k: number]: boolean } = {};
     for (const item of items) {
-      if (matchedMap[item.index]) {
+      if (filteringResultAppearance.everything) {
+        visibleMap[item.index] = true;
+      } else if (matchedMap[item.index]) {
         visibleMap[item.index] = true;
       } else if (filteringResultAppearance.ascendant && upperVisibleMap[item.index]) {
         visibleMap[item.index] = true;

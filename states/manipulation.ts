@@ -34,7 +34,6 @@ export const useManipulation = () => {
     setFilteringQuery,
   } = useQuery();
   const [filterMaps] = useAtom(filterMapsAtom);
-  const [filteringResultAppearance] = useAtom(filteringResultAppearanceAtom);
 
   const setFilteringResultAppearance = (v: FilteringResultAppearanceOption) => setFilteringPreference(prev => {
     const next = _.cloneDeep(prev);
@@ -63,7 +62,6 @@ export const useManipulation = () => {
     manipulation: {
       narrowedRanges,
       filteringQuery,
-      filteringResultAppearance,
     },
 
     pushNarrowedRange,

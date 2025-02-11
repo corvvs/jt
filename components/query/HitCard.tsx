@@ -37,6 +37,7 @@ const CopyResultsBlock = () => {
     "ascendant":            "表示範囲をコピー",
     "descendant":           "表示範囲を配列としてコピー",
     "just":                 "表示範囲を配列としてコピー",
+    "lightup":              "ヒット範囲を配列としてコピー",
   }[filteringPreference.resultAppearance];
 
   return <div

@@ -108,6 +108,7 @@ export const FlatJsonRow = (props: {
   const { manipulation, filteringPreference, filterMaps } = props.manipulationHook;
   const isMatched = !!(filterMaps && filterMaps.matched[props.item.index]);
   const isNarrowedFrom = _.last(manipulation.narrowedRanges)?.from === props.item.index;
+  const isWeaken = filteringPreference.resultAppearance === "lightup" && !!filterMaps && !isMatched;
   const {
     item,
     gauge,
@@ -126,10 +127,9 @@ export const FlatJsonRow = (props: {
       : isHovered
         ? "secondary-background"
         : "";
-
   return (<div
     className={
-      `h-[2em] flex flex-row items-stretch gap-0 ${backgroundClass}`
+      `h-[2em] flex flex-row items-stretch gap-0 ${backgroundClass} ${isWeaken ? "weaken-row" : ""}`
     }
     onMouseOver={() => setIsHovered(true)}
     onMouseOut={() => setIsHovered(false)}
