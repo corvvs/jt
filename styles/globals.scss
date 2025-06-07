@@ -267,11 +267,11 @@ body {
 .json-text {
   .json-text-textarea {
     color: var(--foreground);
-    background-color: rgba(var(--background-textarea), 0.75);
+    background-color: rgb(from var(--background-textarea) r g b / 0.75);
   }
   .json-text-ineditable {
     color: var(--foreground);
-    background-color: rgba(var(--background-textarea), 0.75);
+    background-color: rgb(from var(--background-textarea) r g b / 0.75);
     opacity: 0.5;
   }
 }
@@ -286,7 +286,7 @@ body {
 }
 
 .modal-backdrop {
-  background-color: rgba(var(--background-textarea), 0.3) !important;
+  background-color: rgb(from var(--background-textarea) r g b / 0.4) !important;
 }
 
 .Toastify__toast {
