@@ -215,7 +215,7 @@ export const EditJsonCard = (props: {
   const [errorStr, setErrorStr] = useState("");
   const inputRef = useRef<any>();
   const textareaRef = useRef<any>();
-  const isTooLargeToEdit = rawText.length > 10 * 1024;
+  const isTooLargeToEdit = rawText.length > 64 * 1024;
 
   useEffect(() => {
     inputRef.current.value = title;
