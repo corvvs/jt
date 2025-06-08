@@ -11,7 +11,6 @@ import { toast } from "react-toastify";
 export function PreformattedValueCard(
   props: {
     value: string;
-    onClick?: () => void;
   }
 ) {
   return (

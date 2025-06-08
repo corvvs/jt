@@ -12,7 +12,6 @@ export const PreformattedValueCardHolder = () => {
     <Modal closeModal={closeModal} isOpen={modalState.isOpen}>
       <PreformattedValueCard
         value={modalState.value}
-        onClick={closeModal}
       />
     </Modal>
   );

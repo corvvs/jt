@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import { ThemeObserver } from "@/components/holders/ThemeObserver";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
-import { PreformattedValueCardHolder } from "@/components/holders/modal/PreformatedValueCard";
+import { PreformattedValueCardHolder } from "@/components/holders/modal/PreformattedValueCard";
 
 export default function Home() {
   const router = useRouter();
