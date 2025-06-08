@@ -28,7 +28,12 @@ const OperationPanel = (props: {
   const router = useRouter();
 
   const trimmingRegex = useMemo(() => {
-    return autoTrimming.isValid ? new RegExp(autoTrimming.autoTrimming, "g") : null;
+    try {
+      return autoTrimming.isValid ? new RegExp(autoTrimming.autoTrimming, "g") : null;
+    } catch (e) {
+      console.error("Invalid regex for auto trimming:", e);
+      return null;
+    }
   }, [autoTrimming.autoTrimming, autoTrimming.isValid]);
   
   if (!document) {
