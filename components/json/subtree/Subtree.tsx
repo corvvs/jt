@@ -15,6 +15,7 @@ const CopySubtreeButton = (props: {
 }) => {
 
   return <CopyButton
+    alt="この要素以下をJSONとしてクリップボードにコピーする"
     getSubtext={() => {
       const { rawJson } = props;
       const keyPath = props.item.elementKey;
