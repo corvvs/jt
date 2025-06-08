@@ -219,6 +219,7 @@ export const EditJsonCard = (props: {
   useEffect(() => {
     inputRef.current.value = title;
     textareaRef.current?.focus();
+    textareaRef.current?.select();
   }, []);
 
   return (
