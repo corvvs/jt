@@ -1,7 +1,17 @@
 import { atom, useAtom } from 'jotai';
 
+type PreformattedValueModalState = {
+  isOpen: true;
+  value: string;
+} | {
+  isOpen: false;
+}
+
 export const modalAtom = {
   edit_json: atom(false),
+  preformatted_value: atom<PreformattedValueModalState>({
+    isOpen: false,
+  }),
 };
 
 export function useEditJsonModal() {
@@ -19,3 +29,24 @@ export function useEditJsonModal() {
     openModal,
   } as const;
 };
+
+export function usePreformattedValueModal() {
+  const [state, setState] = useAtom(modalAtom.preformatted_value);
+  const closeModal = () => {
+    setState({
+      isOpen: false,
+    });
+  };
+  const openModal = (value: string) => {
+    setState({
+      isOpen: true,
+      value,
+    });
+  };
+
+  return {
+    modalState: state,
+    closeModal,
+    openModal,
+  } as const;
+}

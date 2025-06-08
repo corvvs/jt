@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { ThemeObserver } from "@/components/holders/ThemeObserver";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
+import { PreformattedValueCardHolder } from "@/components/holders/modal/PreformatedValueCard";
 
 export default function Home() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function Home() {
       <Main docId={docId} />
       <ToastHolder />
       <EditJsonCardHolder />
+      <PreformattedValueCardHolder />
       <ThemeObserver />
       <SpeedInsights />
       <Analytics />
