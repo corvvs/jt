@@ -65,10 +65,9 @@ const OperationPanel = (props: {
 
   const trimText = (text: string): string => {
     if (trimmingRegex) {
-      const rex = new RegExp(trimmingRegex, "g");
-      return props.rawText.replaceAll(rex, "");
+      return text.replaceAll(trimmingRegex, "");
     } else {
-      return props.rawText;
+      return text;
     }
   }    
 
