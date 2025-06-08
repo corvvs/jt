@@ -5,13 +5,14 @@ import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 
 export const CopyButton = (props: {
+  alt: string;
   getSubtext: () => string | null;
   getToastText: () => string;
 }) => {
   return (<p>
     <IconButton
       icon={VscCopy}
-      alt="この要素以下をJSONとしてクリップボードにコピーする"
+      alt={props.alt}
       onClick={async () => {
         const subText = props.getSubtext();
         if (typeof subText !== "string") { return; }

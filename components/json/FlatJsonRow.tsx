@@ -67,6 +67,7 @@ const LeadingCells = (props: {
 const CopyValueButton = (props: {
   item: JsonRowItem;
 }) => <CopyButton
+  alt="この要素以下をJSONとしてクリップボードにコピーする"
   getSubtext={() => {
     return JSON.stringify(props.item.right.value, null, 2);
   }}
@@ -76,6 +77,7 @@ const CopyValueButton = (props: {
 const CopyKeyPathButton = (props: {
   item: JsonRowItem;
 }) => <CopyButton
+  alt="この要素のキーをクリップボードにコピーする"
   getSubtext={() => {
     return props.item.elementKey;
   }}
