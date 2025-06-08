@@ -27,6 +27,10 @@ const OperationPanel = (props: {
   const autoTrimming = useAutoTrimming();
   const router = useRouter();
 
+  const trimmingRegex = useMemo(() => {
+    return autoTrimming.isValid ? new RegExp(autoTrimming.autoTrimming, "g") : null;
+  }, [autoTrimming.autoTrimming, autoTrimming.isValid]);
+  
   if (!document) {
     return null;
   }
@@ -59,10 +63,6 @@ const OperationPanel = (props: {
     props.closeModal();
   };
 
-  const trimmingRegex = useMemo(() => {
-    return autoTrimming.isValid ? new RegExp(autoTrimming.autoTrimming, "g") : null;
-  }, [autoTrimming.autoTrimming, autoTrimming.isValid]);
-  
   const trimText = (text: string): string => {
     if (trimmingRegex) {
       const rex = new RegExp(trimmingRegex, "g");
