@@ -29,10 +29,10 @@ export function useAutoTrimming() {
 
   const save = (regexp: string) => {
     const trimmed = regexp.trim();
-    setAutoTrimming(regexp);
+    setAutoTrimming(trimmed);
     try {
       const _ = new RegExp(trimmed); // Validate regexp
-      saveAutoTrimming(regexp);
+      saveAutoTrimming(trimmed);
       setIsValid(true);
       return;
     } catch (e) {

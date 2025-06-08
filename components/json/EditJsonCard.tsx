@@ -4,7 +4,7 @@ import { JetButton } from "../lv1/JetButton";
 import { BsIndent } from "react-icons/bs";
 import { useToggleMass } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { JsonDocumentStore } from "@/data/document";
 import { FaSortAlphaDown } from "react-icons/fa";
@@ -59,9 +59,13 @@ const OperationPanel = (props: {
     props.closeModal();
   };
 
+  const trimmingRegex = useMemo(() => {
+    return autoTrimming.isValid ? new RegExp(autoTrimming.autoTrimming, "g") : null;
+  }, [autoTrimming.autoTrimming, autoTrimming.isValid]);
+  
   const trimText = (text: string): string => {
-    if (autoTrimming.isValid) {
-      const rex = new RegExp(autoTrimming.autoTrimming, "g");
+    if (trimmingRegex) {
+      const rex = new RegExp(trimmingRegex, "g");
       return props.rawText.replaceAll(rex, "");
     } else {
       return props.rawText;
