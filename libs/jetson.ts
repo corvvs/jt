@@ -77,6 +77,11 @@ export type JsonRowItem = {
   previousSibling?: JsonRowItem;
   parent?: JsonRowItem;
   nextSibling?: JsonRowItem;
+  /**
+   * 整形済みの値かどうか
+   * もしも整形済みであれば, それに忠実に表示してもよい
+   */
+  isPreformattedValue?: boolean;
 };
 
 function makeVOTree(subtree: any): JsonValueObject {
@@ -114,6 +119,9 @@ function makeVOTree(subtree: any): JsonValueObject {
     throw new Error("unreachable");
   }
 }
+
+// 値が整形済みかどうかを判定するための正規表現
+const RegexpIsPreformattedValue = /[\n\r\t](?!$)/;
 
 /**
  * `flattenJson` の補助関数.
@@ -181,6 +189,8 @@ function flattenDigger(
 
   switch (subtree.type) {
     case "string": {
+      // isPreformattedValue の可能性をチェック
+      item.isPreformattedValue = RegexpIsPreformattedValue.test(subtree.value);
       parent?.item.childs?.push(item);
       break;
     }
@@ -196,6 +206,8 @@ function flattenDigger(
       parent?.item.childs?.push(item);
       break;
     }
+    // 以上, 葉ノード
+    // 以下, 葉ノードではない
     case "array": {
       parent?.item.childs?.push(item);
 

@@ -285,6 +285,11 @@ body {
   }
 }
 
+.preformatted-value {
+  color: var(--foreground);
+  background-color: rgb(from var(--background-textarea) r g b / 0.75);
+}
+
 .modal-backdrop {
   background-color: rgb(from var(--background-textarea) r g b / 0.4) !important;
 }

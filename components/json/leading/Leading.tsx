@@ -6,6 +6,8 @@ import { ToggleButton } from "@/components/lv1/ToggleButton";
 import { useToggleSingle } from "@/states/view";
 import { SubtreeMenuCell } from "../subtree/Subtree";
 import { useManipulation } from "@/states/manipulation";
+import { FaGlasses } from "react-icons/fa";
+import { usePreformattedValueModal } from "@/states/modal";
 
 const RightmostKeyCell = (props: {
   index: number;
@@ -21,11 +23,12 @@ const RightmostKeyCell = (props: {
     index,
     isMatched,
   } = props;
+  const { openModal } = usePreformattedValueModal();
   if (typeof right.itemKey === "undefined") { return null; }
   const { toggleState, toggleItem } = props.toggleSingleHook;
   const depth = index % 5;
   const text = typeof right.itemKey === "string" ? right.itemKey : `[${right.itemKey}]`;
-  const currentColumnLength = gauge ? gauge.crampedKeyLengths[index + 1] : 6;
+  const currentColumnLength = gauge ? gauge.crampedKeyLengths[index + 1] : 6;  
 
   return <div
     className={`item-key grow-0 shrink-0 flex flex-row items-center p-1 depth-${depth} ${isMatched ? "matched-cell" : ""}`}
@@ -38,16 +41,32 @@ const RightmostKeyCell = (props: {
       {text}
     </p>
 
-    <div
-      className="w-[1em] shrink-0 grow-0 flex flex-row items-center"
-    >{
+    {
       props.isTogglable
-        ? <ToggleButton
-            isClosed={!!toggleState[right.index]}
-            onClick={(isClosed) => toggleItem(right, isClosed)}
-          />
+        ? <div
+            className="w-[1em] shrink-0 grow-0 flex flex-row items-center"
+          >
+            <ToggleButton
+                isClosed={!!toggleState[right.index]}
+                onClick={(isClosed) => toggleItem(right, isClosed)}
+              />
+          </div>
         : null 
-    }</div>
+    }
+    {
+      right.isPreformattedValue
+        ? <div
+            className="w-[1em] shrink-0 grow-0 flex flex-row items-center"
+          >
+            <button
+              className="font-bold"
+              onClick={() => openModal(right.right.value as string)}
+            >
+              <FaGlasses />
+            </button>
+          </div>
+        : null
+    }
   </div>
 }
 

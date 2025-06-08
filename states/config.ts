@@ -10,10 +10,12 @@ function saveAutoTrimming(regexp: string) {
 
 function loadAutoTrimming(): string {
   try {
-    const regexp = localStorage.getItem(itemName);
-      if (regexp) {
-        const _ = new RegExp(regexp); // Validate regexp
-        return regexp;
+    if (typeof window !== 'undefined') {
+      const regexp = localStorage.getItem(itemName);
+        if (regexp) {
+          const _ = new RegExp(regexp); // Validate regexp
+          return regexp;
+      }
     }
   } catch (e) {
     console.error("Invalid regexp in auto trimming:", e);
