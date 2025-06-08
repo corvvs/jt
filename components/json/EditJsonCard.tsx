@@ -4,7 +4,7 @@ import { JetButton } from "../lv1/JetButton";
 import { BsIndent } from "react-icons/bs";
 import { useToggleMass } from "@/states/view";
 import { useManipulation } from "@/states/manipulation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { JsonDocumentStore } from "@/data/document";
 import { FaSortAlphaDown } from "react-icons/fa";
@@ -12,6 +12,7 @@ import { sortKeysJson } from "@/libs/tree_manipulation";
 import { TiArrowMinimise } from "react-icons/ti";
 import { MdContentPasteGo, MdOutlineDeleteOutline } from "react-icons/md";
 import { ClipboardAccess } from "@/libs/sideeffect";
+import { useAutoTrimming } from "@/states/config";
 
 const OperationPanel = (props: {
   rawText: string;
@@ -23,8 +24,13 @@ const OperationPanel = (props: {
   const { document, setDocumentData, parseJson, setParsedJson } = useJSON();
   const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
+  const autoTrimming = useAutoTrimming();
   const router = useRouter();
 
+  const trimmingRegex = useMemo(() => {
+    return autoTrimming.isValid ? new RegExp(autoTrimming.autoTrimming, "g") : null;
+  }, [autoTrimming.autoTrimming, autoTrimming.isValid]);
+  
   if (!document) {
     return null;
   }
@@ -57,12 +63,21 @@ const OperationPanel = (props: {
     props.closeModal();
   };
 
+  const trimText = (text: string): string => {
+    if (trimmingRegex) {
+      return text.replaceAll(trimmingRegex, "");
+    } else {
+      return text;
+    }
+  }    
+
   return <>
     <div>
       <JetButton
         onClick={async () => {
           try {
-            const shapedText = JSON.stringify(JSON.parse(props.rawText), null, 2);
+            const trimmedText = trimText(props.rawText);
+            const shapedText = JSON.stringify(JSON.parse(trimmedText), null, 2);
             props.setRawText(shapedText)
             await parseAndClose(props.title, shapedText);
           } catch (e) {
@@ -79,7 +94,8 @@ const OperationPanel = (props: {
       <JetButton
         onClick={async () => {
           try {
-            const sortedText = sortKeysJson(props.rawText);
+            const trimmedText = trimText(props.rawText);
+            const sortedText = sortKeysJson(trimmedText);
             const shapedText = JSON.stringify(JSON.parse(sortedText), null, 2);
             props.setRawText(shapedText);
             await parseAndClose(props.title, shapedText);
@@ -103,10 +119,7 @@ const EditorPanel = (props: {
   setErrorStr: (str: string) => void;
   closeModal: () => void;
 }) => {
-  const { document, setDocumentData, parseJson, setParsedJson } = useJSON();
-  const { clearToggleState } = useToggleMass();
-  const { clearManipulation } = useManipulation();
-  const router = useRouter();
+  const { document } = useJSON();
 
   if (!document) {
     return null;
@@ -119,26 +132,6 @@ const EditorPanel = (props: {
       props.setErrorStr("some error has occurred");
     }
   }
-
-  const parseAndClose = async (title: string, text: string) => {
-    const json = parseJson(text);
-    setParsedJson({ status: "accepted", json, text });
-    setDocumentData(title, text);
-
-    clearManipulation();
-    clearToggleState();
-    const id = await JsonDocumentStore.saveDocument({
-      ...document,
-      name: title,
-      json_string: text,
-    });
-    const [docId] = (router.query.docId || []) as string[];
-    if (id !== docId) {
-      router.replace(`/${id}`);
-    }
-
-    props.closeModal();
-  };
 
   return <>
     <div>
@@ -213,6 +206,7 @@ export const EditJsonCard = (props: {
   const [title, setTitle] = useState(document?.name || "");
   const [rawText, setRawText] = useState(baseText);
   const [errorStr, setErrorStr] = useState("");
+  const autoTrimming = useAutoTrimming();
   const inputRef = useRef<any>();
   const textareaRef = useRef<any>();
   const isTooLargeToEdit = rawText.length > 64 * 1024;
@@ -248,6 +242,21 @@ export const EditJsonCard = (props: {
           placeholder="タイトルを入力"
           onChange={(e) => {
             setTitle(e.currentTarget.value);
+          }}
+        />
+      </div>
+
+      <div
+        className="shrink-0 grow-0 relative p-2 flex flex-row"
+      >
+        <p className="shrink-0 grow-0 relative p-2" >自動トリミング</p>
+        <input
+          type="text"
+          className="p-2 bg-transparent border-[1px] outline-0 w-full"
+          placeholder="パターンを入力"
+          value={autoTrimming.autoTrimming}
+          onChange={(e) => {
+            autoTrimming.setAutoTrimming(e.currentTarget.value);
           }}
         />
       </div>
