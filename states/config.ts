@@ -34,6 +34,7 @@ export function useAutoTrimming() {
       const _ = new RegExp(trimmed); // Validate regexp
       saveAutoTrimming(regexp);
       setIsValid(true);
+      return;
     } catch (e) {
       console.error("Invalid regexp in auto trimming:", e);
     }

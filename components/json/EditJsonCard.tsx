@@ -59,18 +59,21 @@ const OperationPanel = (props: {
     props.closeModal();
   };
 
+  const trimText = (text: string): string => {
+    if (autoTrimming.isValid) {
+      const rex = new RegExp(autoTrimming.autoTrimming, "g");
+      return props.rawText.replaceAll(rex, "");
+    } else {
+      return props.rawText;
+    }
+  }    
+
   return <>
     <div>
       <JetButton
         onClick={async () => {
           try {
-            let trimmedText: string
-            if (autoTrimming.isValid) {
-              const rex = new RegExp(autoTrimming.autoTrimming, "g");
-              trimmedText = props.rawText.replaceAll(rex, "");
-            } else {
-              trimmedText = props.rawText;
-            }
+            const trimmedText = trimText(props.rawText);
             const shapedText = JSON.stringify(JSON.parse(trimmedText), null, 2);
             props.setRawText(shapedText)
             await parseAndClose(props.title, shapedText);
@@ -88,13 +91,7 @@ const OperationPanel = (props: {
       <JetButton
         onClick={async () => {
           try {
-            let trimmedText: string
-            if (autoTrimming.isValid) {
-              const rex = new RegExp(autoTrimming.autoTrimming, "g");
-              trimmedText = props.rawText.replaceAll(rex, "");
-            } else {
-              trimmedText = props.rawText;
-            }
+            const trimmedText = trimText(props.rawText);
             const sortedText = sortKeysJson(trimmedText);
             const shapedText = JSON.stringify(JSON.parse(sortedText), null, 2);
             props.setRawText(shapedText);
@@ -252,7 +249,7 @@ export const EditJsonCard = (props: {
         <p className="shrink-0 grow-0 relative p-2" >自動トリミング</p>
         <input
           type="text"
-          className="p-2 bg-transparent	border-[1px] outline-0 w-full"
+          className="p-2 bg-transparent border-[1px] outline-0 w-full"
           placeholder="パターンを入力"
           value={autoTrimming.autoTrimming}
           onChange={(e) => {
