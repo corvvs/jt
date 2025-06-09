@@ -24,18 +24,8 @@ const OperationPanel = (props: {
   const { document, setDocumentData, parseJson, setParsedJson } = useJSON();
   const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
-  const autoTrimming = useAutoTrimming();
   const router = useRouter();
 
-  const trimmingRegex = useMemo(() => {
-    try {
-      return autoTrimming.isValid ? new RegExp(autoTrimming.autoTrimming, "g") : null;
-    } catch (e) {
-      console.error("Invalid regex for auto trimming:", e);
-      return null;
-    }
-  }, [autoTrimming.autoTrimming, autoTrimming.isValid]);
-  
   if (!document) {
     return null;
   }
