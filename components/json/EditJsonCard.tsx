@@ -68,21 +68,12 @@ const OperationPanel = (props: {
     props.closeModal();
   };
 
-  const trimText = (text: string): string => {
-    if (trimmingRegex) {
-      return text.replaceAll(trimmingRegex, "");
-    } else {
-      return text;
-    }
-  }    
-
   return <>
     <div>
       <JetButton
         onClick={async () => {
           try {
-            const trimmedText = trimText(props.rawText);
-            const shapedText = JSON.stringify(JSON.parse(trimmedText), null, 2);
+            const shapedText = JSON.stringify(parseJson(props.rawText), null, 2);
             props.setRawText(shapedText)
             await parseAndClose(props.title, shapedText);
           } catch (e) {
@@ -99,9 +90,8 @@ const OperationPanel = (props: {
       <JetButton
         onClick={async () => {
           try {
-            const trimmedText = trimText(props.rawText);
-            const sortedText = sortKeysJson(trimmedText);
-            const shapedText = JSON.stringify(JSON.parse(sortedText), null, 2);
+            const sortedText = sortKeysJson(props.rawText, parseJson);
+            const shapedText = JSON.stringify(parseJson(sortedText), null, 2);
             props.setRawText(shapedText);
             await parseAndClose(props.title, shapedText);
           } catch (e) {
@@ -124,7 +114,7 @@ const EditorPanel = (props: {
   setErrorStr: (str: string) => void;
   closeModal: () => void;
 }) => {
-  const { document } = useJSON();
+  const { document, parseJson } = useJSON();
 
   if (!document) {
     return null;
@@ -143,7 +133,7 @@ const EditorPanel = (props: {
       <JetButton
         onClick={() => {
           try {
-            props.setRawText(JSON.stringify(JSON.parse(props.rawText), null, 0))
+            props.setRawText(JSON.stringify(parseJson(props.rawText), null, 0))
           } catch (e) {
             setErrorStr(e);
           }
