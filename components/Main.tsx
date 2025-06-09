@@ -128,6 +128,8 @@ export const Main = (props: {
           const clipboardText = await ClipboardAccess.pasteText();
           const sortedText = sortKeysJson(clipboardText, parseJson);
           newDocument.json_string = sortedText;
+          const newId = await JsonDocumentStore.saveDocument(newDocument);
+          router.replace(`/${newId}`);
           toast("クリップボードの内容を取り込みました");
         } catch (e) {
           console.error("Failed to access clipboard:", e);
