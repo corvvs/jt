@@ -68,14 +68,6 @@ const OperationPanel = (props: {
     props.closeModal();
   };
 
-  const trimText = (text: string): string => {
-    if (trimmingRegex) {
-      return text.replaceAll(trimmingRegex, "");
-    } else {
-      return text;
-    }
-  }    
-
   return <>
     <div>
       <JetButton
