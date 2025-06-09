@@ -200,6 +200,8 @@ body {
 .json-string-structure {
   &.item-value {
     color: var(--foreground-string);
+    background-color: var(--background-secondary);
+    font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
   }
 
   white-space: nowrap;
