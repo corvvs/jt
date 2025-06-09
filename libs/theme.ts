@@ -51,7 +51,7 @@ const ColorSets: {
     "background-secondary": "#d4d4d4",
     "foreground-schema":    "#888",
     "foreground-key":       "#3c39d5",
-    "foreground-string":    "#b74731",
+    "foreground-string":    "#875731",
     "foreground-number":    "#468f46",
     "foreground-true":      "#378e51",
     "foreground-false":     "#6d7670",

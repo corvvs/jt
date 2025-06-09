@@ -44,7 +44,7 @@ const ValueStringCell = (props: {
     className="json-structure item-value json-string-structure p-1 flex items-center"
     title={props.vo.value}
   >
-    <p>&quot;{props.vo.value}&quot;</p>
+    <p>{props.vo.value}</p>
   </div>;
 }
 
