@@ -14,6 +14,8 @@ import { useEditJsonModal } from "@/states/modal";
 import { useToggleSingle } from "@/states/view";
 import { useRouter } from "next/router";
 import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
+import { ClipboardAccess } from "@/libs/sideeffect";
+import { toast } from "react-toastify";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -120,9 +122,21 @@ export const Main = (props: {
         json_string: defaultRawText,
       };
 
+      const setNewDocument = async () => {
+        try {
+          const clipboardText = await ClipboardAccess.pasteText();
+          const _ = parseJson(clipboardText);
+          newDocument.json_string = clipboardText;
+          toast("クリップボードの内容を取り込みました");
+        } catch (e) {
+          console.error("Failed to access clipboard:", e);
+        }
+        setDocument(newDocument);
+      }
+
       let doc: JsonPartialDocument = newDocument
       if (docId === "new") {
-        setDocument(newDocument);
+        await setNewDocument();
       } else {
         const d = await (docId ? JsonDocumentStore.fetchDocument(docId) : JsonDocumentStore.fetchLatest())
         if (d) {
@@ -131,7 +145,7 @@ export const Main = (props: {
           doc = d;
         } else {
           router.replace('/new');
-          setDocument(newDocument);
+          await setNewDocument();
         }
       }
       try {

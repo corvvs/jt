@@ -5,6 +5,7 @@ import { toggleAtom } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
 import { JsonPartialDocument } from '@/data/document';
+import { useAutoTrimming } from './config';
 
 export const defaultRawText = JSON.stringify({
   "title": "サンプルテキスト 兼 ReadMe",
@@ -78,9 +79,16 @@ const baseAtoms = {
   parsedJson: atom<ParsedJSONData | null>(null),
 };
 
-
-const parseJson = (baseText: string) => {
+const parseJson = (baseText: string, autoTrimming: string) => {
   const text = baseText.replace(/[\u0000-\u0019]+/g, "");
+  if (autoTrimming) {
+    try {
+      const regex = new RegExp(autoTrimming, "g");
+      return JSON.parse(text.replaceAll(regex, ""));
+    } catch (e) {
+      console.error("Invalid regex for auto trimming:", e);
+    }
+  }
   const json = JSON.parse(text);
   return json;
 }
@@ -144,6 +152,7 @@ export const useJSON = () => {
   const [document, setDocument] = useAtom(baseAtoms.document);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
   const [json, setParsedJson] = useAtom(baseAtoms.parsedJson);
+  const autoTrimming = useAutoTrimming()
   return {
     document, setDocument,
 
@@ -154,7 +163,7 @@ export const useJSON = () => {
     },
     flatJsons,
     json,
-    parseJson,
+    parseJson: (text: string) => parseJson(text, autoTrimming.isValid ? autoTrimming.autoTrimming : ""),
     setParsedJson,
   } as const;
 };
