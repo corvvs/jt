@@ -16,6 +16,7 @@ import { useRouter } from "next/router";
 import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
+import { sortKeysJson } from "@/libs/tree_manipulation";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -125,8 +126,8 @@ export const Main = (props: {
       const setNewDocument = async () => {
         try {
           const clipboardText = await ClipboardAccess.pasteText();
-          const _ = parseJson(clipboardText);
-          newDocument.json_string = clipboardText;
+          const sortedText = sortKeysJson(clipboardText, parseJson);
+          newDocument.json_string = sortedText;
           toast("クリップボードの内容を取り込みました");
         } catch (e) {
           console.error("Failed to access clipboard:", e);
