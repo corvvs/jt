@@ -18,6 +18,10 @@ export type JsonDocument = JsonDocumentPreview & {
 
 export type JsonPartialDocument = PartialKeys<JsonDocument, "id" | "created_at" | "updated_at" | "jet_version">;
 
+export function generateDocumentID() {
+  return uuidv4();
+}
+
 const storeName = {
   JsonDocument: "JsonDocument",
   JsonDocumentPreview: "JsonDocumentPreview",
@@ -25,7 +29,7 @@ const storeName = {
 
 async function saveDocument(data: JsonPartialDocument) {
 
-  const id = data.id || uuidv4();
+  const id = data.id || generateDocumentID();
   const now = new Date();
   if (!data.name) {
     data.name = (new Date()).toLocaleString();
