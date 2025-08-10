@@ -10,7 +10,7 @@ import { defaultRawText, useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
-import { useEditJsonModal } from "@/states/modal";
+import { useEditJsonModal, usePreformattedValueModal } from "@/states/modal";
 import { useToggleSingle } from "@/states/view";
 import { useRouter } from "next/router";
 import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
@@ -113,7 +113,9 @@ export const Main = (props: {
     setParsedData,
   } = useJSON();
   const { dataFormat } = useDataFormat();
-  const { filteringPreference } = useManipulation();
+  const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
+  const { isOpen: isEditJsonModalOpen } = useEditJsonModal();
+  const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const itemViewRef = useRef<any>(null);
   const router = useRouter();
 
@@ -162,6 +164,25 @@ export const Main = (props: {
     };
     f();
   }, [router.isReady, docId]);
+
+  // キーボードショートカット（Ctrl+F / Cmd+F）でフィルターパネルをトグルする
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isEditJsonModalOpen || preformattedValueModalState.isOpen) {
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+        event.preventDefault(); // デフォルト検索を奪う
+        setFilteringBooleanPreference("showPanel", !filteringPreference.showPanel);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen]);
 
   return (<div
     className="shrink grow flex flex-col"
