@@ -92,14 +92,11 @@ function trimText(text: string, autoTrimming: string): string {
 }
 
 const parseData = (dataFormat: DataFormat, baseText: string, autoTrimming: string) => {
-  console.log("baseText:", baseText);
   // JSONLの場合は改行文字(\n)を保持し、その他の制御文字のみ削除
   const text = dataFormat === "json" 
     ? baseText.replace(/[\u0000-\u0019]+/g, "")
     : baseText.replace(/[\u0000-\u0009\u000B-\u0019]+/g, "").replace(/[\u0000-\u0019]+$/g, "")
-  console.log("text:", text);
   const autoTrimmed = trimText(text, autoTrimming);
-  console.log("autoTrimmed:", autoTrimmed);
   switch (dataFormat) {
     case "jsonl":
       return autoTrimmed.split("\n").map(line => JSON.parse(line));
