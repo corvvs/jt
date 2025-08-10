@@ -17,6 +17,7 @@ import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 import { sortKeysJson } from "@/libs/tree_manipulation";
+import { useDataFormat } from "@/states/config";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -108,9 +109,10 @@ export const Main = (props: {
   const { docId } = props;
   const {
     setDocument,
-    parseJson,
-    setParsedJson,
+    parseData,
+    setParsedData,
   } = useJSON();
+  const { dataFormat } = useDataFormat();
   const { filteringPreference } = useManipulation();
   const itemViewRef = useRef<any>(null);
   const router = useRouter();
@@ -126,7 +128,7 @@ export const Main = (props: {
       const setNewDocument = async () => {
         try {
           const clipboardText = await ClipboardAccess.pasteText();
-          const sortedText = sortKeysJson(clipboardText, parseJson);
+          const sortedText = sortKeysJson(dataFormat, clipboardText, parseData);
           newDocument.json_string = sortedText;
           const newId = await JsonDocumentStore.saveDocument(newDocument);
           router.replace(`/${newId}`);
@@ -152,10 +154,10 @@ export const Main = (props: {
         }
       }
       try {
-        const json = parseJson(doc.json_string);
-        setParsedJson({ status: "accepted", json, text: doc.json_string });
+        const json = parseData(doc.json_string);
+        setParsedData({ status: "accepted", json, text: doc.json_string });
       } catch (e) {
-        setParsedJson({ status: "rejected", error: e, text: doc.json_string });
+        setParsedData({ status: "rejected", error: e, text: doc.json_string });
       }
     };
     f();

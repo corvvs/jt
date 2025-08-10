@@ -12,7 +12,8 @@ import { sortKeysJson } from "@/libs/tree_manipulation";
 import { TiArrowMinimise } from "react-icons/ti";
 import { MdContentPasteGo, MdOutlineDeleteOutline } from "react-icons/md";
 import { ClipboardAccess } from "@/libs/sideeffect";
-import { useAutoTrimming } from "@/states/config";
+import { useAutoTrimming, useDataFormat } from "@/states/config";
+import { MultipleButtons } from "../lv1/MultipleButtons";
 
 const OperationPanel = (props: {
   rawText: string;
@@ -21,9 +22,10 @@ const OperationPanel = (props: {
   setErrorStr: (str: string) => void;
   closeModal: () => void;
 }) => {
-  const { document, setDocumentData, parseJson, setParsedJson } = useJSON();
+  const { document, setDocumentData, parseData, unparseData, setParsedData } = useJSON();
   const { clearToggleState } = useToggleMass();
   const { clearManipulation } = useManipulation();
+  const { dataFormat, setDataFormat } = useDataFormat();
   const router = useRouter();
 
   if (!document) {
@@ -39,8 +41,8 @@ const OperationPanel = (props: {
   }
 
   const parseAndClose = async (title: string, text: string) => {
-    const json = parseJson(text);
-    setParsedJson({ status: "accepted", json, text });
+    const json = parseData(text);
+    setParsedData({ status: "accepted", json, text });
     setDocumentData(title, text);
 
     clearManipulation();
@@ -63,7 +65,7 @@ const OperationPanel = (props: {
       <JetButton
         onClick={async () => {
           try {
-            const shapedText = JSON.stringify(parseJson(props.rawText), null, 2);
+            const shapedText = unparseData(parseData(props.rawText), 2);
             props.setRawText(shapedText)
             await parseAndClose(props.title, shapedText);
           } catch (e) {
@@ -80,8 +82,8 @@ const OperationPanel = (props: {
       <JetButton
         onClick={async () => {
           try {
-            const sortedText = sortKeysJson(props.rawText, parseJson);
-            const shapedText = JSON.stringify(parseJson(sortedText), null, 2);
+            const sortedText = sortKeysJson(dataFormat, props.rawText, parseData);
+            const shapedText = unparseData(parseData(sortedText), 2);
             props.setRawText(shapedText);
             await parseAndClose(props.title, shapedText);
           } catch (e) {
@@ -94,17 +96,37 @@ const OperationPanel = (props: {
         Mapをキーでソートして変換
       </JetButton>
     </div>
-  </>
-};
 
-const EditorPanel = (props: {
+    <div className="flex items-center">
+      <span>
+        Format:
+      </span>
+      <MultipleButtons
+        currentKey={dataFormat}
+        items={[
+          {
+            key: "json",
+            title: "JSON",
+          },
+          {
+            key: "jsonl",
+            title: "JSONL",
+          },
+        ]}
+        onClick={(item) => {
+          setDataFormat(item.key);
+        }}
+      />
+    </div>
+  </>
+};const EditorPanel = (props: {
   rawText: string;
   setRawText: (next: string) => void;
   title: string;
   setErrorStr: (str: string) => void;
   closeModal: () => void;
 }) => {
-  const { document, parseJson } = useJSON();
+  const { document, parseData, unparseData } = useJSON();
 
   if (!document) {
     return null;
@@ -123,7 +145,7 @@ const EditorPanel = (props: {
       <JetButton
         onClick={() => {
           try {
-            props.setRawText(JSON.stringify(parseJson(props.rawText), null, 0))
+            props.setRawText(unparseData(parseData(props.rawText), 0))
           } catch (e) {
             setErrorStr(e);
           }

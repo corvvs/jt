@@ -5,7 +5,7 @@ import { toggleAtom } from './view';
 import { useManipulation } from './manipulation';
 import _ from 'lodash';
 import { JsonPartialDocument } from '@/data/document';
-import { useAutoTrimming } from './config';
+import { DataFormat, DataFormats, useAutoTrimming, useDataFormat } from './config';
 
 export const defaultRawText = JSON.stringify({
   "title": "サンプルテキスト 兼 ReadMe",
@@ -79,19 +79,45 @@ const baseAtoms = {
   parsedJson: atom<ParsedJSONData | null>(null),
 };
 
-const parseJson = (baseText: string, autoTrimming: string) => {
-  const text = baseText.replace(/[\u0000-\u0019]+/g, "");
+function trimText(text: string, autoTrimming: string): string {
   if (autoTrimming) {
     try {
       const regex = new RegExp(autoTrimming, "g");
-      return JSON.parse(text.replaceAll(regex, ""));
+      return text.replaceAll(regex, "");
     } catch (e) {
       console.error("Invalid regex for auto trimming:", e);
     }
   }
-  const json = JSON.parse(text);
-  return json;
+  return text;
 }
+
+const parseData = (dataFormat: DataFormat, baseText: string, autoTrimming: string) => {
+  console.log("baseText:", baseText);
+  // JSONLの場合は改行文字(\n)を保持し、その他の制御文字のみ削除
+  const text = dataFormat === "json" 
+    ? baseText.replace(/[\u0000-\u0019]+/g, "")
+    : baseText.replace(/[\u0000-\u0009\u000B-\u0019]+/g, "").replace(/[\u0000-\u0019]+$/g, "")
+  console.log("text:", text);
+  const autoTrimmed = trimText(text, autoTrimming);
+  console.log("autoTrimmed:", autoTrimmed);
+  switch (dataFormat) {
+    case "jsonl":
+      return autoTrimmed.split("\n").map(line => JSON.parse(line));
+    case "json":
+    default:
+      return JSON.parse(autoTrimmed);
+  }
+}
+
+const unparseData = (DataFormat: DataFormat, data: any, space: number) => {
+  switch (DataFormat) {
+    case "jsonl":
+      return data.map((item: any) => JSON.stringify(item, null, 0)).join("\n");
+    case "json":
+    default:
+      return JSON.stringify(data, null, space);
+  }
+};
 
 export const jsonFlattenedAtom = atom(
   (get) => {
@@ -151,7 +177,8 @@ export const useVisibleItems = () => {
 export const useJSON = () => {
   const [document, setDocument] = useAtom(baseAtoms.document);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
-  const [json, setParsedJson] = useAtom(baseAtoms.parsedJson);
+  const [json, setParsedData] = useAtom(baseAtoms.parsedJson);
+  const { dataFormat } = useDataFormat();
   const autoTrimming = useAutoTrimming()
   return {
     document, setDocument,
@@ -163,7 +190,8 @@ export const useJSON = () => {
     },
     flatJsons,
     json,
-    parseJson: (text: string) => parseJson(text, autoTrimming.isValid ? autoTrimming.autoTrimming : ""),
-    setParsedJson,
+    parseData: (text: string) => parseData(dataFormat, text, autoTrimming.isValid ? autoTrimming.autoTrimming : ""),
+    unparseData: (data: any, space: number) => unparseData(dataFormat, data, space),
+    setParsedData,
   } as const;
 };
