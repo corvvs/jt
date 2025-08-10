@@ -1,13 +1,22 @@
+import { DataFormat } from "@/states/config";
 import _ from "lodash";
 
 /**
  * 受け取ったJSON文字列のうち, Mapについてのみキーでソートして返す
  * (jq --sort-keys と思ってよい)
  */
-export function sortKeysJson(jsonText: string, parseJson: (text: string) => any ): string {
-  const parsed = parseJson(jsonText);
-  const stringified = recursiveRestringify(parsed);
-  return stringified;
+export function sortKeysJson(dataFormat: DataFormat, jsonText: string, parseData: (text: string) => any ): string {
+  const parsed = parseData(jsonText);
+  switch (dataFormat) {
+    case "jsonl": {
+      return parsed.map((item: any) => recursiveRestringify(item)).join("\n");
+    }
+    case "json":
+    default: {
+      const stringified = recursiveRestringify(parsed);
+      return stringified;
+    }
+  }
 }
 
 function recursiveRestringify(item: any): string {
