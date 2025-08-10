@@ -61,62 +61,66 @@ const OperationPanel = (props: {
   };
 
   return <>
-    <div>
-      <JetButton
-        onClick={async () => {
-          try {
-            const shapedText = unparseData(parseData(props.rawText), 2);
-            props.setRawText(shapedText)
-            await parseAndClose(props.title, shapedText);
-          } catch (e) {
-            setErrorStr(e);
-          }
-        }}
-      >
-        <InlineIcon i={<BsIndent />} />
-        変換
-      </JetButton>
-    </div>
+    <div className="flex items-center justify-between w-full">
+      <div className="flex gap-2">
+        <div>
+          <JetButton
+            onClick={async () => {
+              try {
+                const shapedText = unparseData(parseData(props.rawText), 2);
+                props.setRawText(shapedText)
+                await parseAndClose(props.title, shapedText);
+              } catch (e) {
+                setErrorStr(e);
+              }
+            }}
+          >
+            <InlineIcon i={<BsIndent />} />
+            変換
+          </JetButton>
+        </div>
 
-    <div>
-      <JetButton
-        onClick={async () => {
-          try {
-            const sortedText = sortKeysJson(dataFormat, props.rawText, parseData);
-            const shapedText = unparseData(parseData(sortedText), 2);
-            props.setRawText(shapedText);
-            await parseAndClose(props.title, shapedText);
-          } catch (e) {
-            console.error(e);
-            setErrorStr(e);
-          }
-        }}
-      >
-        <InlineIcon i={<FaSortAlphaDown />} />
-        Mapをキーでソートして変換
-      </JetButton>
-    </div>
+        <div>
+          <JetButton
+            onClick={async () => {
+              try {
+                const sortedText = sortKeysJson(dataFormat, props.rawText, parseData);
+                const shapedText = unparseData(parseData(sortedText), 2);
+                props.setRawText(shapedText);
+                await parseAndClose(props.title, shapedText);
+              } catch (e) {
+                console.error(e);
+                setErrorStr(e);
+              }
+            }}
+          >
+            <InlineIcon i={<FaSortAlphaDown />} />
+            Mapをキーでソートして変換
+          </JetButton>
+        </div>
+      </div>
 
-    <div className="flex items-center">
-      <span>
-        Format:
-      </span>
-      <MultipleButtons
-        currentKey={dataFormat}
-        items={[
-          {
-            key: "json",
-            title: "JSON",
-          },
-          {
-            key: "jsonl",
-            title: "JSONL",
-          },
-        ]}
-        onClick={(item) => {
-          setDataFormat(item.key);
-        }}
-      />
+      <div className="flex items-center gap-2">
+        <span>
+          Format:
+        </span>
+        <MultipleButtons
+          currentKey={dataFormat}
+          items={[
+            {
+              key: "json",
+              title: "JSON",
+            },
+            {
+              key: "jsonl",
+              title: "JSONL",
+            },
+          ]}
+          onClick={(item) => {
+            setDataFormat(item.key);
+          }}
+        />
+      </div>
     </div>
   </>
 };
