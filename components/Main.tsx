@@ -167,6 +167,7 @@ export const Main = (props: {
 
   // キーボードショートカット（Ctrl+F / Cmd+F）でフィルターパネルをトグルする
   // キーボードショートカット（Ctrl+E / Cmd+E）でEditモーダルを開く
+  // キーボードショートカット（Ctrl+A / Cmd+A）でNewボタンと同じ動作
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isEditJsonModalOpen || preformattedValueModalState.isOpen) {
@@ -181,6 +182,11 @@ export const Main = (props: {
       if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
         event.preventDefault(); // デフォルトの動作を防ぐ
         openEditJsonModal();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+        event.preventDefault(); // デフォルトの動作を防ぐ
+        window.open('/new', '_blank');
       }
     };
 
