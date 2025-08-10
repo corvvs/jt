@@ -119,7 +119,9 @@ const OperationPanel = (props: {
       />
     </div>
   </>
-};const EditorPanel = (props: {
+};
+
+const EditorPanel = (props: {
   rawText: string;
   setRawText: (next: string) => void;
   title: string;
