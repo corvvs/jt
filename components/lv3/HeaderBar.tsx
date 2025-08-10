@@ -80,7 +80,7 @@ const NarrowingLine = (props: {
 }
 
 const OpetationButtons = () => {
-  const { openModal } = useEditJsonModal();
+  const { openModal: openEditDataModal } = useEditJsonModal();
   const { flatJsons } = useJSON();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
@@ -107,7 +107,7 @@ const OpetationButtons = () => {
     </Link>
 
     <MenuButton
-      onClick={() => openModal()}
+      onClick={() => openEditDataModal()}
       onMouseEnter={handleMouseEnter}
     >
       <InlineIcon i={<VscEdit />} />
