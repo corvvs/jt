@@ -113,7 +113,7 @@ export const Main = (props: {
     setParsedData,
   } = useJSON();
   const { dataFormat } = useDataFormat();
-  const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
+  const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const itemViewRef = useRef<any>(null);
@@ -168,6 +168,7 @@ export const Main = (props: {
   // キーボードショートカット（Ctrl+F / Cmd+F）でフィルターパネルをトグルする
   // キーボードショートカット（Ctrl+E / Cmd+E）でEditモーダルを開く
   // キーボードショートカット（Ctrl+A / Cmd+A）でNewボタンと同じ動作
+  // キーボードショートカット（Esc）でナローイングを解除する
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isEditJsonModalOpen || preformattedValueModalState.isOpen) {
@@ -188,13 +189,18 @@ export const Main = (props: {
         event.preventDefault(); // デフォルトの動作を防ぐ
         window.open('/new', '_blank');
       }
+
+      if (event.key === 'Escape' && manipulation.narrowedRanges.length > 0) {
+        event.preventDefault(); // デフォルトの動作を防ぐ
+        popNarrowedRange();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange]);
 
   return (<div
     className="shrink grow flex flex-col"
