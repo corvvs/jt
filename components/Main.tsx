@@ -192,7 +192,7 @@ export const Main = (props: {
 
       if (event.key === 'Escape' && manipulation.narrowedRanges.length > 0) {
         event.preventDefault(); // デフォルトの動作を防ぐ
-        popNarrowedRange();
+        popNarrowedRange(-1);
       }
     };
 
