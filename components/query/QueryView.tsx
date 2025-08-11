@@ -38,6 +38,7 @@ const QueryInputField = () => {
     filteringQuery,
     setFilteringQuery,
   } = useQuery();
+  const { filteringPreference: manipulationPreference } = useManipulation();
 
   const inputRef = useRef<any>();
   const reflectQuery = useCallback(
@@ -51,7 +52,14 @@ const QueryInputField = () => {
   useEffect(() => {
     inputRef.current.value = filteringQuery;
     inputRef.current.focus();
-  }, []);
+  }, [filteringQuery]);
+
+  // 表示時にフォーカスを当てるための処理
+  useEffect(() => {
+    if (manipulationPreference.showPanel) {
+      inputRef.current?.focus();
+    }
+  }, [manipulationPreference.showPanel]);
 
   const placeholder = filteringPreference.mode === "simple"
     ? "キーまたは値に部分一致"
@@ -96,7 +104,7 @@ export const QueryView = () => {
     : <AdvancedFilterCard />;
 
   return <div
-    className="query-view shrink grow flex flex-col gap-2 overflow-hidden"
+    className="query-view h-full shrink grow flex flex-col gap-2 overflow-hidden"
   >
 
     <h2

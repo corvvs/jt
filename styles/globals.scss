@@ -454,3 +454,12 @@ body {
   background-color: var(--background-secondary);
   transition: background-color var(--theme-transition);
 }
+
+.filter-panel-container {
+  will-change: width;
+}
+
+.filter-panel-inner {
+  will-change: transform;
+  backface-visibility: hidden;
+}

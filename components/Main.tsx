@@ -284,15 +284,19 @@ export const Main = (props: {
       className="shrink grow flex flex-row"
     >
 
-      {
-        filteringPreference.showPanel
-          ? <div
-            className="shrink-0 grow-0 w-96 flex flex-col justify-stretch"
-          >
-            <QueryView />
-          </div>
-          : null
-      }
+      <div
+        className={`filter-panel-container shrink-0 grow-0 flex flex-col justify-stretch transition-all duration-100 ease-out overflow-hidden ${
+          filteringPreference.showPanel ? 'w-96' : 'w-0'
+        }`}
+      >
+        <div 
+          className={`filter-panel-inner w-96 h-full transition-transform duration-300 ease-out flex flex-col ${
+            filteringPreference.showPanel ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <QueryView />
+        </div>
+      </div>
 
       <div
         className="shrink grow text-base"
