@@ -252,7 +252,12 @@ export const Main = (props: {
         setDataFormat(targetFormat);
         setDocument(newDocument);
         setParsedData({ status: "accepted", json, text: fileContent });
-        await JsonDocumentStore.saveDocument(newDocument);
+        const id = await JsonDocumentStore.saveDocument(newDocument);
+        const [docId] = (router.query.docId || []) as string[];
+        if (id !== docId) {
+          router.replace(`/${id}`);
+        }
+
         toast.success(`${file.name} を読み込みました`);
       } catch (error) {
         console.error('Parse error:', error);
