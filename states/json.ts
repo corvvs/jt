@@ -187,8 +187,8 @@ export const useJSON = () => {
     },
     flatJsons,
     json,
-    parseData: (text: string) => parseData(dataFormat, text, autoTrimming.isValid ? autoTrimming.autoTrimming : ""),
-    unparseData: (data: any, space: number) => unparseData(dataFormat, data, space),
+    parseData: (dataFormat: DataFormat, text: string) => parseData(dataFormat, text, autoTrimming.isValid ? autoTrimming.autoTrimming : ""),
+    unparseData: (dataFormat: DataFormat, data: any, space: number) => unparseData(dataFormat, data, space),
     setParsedData,
   } as const;
 };
