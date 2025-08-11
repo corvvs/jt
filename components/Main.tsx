@@ -108,6 +108,7 @@ export const Main = (props: {
 }) => {
   const { docId } = props;
   const {
+    document: currentDocument,
     setDocument,
     parseData,
     setParsedData,
@@ -244,13 +245,14 @@ export const Main = (props: {
         const json = parseData(targetFormat, fileContent);
         
         const newDocument = {
+          ...currentDocument,
           name: file.name.replace(fileExtension, ''),
           json_string: fileContent,
         };
         setDataFormat(targetFormat);
         setDocument(newDocument);
         setParsedData({ status: "accepted", json, text: fileContent });
-        
+        await JsonDocumentStore.saveDocument(newDocument);
         toast.success(`${file.name} を読み込みました`);
       } catch (error) {
         console.error('Parse error:', error);

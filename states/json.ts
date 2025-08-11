@@ -175,7 +175,6 @@ export const useJSON = () => {
   const [document, setDocument] = useAtom(baseAtoms.document);
   const [flatJsons] = useAtom(jsonFlattenedAtom);
   const [json, setParsedData] = useAtom(baseAtoms.parsedJson);
-  const { dataFormat } = useDataFormat();
   const autoTrimming = useAutoTrimming()
   return {
     document, setDocument,
