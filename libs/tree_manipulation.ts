@@ -5,8 +5,8 @@ import _ from "lodash";
  * 受け取ったJSON文字列のうち, Mapについてのみキーでソートして返す
  * (jq --sort-keys と思ってよい)
  */
-export function sortKeysJson(dataFormat: DataFormat, jsonText: string, parseData: (text: string) => any ): string {
-  const parsed = parseData(jsonText);
+export function sortKeysJson(dataFormat: DataFormat, jsonText: string, parseData: (dataFormat: DataFormat, text: string) => any ): string {
+  const parsed = parseData(dataFormat, jsonText);
   switch (dataFormat) {
     case "jsonl": {
       return parsed.map((item: any) => recursiveRestringify(item)).join("\n");

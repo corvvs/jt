@@ -17,7 +17,7 @@ import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 import { sortKeysJson } from "@/libs/tree_manipulation";
-import { useDataFormat } from "@/states/config";
+import { useDataFormat, DataFormat } from "@/states/config";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -112,7 +112,7 @@ export const Main = (props: {
     parseData,
     setParsedData,
   } = useJSON();
-  const { dataFormat } = useDataFormat();
+  const { dataFormat, setDataFormat } = useDataFormat();
   const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
@@ -156,7 +156,7 @@ export const Main = (props: {
         }
       }
       try {
-        const json = parseData(doc.json_string);
+        const json = parseData(dataFormat, doc.json_string);
         setParsedData({ status: "accepted", json, text: doc.json_string });
       } catch (e) {
         setParsedData({ status: "rejected", error: e, text: doc.json_string });
@@ -201,6 +201,74 @@ export const Main = (props: {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange]);
+
+  // ファイルドラッグ&ドロップ機能
+  useEffect(() => {
+    const handleDragOver = (event: DragEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    const handleDrop = async (event: DragEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const files = event.dataTransfer?.files;
+      if (!files || files.length === 0) {
+        return;
+      }
+
+      const file = files[0];
+      const fileName = file.name.toLowerCase();
+      
+      // ファイル拡張子をチェックしてフォーマットを決定
+      let targetFormat: DataFormat;
+      let fileExtension: string;
+      const extension = fileName.split('.').pop();
+      switch (extension) {
+        case 'json':
+          targetFormat = 'json';
+          fileExtension = '.json';
+          break;
+        case 'jsonl':
+          targetFormat = 'jsonl';
+          fileExtension = '.jsonl';
+          break;
+        default:
+          toast.error('サポートするファイルは.json, .jsonlのみです');
+          return;
+      }
+
+      try {
+        const fileContent = await file.text();
+        const json = parseData(targetFormat, fileContent);
+        
+        const newDocument = {
+          name: file.name.replace(fileExtension, ''),
+          json_string: fileContent,
+        };
+        setDataFormat(targetFormat);
+        setDocument(newDocument);
+        setParsedData({ status: "accepted", json, text: fileContent });
+        
+        toast.success(`${file.name} を読み込みました`);
+      } catch (error) {
+        console.error('Parse error:', error);
+        // エラー時は元のフォーマット設定に戻す
+        setDataFormat(dataFormat);
+        toast.error(`${targetFormat.toUpperCase()}ファイルの解析に失敗しました`);
+      }
+    };
+
+    // イベントリスナーを追加
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('drop', handleDrop);
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver);
+      document.removeEventListener('drop', handleDrop);
+    };
+  }, [parseData, setDocument, setParsedData, dataFormat, setDataFormat]);
 
   return (<div
     className="shrink grow flex flex-col"
