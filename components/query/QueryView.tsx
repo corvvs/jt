@@ -46,7 +46,7 @@ const QueryInputField = () => {
       setFilteringQuery(prev => {
         return value === prev ? prev : value;
       });
-    }, 99), [setFilteringQuery]
+    }, 300), [setFilteringQuery]
   );
 
   useEffect(() => {
