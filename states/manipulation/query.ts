@@ -114,12 +114,6 @@ export const filterMapsAtom = atom<FilteringMap | null>(
 
     const { items } = json;
     
-    // 大きなデータセット向けの早期リターン最適化
-    if (items.length > 10000) {
-      // 非常に大きなデータセットの場合、処理を簡略化
-      console.warn('Large dataset detected, using simplified filtering');
-    }
-    
     // item ごとに query にマッチしたかどうかを判定する
     const matchedMap: { [k: number]: boolean } = {};
     for (const item of items) {
