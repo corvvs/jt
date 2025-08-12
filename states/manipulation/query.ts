@@ -83,19 +83,20 @@ export const filterMapsAtom = atom<FilteringMap | null>(
       if (get(filteringPreferenceAtom).mode === "simple") {
 
         const simpleQuery = get(filteringQueryAtom).trim().toLowerCase();
-        if (simpleQuery.length === 0) { return null; }
+        // 最小2文字まで入力されるまで検索を開始しない（パフォーマンス改善）
+        if (simpleQuery.length < 2) { return null; }
         return (item: JsonRowItem) => {
           const key = item.itemKey?.toString().toLowerCase();
           if (key?.includes(simpleQuery)) { return true; }
           if (item.right.type === "string") {
-            const key = item.right.value.toLowerCase();
-            if (key.includes(simpleQuery)) {
-              matchedMap[item.index] = true;
+            const value = item.right.value.toLowerCase();
+            if (value.includes(simpleQuery)) {
+              return true;
             }
           } else if (item.right.type === "number") {
-            const key = item.right.value.toString().toLowerCase();
-            if (key.includes(simpleQuery)) {
-              matchedMap[item.index] = true;
+            const value = item.right.value.toString().toLowerCase();
+            if (value.includes(simpleQuery)) {
+              return true;
             }
           }
           return false;
@@ -112,6 +113,7 @@ export const filterMapsAtom = atom<FilteringMap | null>(
     const filteringResultAppearance = get(filteringResultAppearanceAtom);
 
     const { items } = json;
+    
     // item ごとに query にマッチしたかどうかを判定する
     const matchedMap: { [k: number]: boolean } = {};
     for (const item of items) {
@@ -123,14 +125,15 @@ export const filterMapsAtom = atom<FilteringMap | null>(
     const upperVisibleMap: { [k: number]: boolean } = {};
     const lowerVisibleMap: { [k: number]: boolean } = {};
     if (!filteringResultAppearance.everything) {
-      for (const item of items) {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
         // item 自身がマッチした -> 自身と祖先が visible
         if (matchedMap[item.index]) {
           upperVisibleMap[item.index] = true;
           lowerVisibleMap[item.index] = true;
           // まだ visible でない祖先まで下から順に visible にしていく
-          for (let i = item.rowItems.length - 1; 0 <= i; i -= 1) {
-            const an = item.rowItems[i];
+          for (let j = item.rowItems.length - 1; 0 <= j; j -= 1) {
+            const an = item.rowItems[j];
             if (upperVisibleMap[an.index]) { break; }
             upperVisibleMap[an.index] = true;
           }
