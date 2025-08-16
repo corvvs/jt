@@ -37,6 +37,7 @@ const QueryInputField = () => {
     filteringPreference,
     filteringQuery,
     setFilteringQuery,
+    setFilterInputFocused,
   } = useQuery();
   const { filteringPreference: manipulationPreference } = useManipulation();
 
@@ -73,6 +74,12 @@ const QueryInputField = () => {
       placeholder={placeholder}
       onChange={(e) => {
         reflectQuery(e.currentTarget.value);
+      }}
+      onFocus={() => {
+        setFilterInputFocused(true);
+      }}
+      onBlur={() => {
+        setFilterInputFocused(false);
       }}
     />
   </div>

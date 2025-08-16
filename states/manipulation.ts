@@ -32,6 +32,7 @@ export const useManipulation = () => {
     setFilteringPreference,
     filteringQuery,
     setFilteringQuery,
+    filterInputFocused,
   } = useQuery();
   const [filterMaps] = useAtom(filterMapsAtom);
 
@@ -75,6 +76,7 @@ export const useManipulation = () => {
     setFilteringBooleanPreference,
     queryModeDescription: ModeDescription[filteringPreference.mode],
     appearanceDescription: AppearanceDescription[filteringPreference.resultAppearance],
+    filterInputFocused,
 
     clearManipulation,
   };

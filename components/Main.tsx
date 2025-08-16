@@ -114,7 +114,7 @@ export const Main = (props: {
     setParsedData,
   } = useJSON();
   const { dataFormat, setDataFormat } = useDataFormat();
-  const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange } = useManipulation();
+  const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const itemViewRef = useRef<any>(null);
@@ -176,6 +176,15 @@ export const Main = (props: {
         return;
       }
 
+      // フィルター入力欄がフォーカスされている場合は、Cmd+F以外のショートカットを無効にする
+      if (filterInputFocused) {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+          event.preventDefault(); // デフォルト検索を奪う
+          setFilteringBooleanPreference("showPanel", !filteringPreference.showPanel);
+        }
+        return;
+      }
+
       if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
         event.preventDefault(); // デフォルト検索を奪う
         setFilteringBooleanPreference("showPanel", !filteringPreference.showPanel);
@@ -201,7 +210,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
