@@ -1,10 +1,10 @@
 import { useManipulation } from "@/states/manipulation";
 import _ from "lodash";
 import { InlineIcon } from "../lv1/InlineIcon";
-import { VscCopy } from "react-icons/vsc";
+import { VscCopy, VscCloudDownload } from "react-icons/vsc";
 import { extractFilteredResult } from "@/libs/partial_tree";
 import { useJSON } from "@/states";
-import { ClipboardAccess } from "@/libs/sideeffect";
+import { ClipboardAccess, FileDownload } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 import { useVisibleItems } from "@/states/json";
 
@@ -40,41 +40,75 @@ const CopyResultsBlock = () => {
     "lightup":              "ヒット範囲を配列としてコピー",
   }[filteringPreference.resultAppearance];
 
-  return <div
-    className="flex flex-row justify-between items-center"
-  >
-    <h3
-      className="font-bold text-sm"
-    >
-      結果をコピー
-    </h3>
+  const downloadDescription = {
+    "ascendant_descendant": "表示範囲をダウンロード",
+    "ascendant":            "表示範囲をダウンロード",
+    "descendant":           "表示範囲を配列としてダウンロード",
+    "just":                 "表示範囲を配列としてダウンロード",
+    "lightup":              "ヒット範囲を配列としてダウンロード",
+  }[filteringPreference.resultAppearance];
 
-    <div>
-      <button
-        title={copyDescription}
-        className={
-          `flippable h-[2.4em] py-1 whitespace-nowrap break-keep`
-        }
-        onClick={async () => {
-          const partialJson = extractFilteredResult(
-            filteringPreference.resultAppearance,
-            json.json,
-            visibles.filteredItems,
-            filterMaps
-          );
-          if (!partialJson) { return; }
-          const partialText = JSON.stringify(partialJson, null, 2);
-          try {
-            await ClipboardAccess.copyText(partialText);
-            toast(`表示結果のJSONをクリップボードにコピーしました`);
-          } catch (e) {
-            console.error(e);
-          }
-        }}
+  const getPartialJson = () => {
+    return extractFilteredResult(
+      filteringPreference.resultAppearance,
+      json.json,
+      visibles.filteredItems,
+      filterMaps
+    );
+  };
+
+  return <div
+    className="flex flex-col gap-2"
+  >
+    <div className="flex flex-row justify-between items-center">
+      <h3
+        className="font-bold text-sm"
       >
-        <InlineIcon i={<VscCopy />} />
-        <span>{ copyDescription }</span>
-      </button>
+        フィルター結果を:
+      </h3>
+
+      <div className="flex flex-row gap-2">
+        <button
+          title={copyDescription}
+          className={
+            `flippable h-[2.4em] py-1 px-2 whitespace-nowrap break-keep`
+          }
+          onClick={async () => {
+            const partialJson = getPartialJson();
+            if (!partialJson) { return; }
+            const partialText = JSON.stringify(partialJson, null, 2);
+            try {
+              await ClipboardAccess.copyText(partialText);
+              toast(`表示結果のJSONをクリップボードにコピーしました`);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        >
+          <InlineIcon i={<VscCopy />} />
+          <span>コピー</span>
+        </button>
+        
+        <button
+          title={downloadDescription}
+          className={
+            `flippable h-[2.4em] py-1 px-2 whitespace-nowrap break-keep`
+          }
+          onClick={() => {
+            const partialJson = getPartialJson();
+            if (!partialJson) { return; }
+            try {
+              FileDownload.downloadAsJson(partialJson, 'filtered-result.json');
+              toast(`表示結果のJSONをダウンロードしました`);
+            } catch (e) {
+              console.error(e);
+            }
+          }}
+        >
+          <InlineIcon i={<VscCloudDownload />} />
+          <span>ダウンロード</span>
+        </button>
+      </div>
     </div>
 
   </div>;
