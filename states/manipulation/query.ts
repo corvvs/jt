@@ -74,6 +74,9 @@ export const filteringResultAppearanceAtom = atom(
 
 export const filteringQueryAtom = atom<string>(defaultFilteringQuery);
 
+// フィルター入力欄がフォーカスされているかどうかを管理するatom
+export const filterInputFocusedAtom = atom<boolean>(false);
+
 export const filterMapsAtom = atom<FilteringMap | null>(
   (get) => {
     const json = get(jsonFlattenedAtom);
@@ -169,12 +172,15 @@ export const filterMapsAtom = atom<FilteringMap | null>(
 export const useQuery = () => {
   const [filteringQuery, setFilteringQuery] = useAtom(filteringQueryAtom);
   const [filteringPreference, setFilteringPreference] = useAtom(filteringPreferenceAtom);
+  const [filterInputFocused, setFilterInputFocused] = useAtom(filterInputFocusedAtom);
 
   return {
     filteringPreference,
     setFilteringPreference,
     filteringQuery,
     setFilteringQuery,
+    filterInputFocused,
+    setFilterInputFocused,
   };
 };
 
