@@ -6,7 +6,7 @@ import { useManipulation } from "@/states/manipulation";
 import { FlatJsonLeadingCell } from "./leading/Leading";
 import { LineNumberCell } from "./LineNumberCell";
 import { useToggleSingle } from "@/states/view";
-import { CopyButton } from "../lv3/CopyButton";
+import { CopyButton, DownloadButton } from "../lv3/CopyButton";
 
 const LeadingCells = (props: {
   item: JsonRowItem;
@@ -74,6 +74,15 @@ const CopyValueButton = (props: {
   getToastText={() => `値をクリップボードにコピーしました`}
 />
 
+const DownloadValueButton = (props: {
+  item: JsonRowItem;
+}) => <DownloadButton
+  alt="この要素をJSONファイルとしてダウンロードする"
+  getData={() => props.item.right.value}
+  getToastText={() => `値をファイルとしてダウンロードしました`}
+  filename={`value-${props.item.elementKey.replace(/[^\w-]/g, '_')}.json`}
+/>
+
 const CopyKeyPathButton = (props: {
   item: JsonRowItem;
 }) => <CopyButton
@@ -95,6 +104,7 @@ const ValueMenuCell = (props: {
     className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
     {showCopyValueButton && <CopyValueButton item={props.item} />}
+    {showCopyValueButton && <DownloadValueButton item={props.item} />}
     {showCopyKeyPathButton && <CopyKeyPathButton item={props.item} />}
     </div>
 }

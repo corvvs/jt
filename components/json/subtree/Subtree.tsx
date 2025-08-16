@@ -7,7 +7,7 @@ import { CgArrowsBreakeV, CgArrowsShrinkV } from "react-icons/cg";
 import { useJSON } from "@/states";
 import { useToggleSingle } from "@/states/view";
 import { extractSubtree } from "@/libs/partial_tree";
-import { CopyButton } from "@/components/lv3/CopyButton";
+import { CopyButton, DownloadButton } from "@/components/lv3/CopyButton";
 
 const CopySubtreeButton = (props: {
   item: JsonRowItem;
@@ -24,6 +24,22 @@ const CopySubtreeButton = (props: {
       return JSON.stringify(subJson, null, 2);
     }}
     getToastText={() => `キーパス ${props.item.elementKey} 以下のJSONをクリップボードにコピーしました`}
+  />
+}
+
+const DownloadSubtreeButton = (props: {
+  item: JsonRowItem;
+  rawJson: any;
+}) => {
+  return <DownloadButton
+    alt="この要素以下をJSONファイルとしてダウンロードする"
+    getData={() => {
+      const { rawJson } = props;
+      const keyPath = props.item.elementKey;
+      return extractSubtree(rawJson, props.item.elementKey);
+    }}
+    getToastText={() => `キーパス ${props.item.elementKey} 以下のJSONをダウンロードしました`}
+    filename={`subtree-${props.item.elementKey.replace(/[^\w-]/g, '_')}.json`}
   />
 }
 
@@ -84,6 +100,7 @@ export const SubtreeMenuCell = (props: {
     className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
     <CopySubtreeButton item={props.item} rawJson={rawJson} />
+    <DownloadSubtreeButton item={props.item} rawJson={rawJson} />
     <NarrowSubtreeButton
       isNarrowed={isNarrowed} item={props.item} allItems={flatJsons!.items}
       toggleSingleHook={props.toggleSingleHook}
