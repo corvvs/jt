@@ -180,28 +180,25 @@ export const DocumentList = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div
-        className='shrink-0 grow-0 flex flex-col'>
-          <HeaderBar itemViewRef={itemViewRef} mode="document-list" />
+    <div className="shrink grow flex flex-col">
+      <div className="shrink-0 grow-0 flex flex-col border-b border-gray-200 dark:border-gray-700 p-4">
+        <HeaderBar itemViewRef={itemViewRef} mode="document-list" />
       </div>
-      <div className="flex-1 overflow-auto p-6">
-        <div className="max-w-4xl mx-auto">
+      {documents.length > 0 && <div className="shrink grow p-6 flex flex-col overflow-y-hidden">
           {/* 検索フィールド */}
-          {documents.length > 0 && (
-            <div className="mb-6">
-              <input
-                type="text"
-                placeholder="ドキュメント名やIDで検索..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          {renderContent()}
-        </div>
-      </div>
+          <div className="shrink-0 grow-0 max-w-4xl mb-6 pr-6">
+            <input
+              type="text"
+              placeholder="ドキュメント名やIDで検索..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="shrink grow max-w-4xl pr-6 overflow-y-auto">
+            {renderContent()}
+          </div>
+      </div>}
     </div>
   );
 };
