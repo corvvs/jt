@@ -181,7 +181,7 @@ export const DocumentList = () => {
 
   return (
     <div className="shrink grow flex flex-col">
-      <div className="shrink-0 grow-0 flex flex-col border-b border-gray-200 dark:border-gray-700 p-4">
+      <div className='shrink-0 grow-0 flex flex-col'>
         <HeaderBar itemViewRef={itemViewRef} mode="document-list" />
       </div>
       {documents.length > 0 && <div className="shrink grow p-6 flex flex-col overflow-y-hidden">
