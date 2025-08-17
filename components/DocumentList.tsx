@@ -15,7 +15,7 @@ export const DocumentList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortOption, setSortOption] = useState<SortOption>('created_desc');
+  const [sortOption, setSortOption] = useState<SortOption>('updated_desc');
   const router = useRouter();
   const itemViewRef = useRef<any>(null);
 
@@ -244,17 +244,17 @@ export const DocumentList = () => {
                   currentKey={sortOption}
                   items={[
                     {
-                      key: "created_desc",
-                      content: <div className="h-[1.5rem] flex items-center">
-                        <InlineIcon i={<FaCalendarAlt />} />
-                        <span className="p-1">作成時刻</span>
-                      </div>
-                    },
-                    {
                       key: "updated_desc",
                       content: <div className="h-[1.5rem] flex items-center">
                         <InlineIcon i={<FaRegClock />} />
                         <span className="p-1">更新時刻</span>
+                      </div>
+                    },
+                    {
+                      key: "created_desc",
+                      content: <div className="h-[1.5rem] flex items-center">
+                        <InlineIcon i={<FaCalendarAlt />} />
+                        <span className="p-1">作成時刻</span>
                       </div>
                     },
                   ]}
