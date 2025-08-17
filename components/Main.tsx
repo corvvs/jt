@@ -293,8 +293,7 @@ export const Main = (props: {
   return (<div
     className="shrink grow flex flex-col"
   >
-    <div
-      className='shrink-0 grow-0 flex flex-col'>
+    <div className='shrink-0 grow-0 flex flex-col'>
       <HeaderBar itemViewRef={itemViewRef} mode="json-viewer" />
     </div>
 

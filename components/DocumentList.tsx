@@ -1,9 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 import { JsonDocumentPreview, JsonDocumentStore } from "@/data/document";
 import { useRouter } from "next/router";
-import { FaRegClock, FaRegFile, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaRegClock, FaRegFile, FaPlus, FaTrash, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from "react-toastify";
 import { HeaderBar } from "./lv3/HeaderBar";
+import { MultipleButtons } from "./lv1/MultipleButtons";
+import { InlineIcon } from "./lv1/InlineIcon";
+
+type SortOption = 'created_desc' | 'updated_desc';
 
 export const DocumentList = () => {
   const [documents, setDocuments] = useState<JsonDocumentPreview[]>([]);
@@ -11,6 +15,7 @@ export const DocumentList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<SortOption>('created_desc');
   const router = useRouter();
   const itemViewRef = useRef<any>(null);
 
@@ -37,18 +42,32 @@ export const DocumentList = () => {
     loadDocuments();
   }, []);
 
-  // 検索フィルタリング
+  // 検索フィルタリングとソート
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredDocuments(documents);
-    } else {
-      const filtered = documents.filter(doc => 
+    let filtered = documents;
+    
+    // 検索フィルタリング
+    if (searchQuery.trim()) {
+      filtered = documents.filter(doc => 
         doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         doc.id.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setFilteredDocuments(filtered);
     }
-  }, [searchQuery, documents]);
+    
+    // ソート
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortOption) {
+        case 'created_desc':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'updated_desc':
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        default:
+          return 0;
+      }
+    });
+    
+    setFilteredDocuments(sorted);
+  }, [searchQuery, documents, sortOption]);
 
   const handleDocumentClick = (docId: string) => {
     router.push(`/${docId}`);
@@ -64,14 +83,9 @@ export const DocumentList = () => {
     if (confirm(`"${docName || '無題のドキュメント'}" を削除しますか？この操作は元に戻せません。`)) {
       try {
         await JsonDocumentStore.deleteDocument(docId);
-        // ドキュメント一覧を更新
+        // ドキュメント一覧を更新（useEffectでソートが自動適用される）
         const updatedDocuments = documents.filter(doc => doc.id !== docId);
         setDocuments(updatedDocuments);
-        setFilteredDocuments(updatedDocuments.filter(doc => 
-          !searchQuery.trim() || 
-          doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          doc.id.toLowerCase().includes(searchQuery.toLowerCase())
-        ));
         toast.success('ドキュメントを削除しました');
       } catch (err) {
         console.error('ドキュメントの削除に失敗しました:', err);
@@ -91,6 +105,30 @@ export const DocumentList = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const formatSize = (bytes: number | undefined) => {
+    if (bytes === undefined) return '不明';
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const getSizeStyleClass = (bytes: number | undefined) => {
+    if (bytes === undefined) {
+      return 'text-gray-400 dark:text-gray-500'; // 不明の場合は薄いグレー
+    }
+    
+    const k = 1024;
+    if (bytes < k * k) { // 1MB未満（KB以下）
+      return 'text-gray-500 dark:text-gray-400'; // 通常色
+    } else if (bytes < k * k * k) { // 1GB未満（MB）
+      return 'text-orange-600 dark:text-orange-400 font-medium'; // 警告色
+    } else { // 1GB以上
+      return 'text-red-600 dark:text-red-400 font-bold'; // 危険色
+    }
   };
 
   const renderContent = () => {
@@ -158,6 +196,12 @@ export const DocumentList = () => {
                   <div className="flex items-center gap-1">
                     <span>作成: {formatDate(doc.created_at)}</span>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <span>サイズ: </span>
+                    <span className={getSizeStyleClass(doc.data_size)}>
+                      {formatSize(doc.data_size)}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -185,15 +229,41 @@ export const DocumentList = () => {
         <HeaderBar itemViewRef={itemViewRef} mode="document-list" />
       </div>
       {documents.length > 0 && <div className="shrink grow p-6 flex flex-col overflow-y-hidden">
-          {/* 検索フィールド */}
+          {/* 検索フィールドとソート切り替え */}
           <div className="shrink-0 grow-0 max-w-4xl mb-6 pr-6">
-            <input
-              type="text"
-              placeholder="ドキュメント名やIDで検索..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="text"
+                placeholder="ドキュメント名やIDで検索..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex items-center gap-2">
+                <MultipleButtons
+                  currentKey={sortOption}
+                  items={[
+                    {
+                      key: "created_desc",
+                      content: <div className="h-[1.5rem] flex items-center">
+                        <InlineIcon i={<FaCalendarAlt />} />
+                        <span className="p-1">作成時刻</span>
+                      </div>
+                    },
+                    {
+                      key: "updated_desc",
+                      content: <div className="h-[1.5rem] flex items-center">
+                        <InlineIcon i={<FaRegClock />} />
+                        <span className="p-1">更新時刻</span>
+                      </div>
+                    },
+                  ]}
+                  onClick={(item) => {
+                    setSortOption(item.key as SortOption);
+                  }}
+                />
+              </div>
+            </div>
           </div>
           <div className="shrink grow max-w-4xl pr-6 overflow-y-auto">
             {renderContent()}
