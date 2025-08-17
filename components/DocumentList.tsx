@@ -191,10 +191,10 @@ export const DocumentList = () => {
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center gap-1">
                     <FaRegClock />
-                    <span>更新: {formatDate(doc.updated_at)}</span>
+                    <span>更新: <span className="font-mono">{formatDate(doc.updated_at)}</span></span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span>作成: {formatDate(doc.created_at)}</span>
+                    <span>作成: <span className="font-mono">{formatDate(doc.created_at)}</span></span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span>サイズ: </span>
