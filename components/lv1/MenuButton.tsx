@@ -5,6 +5,7 @@ export const MenuButton = (
     onClick: () => void;
     onMouseEnter?: React.MouseEventHandler<HTMLElement> | undefined;
     children: ReactNode;
+    disabled?: boolean;
   }
 ) => {
   return (
@@ -14,6 +15,7 @@ export const MenuButton = (
       }
       onClick={() => props.onClick()}
       onMouseEnter={props.onMouseEnter}
+      disabled={props.disabled}
     >
       {props.children}
     </button>
@@ -25,6 +27,7 @@ export const MenuToggleButton = (
     isToggled: boolean;
     onClick: (isToggled: boolean) => void;
     onMouseEnter?: React.MouseEventHandler<HTMLElement> | undefined;
+    disabled?: boolean;
     children: ReactNode;
   }
 ) => {
@@ -33,6 +36,7 @@ export const MenuToggleButton = (
       className={`menu-toggle-button h-[2.4em] py-1 whitespace-nowrap break-keep ${ props.isToggled ? "is-toggled" : "is-not-toggled"}`}
       onClick={() => props.onClick(!props.isToggled)}
       onMouseEnter={props.onMouseEnter}
+      disabled={props.disabled}
     >
       {props.children}
     </button>

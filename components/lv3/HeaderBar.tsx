@@ -122,41 +122,45 @@ const OpetationButtons = (props: {
       <span>New</span>
     </Link>
 
-    {mode === 'json-viewer' && flatJsons && (
+    {mode === 'json-viewer' && (
       <MenuButton
         onClick={() => openEditDataModal()}
         onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
       >
         <InlineIcon i={<VscEdit />} />
         <span>Edit</span>
       </MenuButton>
     )}
 
-    {mode === 'json-viewer' && flatJsons && (
+    {mode === 'json-viewer' && (
       <MenuToggleButton
         isToggled={filteringPreference.showPanel}
         onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
         onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
       >
         <InlineIcon i={<FaSearch />} />
         <span>Filter</span>
       </MenuToggleButton>
     )}
 
-    {mode === 'json-viewer' && flatJsons && (
+    {mode === 'json-viewer' && (
       <MenuButton
         onClick={() => foldAll()}
         onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
       >
         <InlineIcon i={<HiChevronDoubleUp />} />
         <span>Fold</span>
       </MenuButton>
     )}
 
-    {mode === 'json-viewer' && flatJsons && (
+    {mode === 'json-viewer' && (
       <MenuButton
         onClick={() => unfoldAll()}
         onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
       >
         <InlineIcon i={<HiChevronDoubleDown />} />
         <span>Unfold</span>

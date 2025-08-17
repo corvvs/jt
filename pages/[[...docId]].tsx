@@ -20,15 +20,20 @@ export default function Home() {
     setShouldRender(true);
   }, []);
 
-  if (!shouldRender) { return null; }
+  // ルーターの準備ができていない場合は何も表示しない
+  if (!router.isReady || !shouldRender) { 
+    return null; 
+  }
   
+  const effectiveDocId = docId || '_list';
+
   // _listパスの場合はドキュメント一覧を表示
-  const isDocumentListView = docId === '_list';
-  
+  const isDocumentListView = effectiveDocId === '_list';
+    
   return (
     <Layout>
       <GoogleAnalytics />
-      {isDocumentListView ? <DocumentList /> : <Main docId={docId} />}
+      {isDocumentListView ? <DocumentList /> : <Main docId={effectiveDocId} />}
       <ToastHolder />
       <EditJsonCardHolder />
       <PreformattedValueCardHolder />
