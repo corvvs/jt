@@ -10,6 +10,7 @@ export type JsonDocumentPreview = {
   created_at: Date;
   updated_at: Date;
   jet_version: string;
+  data_size?: number; // バイト単位でのデータサイズ（古いデータでは未定義の可能性）
 };
 
 export type JsonDocument = JsonDocumentPreview & {
@@ -52,13 +53,16 @@ async function saveDocument(data: JsonPartialDocument) {
 }
 
 async function saveDocumentPreview(transaction: TransactionReadWrite, data: JsonDocument) {
-  const preview: JsonDocumentPreview = _.pick(data,
-    "id",
-    "name",
-    "created_at",
-    "updated_at",
-    "jet_version",
-  );
+  const preview: JsonDocumentPreview = {
+    ..._.pick(data,
+      "id",
+      "name",
+      "created_at",
+      "updated_at",
+      "jet_version",
+    ),
+    data_size: new Blob([data.json_string]).size, // UTF-8バイト数を計算
+  };
   await saveItemIDB(transaction, storeName.JsonDocumentPreview, preview);
 }
 
