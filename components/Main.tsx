@@ -4,7 +4,7 @@ import { FixedSizeList } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
-import { MutableRefObject, useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { FaRegFrown, FaRegMehRollingEyes } from 'react-icons/fa';
 import { defaultRawText, useVisibleItems } from "@/states/json";
 import { HeaderBar } from "./lv3/HeaderBar";
@@ -55,12 +55,24 @@ function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualSc
 
 const JsonItemsView = (props: {
   itemViewRef: MutableRefObject<any>;
+  targetDocId: string | undefined;
+  loadedDocId: string | undefined;
+  isLoading: boolean;
 }) => {
   const { json } = useJSON();
   const visibles = useVisibleItems();
   const { openModal } = useEditJsonModal();
   const manipulationHook = useManipulation();
   const toggleSingleHook = useToggleSingle();
+
+  // targetDocIdとloadedDocIdが一致していない場合、またはロード中の場合はローディング表示
+  if (props.isLoading || props.targetDocId !== props.loadedDocId) {
+    return (
+      <div className="h-full shrink grow gap-2 flex flex-col justify-center items-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   if (!json) {
     return null;
@@ -113,7 +125,6 @@ export const Main = (props: {
     parseData,
     setParsedData,
   } = useJSON();
-  console.log("docId", docId)
   const { dataFormat, setDataFormat } = useDataFormat();
   const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
@@ -121,9 +132,30 @@ export const Main = (props: {
   const itemViewRef = useRef<any>(null);
   const router = useRouter();
 
+  // 表示しようとしているdocIDと、ロードが完了したdocIDを別々に管理
+  const [targetDocId, setTargetDocId] = useState<string | undefined>(docId);
+  const [loadedDocId, setLoadedDocId] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  console.log("docId", docId, "targetDocId", targetDocId, "loadedDocId", loadedDocId, "isLoading", isLoading)
+
+  // docIdが変更された時に即座にtargetDocIdを更新
+  useEffect(() => {
+    if (targetDocId !== docId) {
+      setTargetDocId(docId);
+      setIsLoading(true);
+      // 新しいdocIdに変更された場合、loadedDocIdをリセット
+      setLoadedDocId(undefined);
+    }
+  }, [docId, targetDocId]);
+
   useEffect(() => {
     if (!router.isReady) { return; }
+    
     const f = async () => {
+      const currentTargetDocId = targetDocId;
+      setIsLoading(true);
+      
       const newDocument = {
         name: "",
         json_string: defaultRawText,
@@ -144,31 +176,49 @@ export const Main = (props: {
       }
 
       let doc: JsonPartialDocument = newDocument
-      if (docId === "new") {
+      let actualDocId = currentTargetDocId;
+      
+      if (currentTargetDocId === "new") {
         await setNewDocument();
-      } else if (docId) {
-        const d = await (JsonDocumentStore.fetchDocument(docId))
+        actualDocId = "new";
+      } else if (currentTargetDocId) {
+        const d = await (JsonDocumentStore.fetchDocument(currentTargetDocId))
         if (d) {
           router.replace(`/${d.id}`);
           setDocument(d);
           doc = d;
+          actualDocId = d.id;
         } else {
           router.replace('/new');
           await setNewDocument();
+          actualDocId = "new";
         }
       } else {
-          router.replace('/_list');
+          // この分岐は通常発生しないはず（ページレベルで制御されているため）
+          router.replace('/new');
           await setNewDocument();
+          actualDocId = "new";
       }
+      
+      // 処理中にtargetDocIdが変更されていないかチェック
+      if (targetDocId !== currentTargetDocId) {
+        // 処理中に別のdocIdに変更された場合は、この結果を無視
+        return;
+      }
+      
       try {
         const json = parseData(dataFormat, doc.json_string);
         setParsedData({ status: "accepted", json, text: doc.json_string });
       } catch (e) {
         setParsedData({ status: "rejected", error: e, text: doc.json_string });
       }
+      
+      // ロードが完了したdocIDを設定し、ローディング状態を解除
+      setLoadedDocId(actualDocId);
+      setIsLoading(false);
     };
     f();
-  }, [router.isReady, docId]);
+  }, [router.isReady, targetDocId]);
 
   // キーボードショートカット（Ctrl+F / Cmd+F）でフィルターパネルをトグルする
   // キーボードショートカット（Ctrl+E / Cmd+E）でEditモーダルを開く
@@ -318,7 +368,12 @@ export const Main = (props: {
       <div
         className="shrink grow text-base"
       >
-        <JsonItemsView itemViewRef={itemViewRef} />
+        <JsonItemsView 
+          itemViewRef={itemViewRef} 
+          targetDocId={targetDocId}
+          loadedDocId={loadedDocId}
+          isLoading={isLoading}
+        />
       </div>
 
     </div>
