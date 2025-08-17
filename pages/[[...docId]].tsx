@@ -1,4 +1,5 @@
 import { Main } from "@/components/Main";
+import { DocumentList } from "@/components/DocumentList";
 import Layout from "@/components/Layout";
 import { ToastHolder } from "@/components/toast/ToastHolder";
 import { useEffect, useState } from "react";
@@ -20,10 +21,14 @@ export default function Home() {
   }, []);
 
   if (!shouldRender) { return null; }
+  
+  // _listパスの場合はドキュメント一覧を表示
+  const isDocumentListView = docId === '_list';
+  
   return (
     <Layout>
       <GoogleAnalytics />
-      <Main docId={docId} />
+      {isDocumentListView ? <DocumentList /> : <Main docId={docId} />}
       <ToastHolder />
       <EditJsonCardHolder />
       <PreformattedValueCardHolder />

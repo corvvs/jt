@@ -6,12 +6,14 @@ import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
 import { useManipulation } from "@/states/manipulation";
-import { FaChevronRight, FaSearch } from "react-icons/fa";
+import { FaChevronRight, FaList, FaSearch } from "react-icons/fa";
 import _ from "lodash";
 import { useEditJsonModal } from "@/states/modal";
 import Link from "next/link";
 import { ThemeSelector } from "../lv2/ThemeSelector";
 import { useTransientBackdrop } from "@/features/TransientBackdrop";
+
+export type HeaderMode = 'json-viewer' | 'document-list';
 
 const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
@@ -79,7 +81,10 @@ const NarrowingLine = (props: {
   </div>)
 }
 
-const OpetationButtons = () => {
+const OpetationButtons = (props: {
+  mode: HeaderMode;
+}) => {
+  const { mode } = props;
   const { openModal: openEditDataModal } = useEditJsonModal();
   const { flatJsons } = useJSON();
   const { unfoldAll, foldAll } = useToggleMass();
@@ -89,13 +94,24 @@ const OpetationButtons = () => {
     handleMouseLeave,
     backdrop,
   } = useTransientBackdrop();
-  if (!flatJsons) { return null; }
 
   return <div
     className='header-bar relative flex flex-row items-center gap-1'
     onMouseLeave={handleMouseLeave}
   >
     {backdrop}
+    
+    {mode === 'json-viewer' && (
+      <Link
+        className="flippable h-[2.4em] flex flex-row py-1 whitespace-nowrap break-keep"
+        href="/_list"
+        onMouseEnter={handleMouseEnter}
+      >
+        <InlineIcon i={<FaList />} />
+        <span>List</span>
+      </Link>
+    )}
+
     <Link
       className="flippable h-[2.4em] flex flex-row py-1 whitespace-nowrap break-keep"
       href="/new"
@@ -106,43 +122,53 @@ const OpetationButtons = () => {
       <span>New</span>
     </Link>
 
-    <MenuButton
-      onClick={() => openEditDataModal()}
-      onMouseEnter={handleMouseEnter}
-    >
-      <InlineIcon i={<VscEdit />} />
-      <span>Edit</span>
-    </MenuButton>
+    {mode === 'json-viewer' && flatJsons && (
+      <MenuButton
+        onClick={() => openEditDataModal()}
+        onMouseEnter={handleMouseEnter}
+      >
+        <InlineIcon i={<VscEdit />} />
+        <span>Edit</span>
+      </MenuButton>
+    )}
 
-    <MenuToggleButton
-      isToggled={filteringPreference.showPanel}
-      onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
-      onMouseEnter={handleMouseEnter}
-    >
-      <InlineIcon i={<FaSearch />} />
-      <span>Filter</span>
-    </MenuToggleButton>
+    {mode === 'json-viewer' && flatJsons && (
+      <MenuToggleButton
+        isToggled={filteringPreference.showPanel}
+        onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
+        onMouseEnter={handleMouseEnter}
+      >
+        <InlineIcon i={<FaSearch />} />
+        <span>Filter</span>
+      </MenuToggleButton>
+    )}
 
-    <MenuButton
-      onClick={() => foldAll()}
-      onMouseEnter={handleMouseEnter}
-    >
-      <InlineIcon i={<HiChevronDoubleUp />} />
-      <span>Fold</span>
-    </MenuButton>
+    {mode === 'json-viewer' && flatJsons && (
+      <MenuButton
+        onClick={() => foldAll()}
+        onMouseEnter={handleMouseEnter}
+      >
+        <InlineIcon i={<HiChevronDoubleUp />} />
+        <span>Fold</span>
+      </MenuButton>
+    )}
 
-    <MenuButton
-      onClick={() => unfoldAll()}
-      onMouseEnter={handleMouseEnter}
-    >
-      <InlineIcon i={<HiChevronDoubleDown />} />
-      <span>Unfold</span>
-    </MenuButton>
+    {mode === 'json-viewer' && flatJsons && (
+      <MenuButton
+        onClick={() => unfoldAll()}
+        onMouseEnter={handleMouseEnter}
+      >
+        <InlineIcon i={<HiChevronDoubleDown />} />
+        <span>Unfold</span>
+      </MenuButton>
+    )}
 
   </div>;
 }
 
-const AppTitle = () => {
+const AppTitle = (props: {
+  mode: HeaderMode;
+}) => {
   return <h2
     className="px-2 whitespace-nowrap break-keep"
   >
@@ -150,23 +176,28 @@ const AppTitle = () => {
   </h2>
 };
 
-const MainLine = () => {
+const MainLine = (props: {
+  mode: HeaderMode;
+}) => {
+  const { mode } = props;
 
   return (<div
     className="shrink-0 grow-0 gap-2 flex flex-row items-center"
   >
-    <AppTitle />
-    <OpetationButtons />
+    <AppTitle mode={mode} />
+    <OpetationButtons mode={mode} />
     <ThemeSelector />
   </div>);
 };
 
 export const HeaderBar = (props: {
   itemViewRef: MutableRefObject<any>;
+  mode?: HeaderMode;
 }) => {
+  const mode = props.mode || 'json-viewer';
 
   return (<>
-    <MainLine />
-    <NarrowingLine itemViewRef={props.itemViewRef} />
+    <MainLine mode={mode} />
+    {mode === 'json-viewer' && <NarrowingLine itemViewRef={props.itemViewRef} />}
   </>);
 };

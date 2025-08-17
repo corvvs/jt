@@ -45,6 +45,18 @@ export async function fetchItemById(
   return document;
 }
 
+export async function deleteItemIDB(
+  transaction: TransactionReadWrite,
+  store: string,
+  id: string,
+) {
+  const st = transaction.objectStore(store);
+  if (!st) {
+    return;
+  }
+  await st.delete(id);
+}
+
 export async function fetchItemsIDB(
   transaction: TransactionReadOnly,
   store: string,

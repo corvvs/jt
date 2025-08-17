@@ -113,6 +113,7 @@ export const Main = (props: {
     parseData,
     setParsedData,
   } = useJSON();
+  console.log("docId", docId)
   const { dataFormat, setDataFormat } = useDataFormat();
   const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
@@ -145,8 +146,8 @@ export const Main = (props: {
       let doc: JsonPartialDocument = newDocument
       if (docId === "new") {
         await setNewDocument();
-      } else {
-        const d = await (docId ? JsonDocumentStore.fetchDocument(docId) : JsonDocumentStore.fetchLatest())
+      } else if (docId) {
+        const d = await (JsonDocumentStore.fetchDocument(docId))
         if (d) {
           router.replace(`/${d.id}`);
           setDocument(d);
@@ -155,6 +156,9 @@ export const Main = (props: {
           router.replace('/new');
           await setNewDocument();
         }
+      } else {
+          router.replace('/_list');
+          await setNewDocument();
       }
       try {
         const json = parseData(dataFormat, doc.json_string);
@@ -291,7 +295,7 @@ export const Main = (props: {
   >
     <div
       className='shrink-0 grow-0 flex flex-col'>
-      <HeaderBar itemViewRef={itemViewRef} />
+      <HeaderBar itemViewRef={itemViewRef} mode="json-viewer" />
     </div>
 
     <div

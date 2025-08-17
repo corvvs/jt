@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { TransactionReadWrite, fetchItemById, fetchItemsIDB, getTransaction, saveItemIDB } from './indexed_db';
+import { TransactionReadWrite, fetchItemById, fetchItemsIDB, getTransaction, saveItemIDB, deleteItemIDB } from './indexed_db';
 import _ from 'lodash';
 
 export type PartialKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -97,9 +97,18 @@ async function listPreviews(scope: { skip: number; limit: number; } = { skip: 0,
 }
 
 
+async function deleteDocument(id: string) {
+  const transaction: TransactionReadWrite = await getTransaction(1, "readwrite", [
+    storeName.JsonDocument, storeName.JsonDocumentPreview,
+  ]);
+  await deleteItemIDB(transaction, storeName.JsonDocument, id);
+  await deleteItemIDB(transaction, storeName.JsonDocumentPreview, id);
+}
+
 export const JsonDocumentStore = {
     fetchLatest,
     fetchDocument,
     saveDocument,
     listPreviews,
+    deleteDocument,
 };
