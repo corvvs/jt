@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { JsonDocumentPreview, JsonDocumentStore } from "@/data/document";
 import { useRouter } from "next/router";
-import { FaRegClock, FaRegFile, FaPlus, FaTrash, FaCalendarAlt } from 'react-icons/fa';
+import { FaRegClock, FaRegFile, FaPlus, FaTrash, FaCalendarAlt, FaRegFrown } from 'react-icons/fa';
 import { toast } from "react-toastify";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { MultipleButtons } from "./lv1/MultipleButtons";
@@ -9,7 +9,7 @@ import { InlineIcon } from "./lv1/InlineIcon";
 
 type SortOption = 'created_desc' | 'updated_desc';
 
-export const DocumentList = () => {
+const DocumentListBody = () => {
   const [documents, setDocuments] = useState<JsonDocumentPreview[]>([]);
   const [filteredDocuments, setFilteredDocuments] = useState<JsonDocumentPreview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,12 +17,12 @@ export const DocumentList = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOption, setSortOption] = useState<SortOption>('updated_desc');
   const router = useRouter();
-  const itemViewRef = useRef<any>(null);
 
   useEffect(() => {
     const loadDocuments = async () => {
       try {
         setLoading(true);
+        setError(null);
         const result = await JsonDocumentStore.listPreviews({ skip: 0, limit: 100 });
         if (result) {
           setDocuments(result.data);
@@ -33,7 +33,13 @@ export const DocumentList = () => {
         }
       } catch (err) {
         console.error('ドキュメント一覧の取得に失敗しました:', err);
-        setError('ドキュメント一覧の取得に失敗しました');
+        // IndexedDBが利用できない場合などの詳細なエラーメッセージ
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        if (errorMessage.includes('IDBDatabase') || errorMessage.includes('IndexedDB')) {
+          setError('ローカルストレージ（IndexedDB）にアクセスできません。ブラウザの設定を確認してください。');
+        } else {
+          setError('ドキュメント一覧の取得に失敗しました。しばらく待ってから再度お試しください。');
+        }
       } finally {
         setLoading(false);
       }
@@ -131,46 +137,48 @@ export const DocumentList = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="shrink grow flex justify-center items-center h-64">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="shrink grow flex flex-col items-center justify-center h-64 text-gray-500">
+        <FaRegFile className="text-4xl mb-4 text-red-400" />
+        <p className="text-lg mb-2 text-red-500">エラーが発生しました</p>
+        <p className="text-sm mb-4 text-center max-w-md">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          再読み込み
+        </button>
+      </div>
+    );
+  }
+
+  if (documents.length === 0) {
+    return (
+      <div
+        className="shrink grow flex flex-col items-center justify-center h-64 text-gray-500 cursor-pointer"
+        onClick={handleNewDocument}
+      >
+        <FaRegFrown className="text-4xl mb-4" />
+        <p className="text-lg mb-2">No Stored Documents.</p>
+      </div>
+    );
+  }
+
   const renderContent = () => {
-    if (loading) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-lg">Loading...</div>
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-red-500">{error}</div>
-        </div>
-      );
-    }
-
-    if (documents.length === 0) {
-      return (
-        <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-          <FaRegFile className="text-4xl mb-4" />
-          <p className="text-lg mb-2">保存されたドキュメントがありません</p>
-          <p className="text-sm mb-4">新しいドキュメントを作成してデータを保存してください</p>
-          <button
-            onClick={handleNewDocument}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <FaPlus />
-            新しいドキュメントを作成
-          </button>
-        </div>
-      );
-    }
-
     if (filteredDocuments.length === 0 && searchQuery) {
       return (
         <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-          <FaRegFile className="text-4xl mb-4" />
-          <p className="text-lg mb-2">検索条件に一致するドキュメントがありません</p>
-          <p className="text-sm">検索条件を変更してください</p>
+          <FaRegFrown className="text-4xl mb-4" />
+          <p className="text-lg mb-2">No Matching Documents Found.</p>
         </div>
       );
     }
@@ -223,52 +231,60 @@ export const DocumentList = () => {
     );
   };
 
+  return <div className="shrink grow p-6 flex flex-col overflow-y-hidden">
+    {documents.length > 0 && (
+      <div className="shrink-0 grow-0 max-w-4xl mb-6 pr-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <input
+            type="text"
+            placeholder="ドキュメント名やIDで検索..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="flex items-center gap-2">
+            <MultipleButtons
+              currentKey={sortOption}
+              items={[
+                {
+                  key: "updated_desc",
+                  content: <div className="h-[1.5rem] flex items-center">
+                    <InlineIcon i={<FaRegClock />} />
+                    <span className="p-1">Updated At</span>
+                  </div>
+                },
+                {
+                  key: "created_desc",
+                  content: <div className="h-[1.5rem] flex items-center">
+                    <InlineIcon i={<FaCalendarAlt />} />
+                    <span className="p-1">Created At</span>
+                  </div>
+                },
+              ]}
+              onClick={(item) => {
+                setSortOption(item.key as SortOption);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    )}
+    <div className="shrink grow max-w-4xl pr-6 overflow-y-auto">
+      {renderContent()}
+    </div>
+  </div>;
+}
+
+
+export const DocumentList = () => {
+  const itemViewRef = useRef<any>(null);
+
   return (
     <div className="shrink grow flex flex-col">
       <div className='shrink-0 grow-0 flex flex-col'>
         <HeaderBar itemViewRef={itemViewRef} mode="document-list" />
       </div>
-      {documents.length > 0 && <div className="shrink grow p-6 flex flex-col overflow-y-hidden">
-          {/* 検索フィールドとソート切り替え */}
-          <div className="shrink-0 grow-0 max-w-4xl mb-6 pr-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="text"
-                placeholder="ドキュメント名やIDで検索..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="flex items-center gap-2">
-                <MultipleButtons
-                  currentKey={sortOption}
-                  items={[
-                    {
-                      key: "updated_desc",
-                      content: <div className="h-[1.5rem] flex items-center">
-                        <InlineIcon i={<FaRegClock />} />
-                        <span className="p-1">更新時刻</span>
-                      </div>
-                    },
-                    {
-                      key: "created_desc",
-                      content: <div className="h-[1.5rem] flex items-center">
-                        <InlineIcon i={<FaCalendarAlt />} />
-                        <span className="p-1">作成時刻</span>
-                      </div>
-                    },
-                  ]}
-                  onClick={(item) => {
-                    setSortOption(item.key as SortOption);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="shrink grow max-w-4xl pr-6 overflow-y-auto">
-            {renderContent()}
-          </div>
-      </div>}
+      <DocumentListBody />
     </div>
   );
 };
