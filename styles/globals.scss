@@ -463,3 +463,53 @@ body {
   will-change: transform;
   backface-visibility: hidden;
 }
+
+/* Document List - カスタムクラス */
+.document-search-input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  
+  /* 既存のテーマ変数を使用 */
+  border: 1px solid var(--foreground-secondary);
+  background-color: var(--background-textarea);
+  color: var(--foreground);
+  
+  &:focus {
+    border-color: var(--matched-foreground);
+    box-shadow: 0 0 0 2px rgba(42, 134, 214, 0.3); /* matched-foregroundの透明版 */
+  }
+}
+
+.document-list-item {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color var(--theme-transition);
+  
+  border: 1px solid var(--foreground-secondary);
+  
+  &:hover {
+    background-color: var(--background-secondary);
+  }
+}
+
+.document-delete-button {
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  
+  color: var(--foreground-bad);
+  
+  &:hover {
+    color: var(--foreground-bad);
+    background-color: var(--background-secondary);
+  }
+}
+
+.document-list-item:hover .document-delete-button {
+  opacity: 1;
+}
