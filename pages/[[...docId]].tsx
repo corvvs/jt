@@ -31,7 +31,7 @@ export default function Home() {
   const isDocumentListView = effectiveDocId === '_list';
     
   return (
-    <Layout>
+    <Layout isDocumentListView={isDocumentListView}>
       <GoogleAnalytics />
       {isDocumentListView ? <DocumentList /> : <Main docId={effectiveDocId} />}
       <ToastHolder />

@@ -3,6 +3,7 @@ import Head from "next/head";
 import { ReactNode } from "react";
 
 export default function Layout(props: {
+  isDocumentListView: boolean;
   children: ReactNode;
 }) {
   const {
@@ -18,7 +19,7 @@ export default function Layout(props: {
       '
     >
       <Head>
-        <title>{ docTitle ? `[Jet] ${ docTitle }` : "JSON Analyzer" }</title>
+        <title>{ !props.isDocumentListView && docTitle ? `[Jet] ${ docTitle }` : "JSON Analyzer" }</title>
       </Head>
 
       <div
