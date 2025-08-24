@@ -36,34 +36,81 @@ function matchByKeyQuery(
   return true;
 }
 
+function hasAtSymbol(keyPathQuery: KeyPathQuery): boolean {
+  return keyPathQuery.tokens.some(token => token.position === "@");
+}
+
+function matchValueQueryInSubtree(item: JsonRowItem, valueQuery: ValueQuery): boolean {
+  // 子孫ノードすべてをチェック
+  function checkDescendants(node: JsonRowItem): boolean {
+    // 現在のノードでValueQueryをチェック
+    if (matchValueQueryDirect(node, valueQuery)) {
+      return true;
+    }
+    
+    // 子ノードがあれば再帰的にチェック
+    if (node.childs) {
+      return node.childs.some(child => checkDescendants(child));
+    }
+    
+    return false;
+  }
+  
+  return checkDescendants(item);
+}
+
+function matchValueQueryDirect(item: JsonRowItem, valueQuery: ValueQuery): boolean {
+  // まだ Key 1つだけしか対応してない
+  if (valueQuery.tokens.length >= 1) {
+    return item.right.value?.toString() === valueQuery.tokens[0].token;
+  }
+  return false;
+}
+
 export function matchByQuery(
   item: JsonRowItem,
-  query: GroupedQuery | Query | KeyPathQuery | ValueQuery
+  query: GroupedQuery | Query | KeyPathQuery | ValueQuery,
+  level: number = 0,
 ): boolean {
-  if (query.type === "GroupedQuery") {
-
-
-    if (query.op === "and") {
-      return query.queries.every((q) => matchByQuery(item, q));
-    }
-    if (query.op === "or") {
-      return query.queries.some((q) => matchByQuery(item, q));
+  switch (query.type) {
+  case "GroupedQuery": {
+  
+    switch (query.op) {
+      case "and":
+        return query.queries.every((q) => matchByQuery(item, q, level + 1));
+      case "or":
+        return query.queries.some((q) => matchByQuery(item, q, level + 1));
     }
     console.error("SOMETHING WRONG!!!");
+    break;
+  } 
+  case "Query": {
 
-
-  } else if (query.type === "Query") {
-
-
-    return  (query.keyPathQuery ? matchByQuery(item, query.keyPathQuery) : true) &&
-            (query.valueQuery ? matchByQuery(item, query.valueQuery) : true);
-
-
-  } else if (query.type === "KeyPathQuery") {
+    // KeyPathQueryに@が含まれているかチェック
+    if (query.keyPathQuery && hasAtSymbol(query.keyPathQuery)) {
+      // @が含まれる場合：KeyPathQueryで対象ノードを特定し、ValueQueryを子孫に適用
+      const keyPathMatched = matchByQuery(item, query.keyPathQuery, level + 1);
+      if (!keyPathMatched) {
+        return false;
+      }
+      
+      // ValueQueryがある場合は子孫ノードで適用
+      if (query.valueQuery) {
+        return matchValueQueryInSubtree(item, query.valueQuery);
+      }
+      
+      return true;
+    } else {
+      // @が含まれない場合：従来通りのAND条件
+      return  (query.keyPathQuery ? matchByQuery(item, query.keyPathQuery, level + 1) : true) &&
+              (query.valueQuery ? matchByQuery(item, query.valueQuery, level + 1) : true);
+    }
+  } 
+  case "KeyPathQuery": {
 
 
     // こいつが本体
-    let atIndex = query.tokens.findIndex(t => t.position === "@");
+    const atIndex = query.tokens.findIndex(t => t.position === "@");
     const formerSize = atIndex < 0 ? query.tokens.length : atIndex + 1;
     const former = _.slice(query.tokens, 0, formerSize);
     const latter = _.slice(query.tokens, formerSize);
@@ -89,25 +136,20 @@ export function matchByQuery(
       }
       return true;
     })(item);
-    return matchedFormer && (latter.length === 0 ? true : matchSubtreeByKeyQueries(item, latter, 0));
 
-
-  } else if (query.type === "ValueQuery") {
-
-
-    // まだ Key 1つだけしか対応してない
-    if (query.tokens.length >= 1) {
-      return item.right.value?.toString() === query.tokens[0].token;
+    if (!matchedFormer) {
+      return false;
     }
-    console.error("SOMETHING WRONG???");
-
-
-  } else {
-
-
+    if (latter.length === 0) {
+      return true;
+    }
+    return matchSubtreeByKeyQueries(item, latter, 0);
+  }
+  case "ValueQuery": {
+    return matchValueQueryDirect(item, query);
+  }
+  default: 
     console.error("SOMETHING WRONG...");
-
-
   }
 
 

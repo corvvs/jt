@@ -1,10 +1,21 @@
 import { QueryToken, QueryTokenType } from "./types";
 
 const queryTokenMap: { [K in QueryTokenType]: RegExp }  = {
-  "key-value-separator": /[:]/,
-  "keypath-separator": /[.]/,
+  // この文字より前はキーパスに対するクエリ(キーパスクエリ)、この文字より後ろは値に対するクエリ
+  "key-value-separator": /[:]/, 
+
+  // キーパスクエリの区切り文字
+  "keypath-separator": /[.]/, 
+
   // "weak": /[?]/,
-  "root": /[$]/,
+
+  // ルート, すなわちJSONのトップレベルを示す
+  "root": /[$]/, 
+
+  /*
+   * 一度だけ.の代わりにキーパスクエリの区切り文字として使える. 
+   * 使った場合, この文字以降のキーパスクエリに対するマッチは, @の直前のノードを表示させる.
+   */
   "match-target-specifier": /[@]/,
   "paren-open": /[(]/,
   "paren-close": /[)]/,
