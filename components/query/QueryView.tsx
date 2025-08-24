@@ -11,6 +11,16 @@ import { ModeDescription, useQuery } from "@/states/manipulation/query";
 import { HitCard } from "./HitCard";
 import { FootHinted } from "./FootHinted";
 
+interface QueryViewProps {
+  matchNavigation?: {
+    goToNextMatch: () => void;
+    goToPreviousMatch: () => void;
+    goToFirstMatch: () => void;
+    matchedCount: number;
+    currentMatchIndex: number;
+  };
+}
+
 const ModePanel = () => {
   const { filteringPreference, setFilteringMode } = useManipulation();
 
@@ -85,7 +95,7 @@ const QueryInputField = () => {
   </div>
 };
 
-export const QueryView = () => {
+export const QueryView = ({ matchNavigation }: QueryViewProps = {}) => {
   const {
     filteringPreference,
     queryModeDescription,
@@ -179,7 +189,7 @@ export const QueryView = () => {
     <div
       className="px-2 shrink-0 grow-0"
     >
-      <HitCard />
+      <HitCard matchNavigation={matchNavigation} />
     </div>
 
     <div

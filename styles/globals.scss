@@ -108,6 +108,124 @@ body {
   box-shadow: inset 3px 0 0 var(--matched-foreground);
 }
 
+/* マッチナビゲーションパネル */
+.match-navigation-panel {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  background-color: var(--background);
+  border: 2px solid var(--matched-foreground);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease-in-out;
+}
+
+.match-navigation-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.match-info {
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+  font-size: 0.875rem;
+  color: var(--matched-foreground);
+  font-weight: bold;
+}
+
+.match-counter {
+  padding: 0.25rem 0.5rem;
+  background-color: var(--matched-row);
+  border-radius: 0.25rem;
+}
+
+.match-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+}
+
+.match-nav-button {
+  padding: 0.5rem;
+  border: 1px solid var(--matched-foreground);
+  background-color: var(--background);
+  color: var(--matched-foreground);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--matched-foreground);
+    color: var(--background);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* インラインマッチナビゲーション */
+.hit-counter-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 3rem;
+}
+
+.match-navigation-inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--matched-row);
+  border-radius: 0.25rem;
+  border: 1px solid var(--matched-foreground);
+}
+
+.match-counter-inline {
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--matched-foreground);
+  font-weight: bold;
+  min-width: 3rem;
+  text-align: center;
+}
+
+.match-buttons-inline {
+  display: flex;
+  flex-direction: row;
+  gap: 0.125rem;
+}
+
+.match-nav-button-inline {
+  padding: 0.25rem 0.375rem;
+  border: 1px solid var(--matched-foreground);
+  background-color: var(--background);
+  color: var(--matched-foreground);
+  border-radius: 0.125rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  font-size: 0.75rem;
+  line-height: 1;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--matched-foreground);
+    color: var(--background);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .weaken-row {
   opacity: 0.65;
 }
