@@ -18,6 +18,7 @@ import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 import { sortKeysJson } from "@/libs/tree_manipulation";
 import { useDataFormat, DataFormat } from "@/states/config";
+import { useMatchNavigation } from "@/hooks/useMatchNavigation";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -130,6 +131,7 @@ export const Main = (props: {
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const itemViewRef = useRef<any>(null);
+  const matchNavigation = useMatchNavigation(itemViewRef);
   const router = useRouter();
 
   // 表示しようとしているdocIDと、ロードが完了したdocIDを別々に管理
@@ -258,13 +260,39 @@ export const Main = (props: {
         event.preventDefault(); // デフォルトの動作を防ぐ
         popNarrowedRange(-1);
       }
+
+      // F3 / Shift+F3: 次/前のマッチした行に移動
+      if (event.key === 'F3') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          matchNavigation.goToPreviousMatch();
+        } else {
+          matchNavigation.goToNextMatch();
+        }
+      }
+
+      // Ctrl+G / Ctrl+Shift+G: 次/前のマッチした行に移動（代替ショートカット）
+      if ((event.ctrlKey || event.metaKey) && event.key === 'g') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          matchNavigation.goToPreviousMatch();
+        } else {
+          matchNavigation.goToNextMatch();
+        }
+      }
+
+      // Ctrl+1: 最初のマッチした行に移動
+      if ((event.ctrlKey || event.metaKey) && event.key === '1') {
+        event.preventDefault();
+        matchNavigation.goToFirstMatch();
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, matchNavigation]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
@@ -361,7 +389,7 @@ export const Main = (props: {
             filteringPreference.showPanel ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <QueryView />
+          <QueryView matchNavigation={matchNavigation} />
         </div>
       </div>
 

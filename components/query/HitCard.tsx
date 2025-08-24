@@ -2,21 +2,72 @@ import { useManipulation } from "@/states/manipulation";
 import _ from "lodash";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { VscCopy, VscCloudDownload } from "react-icons/vsc";
+import { FaChevronUp, FaChevronDown, FaStepBackward } from "react-icons/fa";
 import { extractFilteredResult } from "@/libs/partial_tree";
 import { useJSON } from "@/states";
 import { ClipboardAccess, FileDownload } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 import { useVisibleItems } from "@/states/json";
 
-const HitCounter = () => {
-  const { filterMaps } = useManipulation();
+interface HitCardProps {
+  matchNavigation?: {
+    goToNextMatch: () => void;
+    goToPreviousMatch: () => void;
+    goToFirstMatch: () => void;
+    matchedCount: number;
+    currentMatchIndex: number;
+  };
+}
+
+const HitCounter = ({ matchNavigation }: { matchNavigation?: HitCardProps['matchNavigation'] }) => {
+  const { filterMaps, filteringPreference } = useManipulation();
   if (!filterMaps) { return null }
   const hitCount = _.size(filterMaps.matched);
 
-  return <p className={`filter-matched-items ${hitCount > 0 ? "" : "no-hit"}`}>
-    {hitCount}
-    <span className="text-sm">items</span>
-  </p>
+  return <div className="hit-counter-container">
+    <p className={`filter-matched-items ${hitCount > 0 ? "" : "no-hit"}`}>
+      {hitCount}
+      <span className="text-sm">items</span>
+    </p>
+    
+    {/* LightUpモードの場合、ナビゲーションボタンを表示 */}
+    {filteringPreference.resultAppearance === 'lightup' && hitCount > 0 && matchNavigation && (
+      <div className="match-navigation-inline">
+        <span className="match-counter-inline">
+          {matchNavigation.currentMatchIndex > 0 ? matchNavigation.currentMatchIndex : '-'} / {matchNavigation.matchedCount}
+        </span>
+        
+        <div className="match-buttons-inline">
+          <button
+            onClick={matchNavigation.goToFirstMatch}
+            disabled={matchNavigation.matchedCount === 0}
+            title="最初のマッチした行に移動 (Ctrl+1)"
+            className="match-nav-button-inline"
+          >
+            <InlineIcon i={<FaStepBackward />} />
+          </button>
+          
+          <button
+            onClick={matchNavigation.goToPreviousMatch}
+            disabled={matchNavigation.matchedCount === 0}
+            title="前のマッチした行に移動 (Shift+F3)"
+            className="match-nav-button-inline"
+          >
+            <InlineIcon i={<FaChevronUp />} />
+          </button>
+          
+          <button
+            onClick={matchNavigation.goToNextMatch}
+            disabled={matchNavigation.matchedCount === 0}
+            title="次のマッチした行に移動 (F3)"
+            className="match-nav-button-inline"
+          >
+            <InlineIcon i={<FaChevronDown />} />
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
 };
 
 const CopyResultsBlock = () => {
@@ -114,9 +165,9 @@ const CopyResultsBlock = () => {
   </div>;
 };
 
-export const HitCard = () => {
+export const HitCard = ({ matchNavigation }: HitCardProps = {}) => {
   return <>
-    <HitCounter />
+    <HitCounter matchNavigation={matchNavigation} />
 
     <CopyResultsBlock />
   </>
