@@ -30,7 +30,7 @@ export const MatchNavigationPanel: React.FC<MatchNavigationPanelProps> = ({
   if (compact) {
     return (
       <div className="match-navigation-compact">
-        <div className="match-navigation-compact-content">
+        <div>
           <span className="match-counter-compact">
             {currentMatchIndex > 0 ? currentMatchIndex : '-'} / {matchedCount}
           </span>
