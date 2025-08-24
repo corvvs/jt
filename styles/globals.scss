@@ -105,10 +105,11 @@ body {
 
 .matched-row {
   background-color: var(--matched-row);
+  box-shadow: inset 3px 0 0 var(--matched-foreground);
 }
 
 .weaken-row {
-  opacity: 0.20;
+  opacity: 0.65;
 }
 
 .matched-cell {
