@@ -2,7 +2,7 @@ import { useAtom } from "jotai";
 import _ from "lodash";
 import { defaultNarrowedRange, useNarrowing } from "./manipulation/narrowing";
 import { AppearanceDescription, FilteringResultAppearanceOption, ModeDescription, defaultFilteringQuery, filterMapsAtom, filteringResultAppearanceAtom, useQuery } from "./manipulation/query";
-import { saveDefaultSearchMode } from "./search_mode";
+import { saveDefaultSearchAppearance, saveDefaultSearchMode } from "./search_mode";
 
 type Manipulation = {
   /**
@@ -40,6 +40,9 @@ export const useManipulation = () => {
   const setFilteringResultAppearance = (v: FilteringResultAppearanceOption) => setFilteringPreference(prev => {
     const next = _.cloneDeep(prev);
     next.resultAppearance = v;
+    if (prev.resultAppearance !== v) {
+      saveDefaultSearchAppearance(v);
+    }
     return next;
   });
   const setFilteringMode = (mode: "simple" | "advanced") => setFilteringPreference(prev => {

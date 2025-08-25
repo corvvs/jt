@@ -3,7 +3,7 @@ import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { jsonFlattenedAtom } from "../json";
 import { advancedMatcherAtom } from "@/libs/advanced_query";
-import { loadDefaultSearchMode } from "../search_mode";
+import { loadDefaultSearchAppearance, loadDefaultSearchMode } from "../search_mode";
 
 export const defaultFilteringQuery = "";
 
@@ -39,7 +39,7 @@ type FilteringPreference = {
 export const filteringPreferenceAtom = atom<FilteringPreference>({
   mode: loadDefaultSearchMode() ?? "simple",
   showPanel: false,
-  resultAppearance: "lightup",
+  resultAppearance: loadDefaultSearchAppearance() ?? "lightup",
   showAdvancedDebug: false,
 });
 
