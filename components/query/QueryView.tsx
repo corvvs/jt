@@ -127,7 +127,7 @@ export const QueryView = ({ matchNavigation }: QueryViewProps = {}) => {
     <h2
       className="color-inverted px-2 py-1 flex flex-row gap-1 items-center font-bold"
     >
-      <p>フィルタリング</p>
+      <p>検索</p>
       <InlineIcon i={<FaSearch />} />
     </h2>
 

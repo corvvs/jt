@@ -8,6 +8,7 @@ export type QueryTokenType =
   | "paren-close"
   | "and"
   | "or"
+  | "single-key-wildcard"
   | "key"
   | "end"
   // | "value";
@@ -83,8 +84,17 @@ export type KeyStringQuery = {
   token: string;
 };
 
+export type SingleKeyWildcardQuery = {
+  type: "SingleKeyWildcardQuery",
+  token: "*";
+};
+
 export type CompoundQuery = GroupedQuery | Query | KeyPathQuery | ValueQuery;
-export type GenericQuery = CompoundQuery | AndQuery | OrQuery | RootQuery | DotQuery | AtQuery | KeyStringQuery;
+export type GenericQuery = CompoundQuery | AndQuery | OrQuery | RootQuery | DotQuery | AtQuery | KeyStringQuery | SingleKeyWildcardQuery;
 export type ValueQuerySubsidiary = KeyStringQuery;
 export type KeyPathQuerySubsidiary = KeyQuery;
 export type GroupedQuerySubsidiary = GroupedQuery | Query;
+
+export function isKeyStringLikeQuery(q: GenericQuery): q is (KeyStringQuery | SingleKeyWildcardQuery) {
+  return q.type === "KeyStringQuery" || q.type === "SingleKeyWildcardQuery";
+}

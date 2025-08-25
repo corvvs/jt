@@ -10,6 +10,11 @@ export const FilteringResultAppearancePanel = () => {
     currentKey={filteringPreference.resultAppearance}
     items={[
       {
+        key: "lightup",
+        title: "LightUp",
+        hint: AppearanceDescription["lightup"],
+      },
+      {
         key: "ascendant_descendant",
         title: "Related",
         hint: AppearanceDescription["ascendant_descendant"],
@@ -28,11 +33,6 @@ export const FilteringResultAppearancePanel = () => {
         key: "just",
         title: "Only",
         hint: AppearanceDescription["just"],
-      },
-      {
-        key: "lightup",
-        title: "LightUp",
-        hint: AppearanceDescription["lightup"],
       },
     ]}
     onClick={(item) => {

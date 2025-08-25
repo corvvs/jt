@@ -3,6 +3,7 @@ import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { jsonFlattenedAtom } from "../json";
 import { advancedMatcherAtom } from "@/libs/advanced_query";
+import { loadDefaultSearchAppearance, loadDefaultSearchMode } from "../search_mode";
 
 export const defaultFilteringQuery = "";
 
@@ -11,7 +12,7 @@ export type FilteringMap = {
   visible: { [k: number]: boolean };
 };
 
-type QueryMode = "simple" | "advanced";
+export type QueryMode = "simple" | "advanced";
 
 export const ModeDescription = {
   "simple":   "キー・値に対する部分一致検索",
@@ -36,9 +37,9 @@ type FilteringPreference = {
 };
 
 export const filteringPreferenceAtom = atom<FilteringPreference>({
-  mode: "simple",
+  mode: loadDefaultSearchMode() ?? "simple",
   showPanel: false,
-  resultAppearance: "ascendant_descendant",
+  resultAppearance: loadDefaultSearchAppearance() ?? "lightup",
   showAdvancedDebug: false,
 });
 
