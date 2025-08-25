@@ -21,7 +21,9 @@ const queryTokenMap: { [K in QueryTokenType]: RegExp }  = {
   "paren-close": /[)]/,
   "and": /[&]/,
   "or": /[|]/,
-  "key": /[^:.$@()&|]/,
+  "single-key-wildcard": /[*]/,
+
+  "key": /[^*:.$@()&|]/,
   // "value": /./,
   "end": /$/,
 };
@@ -42,6 +44,7 @@ export const tokenizeQuery = (query: string) => {
     "paren-close",
     "and",
     "or",
+    "single-key-wildcard",
     "end",
   ] as const;
 

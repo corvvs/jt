@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { AtQuery, CompoundQuery, DotQuery, GenericQuery, GroupedQuery, KeyPathQuery, KeyPathQuerySubsidiary, KeyQuery, KeyStringQuery, Query, QueryToken, QueryTokenType, RootQuery, TokenToQuery, ValueQuery, ValueQuerySubsidiary } from "./types";
+import { AtQuery, CompoundQuery, DotQuery, GenericQuery, GroupedQuery, isKeyStringLikeQuery, KeyPathQuery, KeyPathQuerySubsidiary, KeyQuery, KeyStringQuery, Query, QueryToken, QueryTokenType, RootQuery, TokenToQuery, ValueQuery, ValueQuerySubsidiary } from "./types";
 import { QuerySyntaxError } from "./QuerySyntaxError";
 
 const startingTokens: TokenToQuery[] = [
@@ -63,6 +63,7 @@ const continuingTokens = [
   { token: "keypath-separator", query: "DotQuery" },
   { token: "match-target-specifier", query: "AtQuery" },
   { token: "key", query: "KeyStringQuery" },
+  { token: "single-key-wildcard", query: "KeyStringQuery" },
 ] as const;
 
 function isQueryLike(q?: GenericQuery): q is Query | GroupedQuery {
@@ -201,7 +202,7 @@ function reduceQueries(ender: TokenToQuery, opener: CompoundQuery, rest: Generic
       if (!isKeyPathQueryComponent(q)) {
         throw new QuerySyntaxError("Invalid KeyPathQuery", `operands include an unexpected type of query: ${q.type}`, { ender, compound: opener, rest });
       }
-      if (0 < i && last_is_key === (q.type === "KeyStringQuery")) {
+      if (0 < i && last_is_key === isKeyStringLikeQuery(q)) {
         throw new QuerySyntaxError("Invalid KeyPathQuery", "operands are not well separated", { ender, compound: opener, rest });
       }
       if (q.type === "RootQuery") {
@@ -219,7 +220,7 @@ function reduceQueries(ender: TokenToQuery, opener: CompoundQuery, rest: Generic
           throw new QuerySyntaxError("Invalid Atmark Usage", "at(@) must be at most one", { ender, compound: opener, rest });
         }
       }
-      last_is_key = q.type === "KeyStringQuery";
+      last_is_key = isKeyStringLikeQuery(q);
 
       if (q.type === "KeyStringQuery") {
         stringQuery = q;
