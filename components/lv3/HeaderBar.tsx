@@ -141,7 +141,7 @@ const OpetationButtons = (props: {
         disabled={!flatJsons}
       >
         <InlineIcon i={<FaSearch />} />
-        <span>Filter</span>
+        <span>Search</span>
       </MenuToggleButton>
     )}
 

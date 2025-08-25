@@ -39,7 +39,7 @@ type FilteringPreference = {
 export const filteringPreferenceAtom = atom<FilteringPreference>({
   mode: loadDefaultSearchMode() ?? "simple",
   showPanel: false,
-  resultAppearance: "ascendant_descendant",
+  resultAppearance: "lightup",
   showAdvancedDebug: false,
 });
 
