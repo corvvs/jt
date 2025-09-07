@@ -9,6 +9,9 @@
     "export": "next export",
     "lint": "next lint"
   },
+  "engines": {
+    "node": "22.x"
+  },
   "dependencies": {
     "@headlessui/react": "^1.7.14",
     "@types/node": "^22.16.0",
