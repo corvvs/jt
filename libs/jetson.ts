@@ -330,7 +330,7 @@ export function makeGauge(items: JsonRowItem[]) {
     }
     kmean = kls.length > 0 ? kmean / kls.length : 0;
     k2mean = kls.length > 0 ? k2mean / kls.length : 0;
-    const ksigma = k2mean - kmean ** 2;
+    const ksigma = Math.sqrt(k2mean - kmean ** 2);
     const kmax = (kvmax - kmean) / ksigma < 0.5 ? kvmax : kmean + ksigma;
     return Math.ceil(Math.max(kmax + 2, imax + 3));
   });
