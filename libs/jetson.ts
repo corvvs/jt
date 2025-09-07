@@ -67,15 +67,36 @@ export type JsonGauge = {
 export type JsonRowItem = {
   index: number;
   lineNumber: number;
+  /**
+   * JSON多分木における自ノードのキー名
+   */
   elementKey: string;
+  /**
+   * このノードをサブルートとした時のJSON値
+   */
   right: JsonValueObject;
+  /**
+   * ルートからこのノードの親までの経路上にあるノードの配列
+   */
   rowItems: JsonRowItem[];
   stats: TreeStats;
+  /**
+   * 子ノード
+   */
   childs?: JsonRowItem[];
   itemKey?: string | number;
 
+  /**
+   * JSON多分木のノードを一列に並べた時, 自分と同じ親を持つ自分の直前のノード
+   */
   previousSibling?: JsonRowItem;
+  /**
+   * 親ノード
+   */
   parent?: JsonRowItem;
+  /**
+   * JSON多分木のノードを一列に並べた時, 自分と同じ親を持つ自分の直後のノード
+   */
   nextSibling?: JsonRowItem;
   /**
    * 整形済みの値かどうか
@@ -280,14 +301,12 @@ export function makeGauge(items: JsonRowItem[]) {
   // 各列の幅を収集する
   for (const item of items) {
     const depth = item.rowItems.length;
-    if (gaugeStats.columnKeyLengths.length < depth + 1) {
-      while (gaugeStats.columnKeyLengths.length < depth + 1) {
-        gaugeStats.columnKeyLengths.push([]);
-        gaugeStats.columnIndexLengths.push([]);
-        if (gaugeStats.columnKeyLengths.length <= item.rowItems.length) {
-          const i = gaugeStats.columnKeyLengths.length - 1;
-          pushColumnLength(gaugeStats, item.rowItems[i]);
-        }
+    while (gaugeStats.columnKeyLengths.length <= depth) {
+      gaugeStats.columnKeyLengths.push([]);
+      gaugeStats.columnIndexLengths.push([]);
+      if (gaugeStats.columnKeyLengths.length <= item.rowItems.length) {
+        const i = gaugeStats.columnKeyLengths.length - 1;
+        pushColumnLength(gaugeStats, item.rowItems[i]);
       }
     }
     pushColumnLength(gaugeStats, item);
@@ -296,11 +315,23 @@ export function makeGauge(items: JsonRowItem[]) {
   const maxKeyLengths = gaugeStats.columnKeyLengths.map((kls, i) => {
     // インデックス
     const ils = gaugeStats.columnIndexLengths[i];
-    const imax = ils.length > 0 ? Math.max(...ils) : 0;
+    let imax = 0;
+    for (const x of ils) {
+      if (imax < x) { imax = x; }
+    }
     // キー
-    const kvmax = kls.length > 0 ? Math.max(...kls) : 0;
-    const kmean = kls.length > 0 ? kls.reduce((s, a) => s + a, 0) / kls.length : 0;
-    const ksigma = kls.length > 0 ? Math.sqrt(kls.reduce((s, a) => s + (a - kmean) ** 2, 0) / kls.length) : 0;
+    let kvmax = 0;
+    let kmean = 0;
+    for (const x of kls) {
+      if (kvmax < x) { kvmax = x; }
+      kmean += x;
+    }
+    kmean = kls.length > 0 ? kmean / kls.length : 0;
+    let ksigma = 0;
+    for (const x of kls) {
+      ksigma += (x - kmean) ** 2;
+    }
+    ksigma = kls.length > 0 ? Math.sqrt(ksigma / kls.length) : 0;
     const kmax = (kvmax - kmean) / ksigma < 0.5 ? kvmax : kmean + ksigma;
 
     return Math.ceil(Math.max(kmax + 2, imax + 3));
