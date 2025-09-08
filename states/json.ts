@@ -156,7 +156,7 @@ export const useVisibleItems = () => {
 
     let nextOpenCandidate: number = -1;
     const openedItems = filteredItems.filter((item) => {
-      if (0 <= nextOpenCandidate&& item.index < nextOpenCandidate) {
+      if (0 <= nextOpenCandidate && item.index < nextOpenCandidate) {
         return false;
       }
 
