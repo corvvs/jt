@@ -154,7 +154,19 @@ export const useVisibleItems = () => {
       : () => true;
     const filteredItems = narrowedItems.filter(filterByQuery);
 
-    const openedItems = filteredItems.filter((item) => !item.rowItems.some((rowItem) => toggleState[rowItem.index]));
+    let nextOpenCandidate: number = -1;
+    const openedItems = filteredItems.filter((item) => {
+      if (0 <= nextOpenCandidate && item.index < nextOpenCandidate) {
+        return false;
+      }
+
+      if (toggleState[item.index]) {
+        nextOpenCandidate = item.nextSiblingOrParent?.index ?? -1;
+      } else {
+        nextOpenCandidate = -1;
+      }
+      return true;
+    });
 
     const visibleItems = openedItems;
 
