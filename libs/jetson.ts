@@ -99,6 +99,10 @@ export type JsonRowItem = {
    */
   nextSibling?: JsonRowItem;
   /**
+   * nextSibling があるならそれと同じ, ない場合は親の nextSiblingOrParent と同じ
+   */
+  nextSiblingOrParent?: JsonRowItem;
+  /**
    * 整形済みの値かどうか
    * もしも整形済みであれば, それに忠実に表示してもよい
    */
@@ -275,6 +279,10 @@ export function flattenJson(json: any, rawText: string) {
     char_count: rawText.length,
   };
   flattenDigger(tree, items, branch, jsonStats);
+  for (const item of items) {
+    // NOTE: itemsが 親 → 子 の順に並んでいることを利用している
+    item.nextSiblingOrParent = item.nextSibling ?? item.parent?.nextSiblingOrParent;
+  }
 
   return {
     items,
@@ -313,11 +321,11 @@ export function makeGauge(items: JsonRowItem[]) {
   }
   // 各列の幅を調整する
   const maxKeyLengths = gaugeStats.columnKeyLengths.map((kls, i) => {
-    // インデックス
+    // インデックス長
     const ils = gaugeStats.columnIndexLengths[i];
-    let imax = 0;
+    let ilmax = 0;
     for (const x of ils) {
-      if (imax < x) { imax = x; }
+      if (ilmax < x) { ilmax = x; }
     }
     // キー
     let kvmax = 0;
@@ -332,7 +340,7 @@ export function makeGauge(items: JsonRowItem[]) {
     k2mean = kls.length > 0 ? k2mean / kls.length : 0;
     const ksigma = Math.sqrt(k2mean - kmean ** 2);
     const kmax = (kvmax - kmean) / ksigma < 0.5 ? kvmax : kmean + ksigma;
-    return Math.ceil(Math.max(kmax + 2, imax + 3));
+    return Math.ceil(Math.max(kmax + 2, ilmax + 3));
   });
   const gauge: JsonGauge = {
     maxKeyLengths,

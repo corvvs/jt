@@ -11,9 +11,20 @@ const narrowedRangeAtom = atom<NarrowingStack>(defaultNarrowedRange);
 const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   const indexFrom = index;
   const itemFrom = items[indexFrom];
-  const itemTo = _.slice(items, indexFrom + 1).find(itemTo => {
-    return itemTo.rowItems.length <= itemFrom.rowItems.length || itemTo.rowItems[itemFrom.rowItems.length].elementKey !== itemFrom.elementKey;
-  });
+  const fromRowsLength = itemFrom.rowItems.length;
+  let itemTo: JsonRowItem | undefined = undefined;
+  for (let i = indexFrom + 1; i < items.length; i++) {
+    // itemTo = itemFromから始まったナロイングが終わる場所にあるアイテムを探す.
+    // ナロイングによる表示範囲は半開区間 [itemFrom, itemTo) で表される.
+    // 判定条件:
+    // - itemFrom以降で, itemFromと同じか浅い階層にある最初のアイテム
+    const it = items[i];
+    if (it.rowItems.length <= fromRowsLength
+        || it.rowItems[fromRowsLength].elementKey !== itemFrom.elementKey) {
+      itemTo = it;
+      break;
+    }
+  }
   const indexTo = itemTo ? itemTo.index : items.length;
   return {
     from: indexFrom, to: indexTo,
