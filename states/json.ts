@@ -161,7 +161,7 @@ export const useVisibleItems = () => {
       }
 
       if (toggleState[item.index]) {
-        nextOpenCandidate = item.nextSiblingOrParent?.index ?? -1;
+        nextOpenCandidate = item.nextSiblingOrParent?.index ?? Infinity;
       } else {
         nextOpenCandidate = -1;
       }
