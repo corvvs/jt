@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { MultipleButtons } from "./lv1/MultipleButtons";
 import { InlineIcon } from "./lv1/InlineIcon";
+import { ClipboardAccess } from "@/libs/sideeffect";
 
 type SortOption = 'created_desc' | 'updated_desc';
 
@@ -47,6 +48,43 @@ const DocumentListBody = () => {
 
     loadDocuments();
   }, []);
+
+  // キーボードショートカット（Cmd+A / Cmd+Shift+A）
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // テキスト入力中はショートカットを無効にする
+      if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Cmd+Shift+A: クリップボードの内容を現在のタブに取り込む
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'A' || event.key === 'a')) {
+        event.preventDefault();
+        (async () => {
+          try {
+            const clipboardText = await ClipboardAccess.pasteText();
+            const newDoc = { name: "", json_string: clipboardText };
+            const newId = await JsonDocumentStore.saveDocument(newDoc);
+            router.push(`/${newId}`);
+            toast("クリップボードの内容を取り込みました");
+          } catch (e) {
+            console.error("Failed to access clipboard:", e);
+          }
+        })();
+      }
+
+      // Cmd+A: 新規タブで開く
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'a') {
+        event.preventDefault();
+        window.open('/new', '_blank');
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [router]);
 
   // 検索フィルタリングとソート
   useEffect(() => {
