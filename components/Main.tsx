@@ -139,7 +139,7 @@ export const Main = (props: {
   const [loadedDocId, setLoadedDocId] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   
-  console.log("docId", docId, "targetDocId", targetDocId, "loadedDocId", loadedDocId, "isLoading", isLoading)
+  // console.log("docId", docId, "targetDocId", targetDocId, "loadedDocId", loadedDocId, "isLoading", isLoading)
 
   // docIdが変更された時に即座にtargetDocIdを更新
   useEffect(() => {
@@ -251,7 +251,24 @@ export const Main = (props: {
         openEditJsonModal();
       }
 
-      if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+      // Cmd+Shift+A: クリップボードの内容を現在のタブに取り込む
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'A' || event.key === 'a')) {
+        event.preventDefault();
+        (async () => {
+          try {
+            const clipboardText = await ClipboardAccess.pasteText();
+            const sortedText = sortKeysJson(dataFormat, clipboardText, parseData);
+            const newDoc = { name: "", json_string: sortedText };
+            const newId = await JsonDocumentStore.saveDocument(newDoc);
+            router.replace(`/${newId}`);
+            toast("クリップボードの内容を取り込みました");
+          } catch (e) {
+            console.error("Failed to access clipboard:", e);
+          }
+        })();
+      }
+
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'a') {
         event.preventDefault(); // デフォルトの動作を防ぐ
         window.open('/new', '_blank');
       }
@@ -292,7 +309,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, matchNavigation]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, matchNavigation, router, dataFormat, parseData]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
