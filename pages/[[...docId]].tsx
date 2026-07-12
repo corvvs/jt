@@ -10,10 +10,11 @@ import { ThemeObserver } from "@/components/holders/ThemeObserver";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import { PreformattedValueCardHolder } from "@/components/holders/modal/PreformattedValueCard";
+import { SelectDiffTargetCardHolder } from "@/components/holders/modal/SelectDiffTargetCard";
 
 export default function Home() {
   const router = useRouter();
-  const [docId] = (router.query.docId || []) as string[];
+  const [docId, subview, subviewId] = (router.query.docId || []) as string[];
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
@@ -27,15 +28,19 @@ export default function Home() {
   
   const effectiveDocId = docId || '_list';
 
+  // /{docId}/diff/{otherDocId} で diff モード
+  const diffDocId = subview === "diff" && subviewId ? subviewId : undefined;
+
   // _listパスの場合はドキュメント一覧を表示
   const isDocumentListView = effectiveDocId === '_list';
     
   return (
     <Layout isDocumentListView={isDocumentListView}>
       <GoogleAnalytics />
-      {isDocumentListView ? <DocumentList /> : <Main docId={effectiveDocId} />}
+      {isDocumentListView ? <DocumentList /> : <Main docId={effectiveDocId} diffDocId={diffDocId} />}
       <ToastHolder />
       <EditJsonCardHolder />
+      <SelectDiffTargetCardHolder />
       <PreformattedValueCardHolder />
       <ThemeObserver />
       <SpeedInsights />

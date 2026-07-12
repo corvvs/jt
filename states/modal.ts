@@ -12,7 +12,24 @@ export const modalAtom = {
   preformatted_value: atom<PreformattedValueModalState>({
     isOpen: false,
   }),
+  select_diff_target: atom(false),
 };
+
+export function useSelectDiffTargetModal() {
+  const [isOpen, setIsOpen] = useAtom(modalAtom.select_diff_target);
+  const closeModal = () => {
+    setIsOpen(false);
+  };
+  const openModal = () => {
+    setIsOpen(true);
+  };
+
+  return {
+    isOpen,
+    closeModal,
+    openModal,
+  } as const;
+}
 
 export function useEditJsonModal() {
   const [isOpen, setIsOpen] = useAtom(modalAtom.edit_json)

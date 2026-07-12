@@ -6,7 +6,10 @@ import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { FaRegFrown, FaRegMehRollingEyes } from 'react-icons/fa';
-import { defaultRawText, useVisibleItems } from "@/states/json";
+import { defaultRawText, useVisibleItems, type ParsedJSONData } from "@/states/json";
+import { useDiffTarget } from "@/states/diff";
+import { toggleAtom } from "@/states/view";
+import { useSetAtom } from "jotai";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
@@ -118,16 +121,20 @@ const JsonItemsView = (props: {
 
 export const Main = (props: {
   docId?: string;
+  diffDocId?: string;
 }) => {
-  const { docId } = props;
+  const { docId, diffDocId } = props;
   const {
     document: currentDocument,
     setDocument,
     parseData,
     setParsedData,
   } = useJSON();
+  const { setDiffTarget } = useDiffTarget();
+  const setToggleState = useSetAtom(toggleAtom);
+  const prevDiffDocIdRef = useRef<string | undefined>(undefined);
   const { dataFormat, setDataFormat } = useDataFormat();
-  const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused } = useManipulation();
+  const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused, clearManipulation } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const itemViewRef = useRef<any>(null);
@@ -214,13 +221,47 @@ export const Main = (props: {
       } catch (e) {
         setParsedData({ status: "rejected", error: e, text: doc.json_string });
       }
-      
+
+      // diff モードの場合は比較相手 (旧側) をロードする
+      if (diffDocId) {
+        const other = await JsonDocumentStore.fetchDocument(diffDocId);
+        if (other) {
+          let parsedOther: ParsedJSONData;
+          try {
+            const otherJson = parseData(dataFormat, other.json_string);
+            parsedOther = { status: "accepted", json: otherJson, text: other.json_string };
+          } catch (e) {
+            parsedOther = { status: "rejected", error: e, text: other.json_string };
+          }
+          if (parsedOther.status === "accepted") {
+            setDiffTarget({ docId: other.id, name: other.name, parsed: parsedOther });
+          } else {
+            toast.error("比較相手のドキュメントをパースできませんでした");
+            setDiffTarget(null);
+            router.replace(`/${actualDocId}`);
+          }
+        } else {
+          toast.error("比較相手のドキュメントが見つかりません");
+          setDiffTarget(null);
+          router.replace(`/${actualDocId}`);
+        }
+      } else {
+        setDiffTarget(null);
+      }
+
+      // diff モードの出入りで行アイテムの index 空間が変わるため, 操作状態をリセットする
+      if (prevDiffDocIdRef.current !== diffDocId) {
+        clearManipulation();
+        setToggleState({});
+        prevDiffDocIdRef.current = diffDocId;
+      }
+
       // ロードが完了したdocIDを設定し、ローディング状態を解除
       setLoadedDocId(actualDocId);
       setIsLoading(false);
     };
     f();
-  }, [router.isReady, targetDocId]);
+  }, [router.isReady, targetDocId, diffDocId]);
 
   // キーボードショートカット（Ctrl+F / Cmd+F）でフィルターパネルをトグルする
   // キーボードショートカット（Ctrl+E / Cmd+E）でEditモーダルを開く

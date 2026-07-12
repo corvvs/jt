@@ -9,7 +9,10 @@ import { useEffectiveItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
 import { FaChevronRight, FaList, FaSearch } from "react-icons/fa";
 import _ from "lodash";
-import { useEditJsonModal } from "@/states/modal";
+import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
+import { useDiffTarget } from "@/states/diff";
+import { GoDiff } from "react-icons/go";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { ThemeSelector } from "../lv2/ThemeSelector";
 import { useTransientBackdrop } from "@/features/TransientBackdrop";
@@ -82,11 +85,43 @@ const NarrowingLine = (props: {
   </div>)
 }
 
+const DiffLine = () => {
+  const { diffTarget } = useDiffTarget();
+  const { document } = useJSON();
+  const router = useRouter();
+  if (!diffTarget) { return null; }
+  const [docId] = (router.query.docId || []) as string[];
+
+  return (<div
+    className="narrowing-line shrink-0 grow-0 flex flex-row gap-1 text-sm stats items-center"
+  >
+    <p className="line-title shrink-0 grow-0">Diff</p>
+
+    <p className="stats-item shrink-0 grow-0">
+      <span>old: {diffTarget.name || "無題のドキュメント"}</span>
+    </p>
+
+    <p><FaChevronRight /></p>
+
+    <p className="stats-item shrink-0 grow-0">
+      <span>new: {document?.name || "無題のドキュメント"}</span>
+    </p>
+
+    <p
+      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
+      onClick={() => router.push(`/${docId}`)}
+    >
+      <span>Exit</span>
+    </p>
+  </div>);
+};
+
 const OpetationButtons = (props: {
   mode: HeaderMode;
 }) => {
   const { mode } = props;
   const { openModal: openEditDataModal } = useEditJsonModal();
+  const { openModal: openSelectDiffTargetModal } = useSelectDiffTargetModal();
   const { flatJsons } = useJSON();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
@@ -148,6 +183,17 @@ const OpetationButtons = (props: {
 
     {mode === 'json-viewer' && (
       <MenuButton
+        onClick={() => openSelectDiffTargetModal()}
+        onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
+      >
+        <InlineIcon i={<GoDiff />} />
+        <span>Diff</span>
+      </MenuButton>
+    )}
+
+    {mode === 'json-viewer' && (
+      <MenuButton
         onClick={() => foldAll()}
         onMouseEnter={handleMouseEnter}
         disabled={!flatJsons}
@@ -203,6 +249,7 @@ export const HeaderBar = (props: {
 
   return (<>
     <MainLine mode={mode} />
+    {mode === 'json-viewer' && <DiffLine />}
     {mode === 'json-viewer' && <NarrowingLine itemViewRef={props.itemViewRef} />}
   </>);
 };

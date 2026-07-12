@@ -1,4 +1,6 @@
-import { JsonGauge, JsonRowItem, flattenJson, makeGauge } from '@/libs/jetson';
+import { JsonGauge, JsonRowItem, JsonStats, flattenJson, makeGauge } from '@/libs/jetson';
+import { diffJson } from '@/libs/diff';
+import { diffTargetAtom } from './diff';
 import { atom, useAtom } from 'jotai';
 import { useMemo } from 'react';
 import { toggleAtom } from './view';
@@ -63,7 +65,7 @@ export const defaultRawText = JSON.stringify({
   "notice": "アルファ版のため、予告なく大規模・破壊的な変更をします。",
 }, null, 2);
 
-type ParsedJSONData = {
+export type ParsedJSONData = {
   status: "accepted";
   json: any;
   text: string;
@@ -130,11 +132,32 @@ export const jsonFlattenedAtom = atom(
   },
 );
 
+export const diffFlattenedAtom = atom(
+  (get) => {
+    try {
+      const target = get(diffTargetAtom);
+      if (!target) { return null; }
+      if (target.parsed.status !== "accepted") { return null; }
+      const current = get(baseAtoms.parsedJson);
+      if (!current) { return null; }
+      if (current.status !== "accepted") { return null; }
+      return diffJson(target.parsed.json, current.json, { newText: current.text });
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  },
+);
+
 /**
  * 表示パイプライン (ナローイング → 検索 → フォールディング) が読む行アイテムの単一供給点.
- * diff モードではここで供給元を merged 行アイテム列に切り替える.
+ * diff モードでは merged 行アイテム列に切り替わる.
  */
-export const effectiveItemsAtom = atom((get) => get(jsonFlattenedAtom));
+export const effectiveItemsAtom = atom(
+  (get): { items: JsonRowItem[]; stats: JsonStats } | null => {
+    return get(diffFlattenedAtom) ?? get(jsonFlattenedAtom);
+  },
+);
 
 export const useEffectiveItems = () => {
   const [effectiveItems] = useAtom(effectiveItemsAtom);
