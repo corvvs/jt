@@ -130,8 +130,19 @@ export const jsonFlattenedAtom = atom(
   },
 );
 
+/**
+ * 表示パイプライン (ナローイング → 検索 → フォールディング) が読む行アイテムの単一供給点.
+ * diff モードではここで供給元を merged 行アイテム列に切り替える.
+ */
+export const effectiveItemsAtom = atom((get) => get(jsonFlattenedAtom));
+
+export const useEffectiveItems = () => {
+  const [effectiveItems] = useAtom(effectiveItemsAtom);
+  return effectiveItems;
+};
+
 export const useVisibleItems = () => {
-  const { flatJsons } = useJSON();
+  const flatJsons = useEffectiveItems();
   const [toggleState] = useAtom(toggleAtom);
   const { manipulation, filterMaps } = useManipulation();
 

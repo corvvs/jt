@@ -1,7 +1,7 @@
 import { JsonRowItem } from "@/libs/jetson";
 import { atom, useAtom } from "jotai";
 import _ from "lodash";
-import { jsonFlattenedAtom } from "../json";
+import { effectiveItemsAtom } from "../json";
 import { advancedMatcherAtom } from "@/libs/advanced_query";
 import { loadDefaultSearchAppearance, loadDefaultSearchMode } from "../search_mode";
 
@@ -80,7 +80,7 @@ export const filterInputFocusedAtom = atom<boolean>(false);
 
 export const filterMapsAtom = atom<FilteringMap | null>(
   (get) => {
-    const json = get(jsonFlattenedAtom);
+    const json = get(effectiveItemsAtom);
     if (!json) { return null; }
 
     const actualMatcher = (() => {

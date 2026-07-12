@@ -5,6 +5,7 @@ import { useManipulation } from "@/states/manipulation";
 import { IconButton } from "@/components/lv1/IconButton";
 import { CgArrowsBreakeV, CgArrowsShrinkV } from "react-icons/cg";
 import { useJSON } from "@/states";
+import { useEffectiveItems } from "@/states/json";
 import { useToggleSingle } from "@/states/view";
 import { extractSubtree } from "@/libs/partial_tree";
 import { CopyButton, DownloadButton } from "@/components/lv3/CopyButton";
@@ -91,7 +92,8 @@ export const SubtreeMenuCell = (props: {
   manipulationHook: ReturnType<typeof useManipulation>;
 }) => {
   const { manipulation } = props.manipulationHook;
-  const { json, flatJsons } = useJSON();
+  const { json } = useJSON();
+  const flatJsons = useEffectiveItems();
   const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
   if (!json || json.status !== "accepted" || !props.isHovered && !isNarrowed) { return null; }
   const rawJson = json.json;

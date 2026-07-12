@@ -5,6 +5,7 @@ import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
+import { useEffectiveItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
 import { FaChevronRight, FaList, FaSearch } from "react-icons/fa";
 import _ from "lodash";
@@ -19,7 +20,7 @@ const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
 }) => {
   const { manipulation, popNarrowedRange } = useManipulation();
-  const { flatJsons } = useJSON();
+  const flatJsons = useEffectiveItems();
   if (!flatJsons) { return null; }
   if (manipulation.narrowedRanges.length === 0) { return null; }
   const allItems = flatJsons.items;

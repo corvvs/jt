@@ -104,7 +104,7 @@ const JsonItemsView = (props: {
       itemViewRef={props.itemViewRef}
       data={visibleItems} // データ
       renderItem={(item) => <FlatJsonRow
-        key={item.elementKey}
+        key={item.index}
         item={item}
         manipulationHook={manipulationHook}
         toggleSingleHook={toggleSingleHook}

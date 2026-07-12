@@ -1,6 +1,6 @@
 import { JsonStats } from "@/libs/jetson";
 import { useJSON } from "@/states";
-import { useVisibleItems } from "@/states/json";
+import { useEffectiveItems, useVisibleItems } from "@/states/json";
 import _ from "lodash";
 import React, { MutableRefObject } from "react";
 
@@ -8,7 +8,8 @@ const MainLine = (props: {
   stats: JsonStats;
   itemViewRef: MutableRefObject<any>;
 }) => {
-  const { document, flatJsons } = useJSON();
+  const { document } = useJSON();
+  const flatJsons = useEffectiveItems();
   const visibles = useVisibleItems();
   if (!flatJsons || !visibles) { return null; }
 
@@ -50,7 +51,7 @@ const MainLine = (props: {
 export const FooterBar = (props: {
   itemViewRef: MutableRefObject<any>;
 }) => {
-  const { flatJsons }  = useJSON();
+  const flatJsons = useEffectiveItems();
   if (!flatJsons) { return null; }
   const {
     stats,
