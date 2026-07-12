@@ -109,7 +109,7 @@ export type JsonRowItem = {
   isPreformattedValue?: boolean;
 };
 
-function makeVOTree(subtree: any): JsonValueObject {
+export function makeVOTree(subtree: any): JsonValueObject {
   if (typeof subtree === "string") {
     return {
       type: "string",
@@ -146,7 +146,7 @@ function makeVOTree(subtree: any): JsonValueObject {
 }
 
 // 値が整形済みかどうかを判定するための正規表現
-const RegexpIsPreformattedValue = /[\n\r\t](?!$)/;
+export const RegexpIsPreformattedValue = /[\n\r\t](?!$)/;
 
 /**
  * `flattenJson` の補助関数.
