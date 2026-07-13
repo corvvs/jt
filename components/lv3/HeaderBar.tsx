@@ -5,9 +5,10 @@ import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
-import { useEffectiveItems } from "@/states/json";
+import { diffFlattenedAtom, useEffectiveItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
-import { FaChevronRight, FaList, FaSearch } from "react-icons/fa";
+import { FaChevronRight, FaExchangeAlt, FaList, FaSearch } from "react-icons/fa";
+import { useAtom } from "jotai";
 import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
 import { useDiffTarget } from "@/states/diff";
@@ -88,9 +89,11 @@ const NarrowingLine = (props: {
 const DiffLine = () => {
   const { diffTarget } = useDiffTarget();
   const { document } = useJSON();
+  const [diffFlattened] = useAtom(diffFlattenedAtom);
   const router = useRouter();
   if (!diffTarget) { return null; }
   const [docId] = (router.query.docId || []) as string[];
+  const diffStats = diffFlattened?.diffStats;
 
   return (<div
     className="narrowing-line shrink-0 grow-0 flex flex-row gap-1 text-sm stats items-center"
@@ -105,6 +108,20 @@ const DiffLine = () => {
 
     <p className="stats-item shrink-0 grow-0">
       <span>new: {document?.name || "無題のドキュメント"}</span>
+    </p>
+
+    {diffStats && <p className="stats-item shrink-0 grow-0 flex flex-row gap-2 font-monospacy">
+      <span className="diff-status-added">+{diffStats.added}</span>
+      <span className="diff-status-removed">−{diffStats.removed}</span>
+      <span className="diff-status-changed">±{diffStats.changed}</span>
+    </p>}
+
+    <p
+      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
+      onClick={() => router.push(`/${diffTarget.docId}/diff/${docId}`)}
+      title="新旧を入れ替える"
+    >
+      <span className="flex flex-row items-center gap-1"><FaExchangeAlt /><span>Swap</span></span>
     </p>
 
     <p
@@ -122,6 +139,7 @@ const OpetationButtons = (props: {
   const { mode } = props;
   const { openModal: openEditDataModal } = useEditJsonModal();
   const { openModal: openSelectDiffTargetModal } = useSelectDiffTargetModal();
+  const { diffTarget } = useDiffTarget();
   const { flatJsons } = useJSON();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
@@ -162,7 +180,7 @@ const OpetationButtons = (props: {
       <MenuButton
         onClick={() => openEditDataModal()}
         onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons}
+        disabled={!flatJsons || !!diffTarget}
       >
         <InlineIcon i={<VscEdit />} />
         <span>Edit</span>

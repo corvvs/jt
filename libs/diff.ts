@@ -33,6 +33,10 @@ export type DiffRowItem = JsonRowItem & {
   diff: DiffAnnotation;
 };
 
+export function isDiffRowItem(item: JsonRowItem): item is DiffRowItem {
+  return "diff" in item;
+}
+
 export type DiffStats = {
   /** 新側にのみ存在する行数 */
   added: number;

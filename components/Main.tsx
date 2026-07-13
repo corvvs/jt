@@ -289,7 +289,10 @@ export const Main = (props: {
 
       if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
         event.preventDefault(); // デフォルトの動作を防ぐ
-        openEditJsonModal();
+        // diff モード中は編集させない
+        if (!diffDocId) {
+          openEditJsonModal();
+        }
       }
 
       // Cmd+Shift+A: クリップボードの内容を現在のタブに取り込む
@@ -350,7 +353,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, matchNavigation, router, dataFormat, parseData]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, matchNavigation, router, dataFormat, parseData, diffDocId]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {

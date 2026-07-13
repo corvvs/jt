@@ -34,6 +34,12 @@ const ColorSetKeys = [
   "narrowing-base",
   "selected-row",
   "line-number",
+  "diff-added-row",
+  "diff-removed-row",
+  "diff-changed-row",
+  "diff-added-foreground",
+  "diff-removed-foreground",
+  "diff-changed-foreground",
 ] as const;
 
 type ColorSet = {
@@ -66,6 +72,12 @@ const ColorSets: {
     "narrowing-base":       "#9e62f3",
     "selected-row":         "#c6f1c8",
     "line-number":          "royalblue",
+    "diff-added-row":          "#d6ecd4",
+    "diff-removed-row":        "#f2dad8",
+    "diff-changed-row":        "#f0e7cb",
+    "diff-added-foreground":   "#2e7d43",
+    "diff-removed-foreground": "#c24444",
+    "diff-changed-foreground": "#9a7b1c",
   },
 
   dark: {
@@ -91,6 +103,12 @@ const ColorSets: {
     "narrowing-base":       "#5822a3",
     "selected-row":         "#096865",
     "line-number":          "#858dff",
+    "diff-added-row":          "#2c4632",
+    "diff-removed-row":        "#4a2e2e",
+    "diff-changed-row":        "#4a4028",
+    "diff-added-foreground":   "#73d98a",
+    "diff-removed-foreground": "#e88787",
+    "diff-changed-foreground": "#e0c25e",
   },
 }
 

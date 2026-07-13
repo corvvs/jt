@@ -1,4 +1,5 @@
 import { JsonGauge, JsonRowItem } from "@/libs/jetson";
+import { isDiffRowItem } from "@/libs/diff";
 import _ from "lodash";
 import { FlatJsonValueCell } from "./FlatJsonValueCell";
 import { useState } from "react";
@@ -93,6 +94,35 @@ const CopyKeyPathButton = (props: {
   getToastText={() => `KeyPath ${props.item.elementKey} をクリップボードにコピーしました`}
 />
 
+/**
+ * diff ビューでの行の状態を示すグリフ列.
+ * 行の背景色に頼らず added / removed / changed を判別できるようにする (色覚対応).
+ * diff ビューでない行では何も描画しない.
+ */
+const DiffStatusCell = (props: {
+  item: JsonRowItem;
+}) => {
+  if (!isDiffRowItem(props.item)) { return null; }
+  const { glyph, className, alt } = (() => {
+    switch (props.item.diff.status) {
+      case "added":
+        return { glyph: "+", className: "diff-status-added", alt: "新側にのみ存在します" };
+      case "removed":
+        return { glyph: "−", className: "diff-status-removed", alt: "旧側にのみ存在します" };
+      case "changed":
+        return { glyph: "±", className: "diff-status-changed", alt: "値が変化しています" };
+      case "child_changed":
+        return { glyph: "·", className: "diff-status-child-changed", alt: "内部に差分があります" };
+      default:
+        return { glyph: "", className: "", alt: "" };
+    }
+  })();
+  return <div
+    className={`grow-0 shrink-0 w-[1.25em] flex items-center justify-center font-monospacy ${className}`}
+    title={alt}
+  >{glyph}</div>;
+};
+
 const ValueMenuCell = (props: {
   item: JsonRowItem;
 }) => {
@@ -132,13 +162,25 @@ export const FlatJsonRow = (props: {
     elementKey,
   } = item;
   const isLeaf = right.type === "string" || right.type === "number" || right.type === "boolean" || right.type === "null";
+  const diff = isDiffRowItem(item) ? item.diff : undefined;
+  const diffBackgroundClass = diff
+    ? (diff.status === "added"
+      ? "diff-added-row"
+      : diff.status === "removed"
+        ? "diff-removed-row"
+        : diff.status === "changed"
+          ? "diff-changed-row"
+          : "")
+    : "";
   const backgroundClass = (isMatched && filteringPreference.resultAppearance !== "just")
     ? "matched-row"
-    : isNarrowedFrom
-      ? "narrowed-from-row"
-      : isHovered
-        ? "secondary-background"
-        : "";
+    : diffBackgroundClass
+      ? diffBackgroundClass
+      : isNarrowedFrom
+        ? "narrowed-from-row"
+        : isHovered
+          ? "secondary-background"
+          : "";
   return (<div
     className={
       `h-[2em] flex flex-row items-stretch gap-0 ${backgroundClass} ${isWeaken ? "weaken-row" : ""}`
@@ -147,6 +189,8 @@ export const FlatJsonRow = (props: {
     onMouseOut={() => setIsHovered(false)}
   >
     <LineNumberCell item={item} />
+
+    <DiffStatusCell item={item} />
 
     <LeadingCells
       item={item}
@@ -162,6 +206,7 @@ export const FlatJsonRow = (props: {
       vo={right}
       elementKey={elementKey}
       matched={isMatched}
+      counterpart={diff?.status === "changed" ? diff.counterpart : undefined}
     />
 
     {isLeaf && isHovered && <ValueMenuCell item={item} />}
