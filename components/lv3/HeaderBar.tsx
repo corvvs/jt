@@ -11,7 +11,9 @@ import { FaChevronRight, FaExchangeAlt, FaList, FaSearch } from "react-icons/fa"
 import { useAtom } from "jotai";
 import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
-import { useDiffTarget } from "@/states/diff";
+import { useDiffOnly, useDiffTarget } from "@/states/diff";
+import { isChangedDiffRow } from "@/libs/diff";
+import { useMatchNavigation } from "@/hooks/useMatchNavigation";
 import { GoDiff } from "react-icons/go";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -86,10 +88,14 @@ const NarrowingLine = (props: {
   </div>)
 }
 
-const DiffLine = () => {
+const DiffLine = (props: {
+  itemViewRef: MutableRefObject<any>;
+}) => {
   const { diffTarget } = useDiffTarget();
   const { document } = useJSON();
   const [diffFlattened] = useAtom(diffFlattenedAtom);
+  const { diffOnly, setDiffOnly } = useDiffOnly();
+  const diffNavigation = useMatchNavigation(props.itemViewRef, isChangedDiffRow);
   const router = useRouter();
   if (!diffTarget) { return null; }
   const [docId] = (router.query.docId || []) as string[];
@@ -115,6 +121,30 @@ const DiffLine = () => {
       <span className="diff-status-removed">−{diffStats.removed}</span>
       <span className="diff-status-changed">±{diffStats.changed}</span>
     </p>}
+
+    <p
+      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
+      onClick={() => diffNavigation.goToPreviousMatch()}
+      title="前の差分行へ移動する"
+    >
+      <span>‹</span>
+    </p>
+
+    <p
+      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
+      onClick={() => diffNavigation.goToNextMatch()}
+      title="次の差分行へ移動する"
+    >
+      <span>›</span>
+    </p>
+
+    <p
+      className={`stats-item narrowing-status shrink-0 grow-0 cursor-pointer ${diffOnly ? "diff-only-active" : ""}`}
+      onClick={() => setDiffOnly(!diffOnly)}
+      title="差分のある行 (とその祖先) だけを表示する"
+    >
+      <span>Diff only</span>
+    </p>
 
     <p
       className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
@@ -267,7 +297,7 @@ export const HeaderBar = (props: {
 
   return (<>
     <MainLine mode={mode} />
-    {mode === 'json-viewer' && <DiffLine />}
+    {mode === 'json-viewer' && <DiffLine itemViewRef={props.itemViewRef} />}
     {mode === 'json-viewer' && <NarrowingLine itemViewRef={props.itemViewRef} />}
   </>);
 };

@@ -37,6 +37,16 @@ export function isDiffRowItem(item: JsonRowItem): item is DiffRowItem {
   return "diff" in item;
 }
 
+/**
+ * 差分のある行 (added / removed / changed) かどうか.
+ * 差分ナビゲーションや Diff only 表示の対象判定に使う.
+ */
+export function isChangedDiffRow(item: JsonRowItem): boolean {
+  if (!isDiffRowItem(item)) { return false; }
+  const status = item.diff.status;
+  return status === "added" || status === "removed" || status === "changed";
+}
+
 export type DiffStats = {
   /** 新側にのみ存在する行数 */
   added: number;

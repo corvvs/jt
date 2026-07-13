@@ -20,3 +20,17 @@ export function useDiffTarget() {
     setDiffTarget,
   } as const;
 }
+
+/**
+ * Diff only 表示: 差分のある行 (とその祖先) だけを表示する.
+ * diff モードでない場合は無視される.
+ */
+export const diffOnlyAtom = atom(false);
+
+export function useDiffOnly() {
+  const [diffOnly, setDiffOnly] = useAtom(diffOnlyAtom);
+  return {
+    diffOnly,
+    setDiffOnly,
+  } as const;
+}

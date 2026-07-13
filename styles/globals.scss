@@ -156,6 +156,11 @@ body {
   text-decoration: line-through;
 }
 
+.diff-only-active {
+  color: var(--matched-foreground);
+  font-weight: bold;
+}
+
 /* マッチナビゲーションパネル */
 .match-navigation-panel {
   position: fixed;

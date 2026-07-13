@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import { sortKeysJson } from "@/libs/tree_manipulation";
 import { useDataFormat, DataFormat } from "@/states/config";
 import { useMatchNavigation } from "@/hooks/useMatchNavigation";
+import { isChangedDiffRow } from "@/libs/diff";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -139,6 +140,11 @@ export const Main = (props: {
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const itemViewRef = useRef<any>(null);
   const matchNavigation = useMatchNavigation(itemViewRef);
+  const diffNavigation = useMatchNavigation(itemViewRef, isChangedDiffRow);
+  // diff モード中に検索マッチがなければ, F3 系のジャンプは差分行を対象にする
+  const activeNavigation = (diffDocId && matchNavigation.matchedCount === 0)
+    ? diffNavigation
+    : matchNavigation;
   const router = useRouter();
 
   // 表示しようとしているdocIDと、ロードが完了したdocIDを別々に管理
@@ -326,9 +332,9 @@ export const Main = (props: {
       if (event.key === 'F3') {
         event.preventDefault();
         if (event.shiftKey) {
-          matchNavigation.goToPreviousMatch();
+          activeNavigation.goToPreviousMatch();
         } else {
-          matchNavigation.goToNextMatch();
+          activeNavigation.goToNextMatch();
         }
       }
 
@@ -336,16 +342,16 @@ export const Main = (props: {
       if ((event.ctrlKey || event.metaKey) && event.key === 'g') {
         event.preventDefault();
         if (event.shiftKey) {
-          matchNavigation.goToPreviousMatch();
+          activeNavigation.goToPreviousMatch();
         } else {
-          matchNavigation.goToNextMatch();
+          activeNavigation.goToNextMatch();
         }
       }
 
       // Ctrl+1: 最初のマッチした行に移動
       if ((event.ctrlKey || event.metaKey) && event.key === '1') {
         event.preventDefault();
-        matchNavigation.goToFirstMatch();
+        activeNavigation.goToFirstMatch();
       }
     };
 
@@ -353,7 +359,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, matchNavigation, router, dataFormat, parseData, diffDocId]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData, diffDocId]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
