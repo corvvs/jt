@@ -121,8 +121,10 @@ const DiffStatusCell = (props: {
         return { glyph: "", className: "", alt: "" };
     }
   })();
+  // changed ペアの2行を縦バーで繋ぎ, 同一キーの値変更であることを示す
+  const isChangedPair = props.item.diff.status === "changed";
   return <div
-    className={`grow-0 shrink-0 w-[1.25em] flex items-center justify-center font-monospacy ${className}`}
+    className={`grow-0 shrink-0 w-[1.25em] flex items-center justify-center font-monospacy ${className} ${isChangedPair ? "diff-changed-pair-cell" : ""}`}
     title={alt}
   >{glyph}</div>;
 };

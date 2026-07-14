@@ -161,6 +161,11 @@ body {
   color: var(--foreground-secondary);
 }
 
+/* changed ペアの2行をグリフ列の縦バーで繋ぐ (matched-row の左バーとはスロットを分ける) */
+.diff-changed-pair-cell {
+  box-shadow: inset 3px 0 0 var(--diff-changed-foreground);
+}
+
 /* マッチナビゲーションパネル */
 .match-navigation-panel {
   position: fixed;
