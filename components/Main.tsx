@@ -134,6 +134,7 @@ export const Main = (props: {
   const { setDiffTarget } = useDiffTarget();
   const setToggleState = useSetAtom(toggleAtom);
   const prevDiffDocIdRef = useRef<string | undefined>(undefined);
+  const loadGenerationRef = useRef(0);
   const { dataFormat, setDataFormat } = useDataFormat();
   const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused, clearManipulation } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
@@ -166,7 +167,15 @@ export const Main = (props: {
 
   useEffect(() => {
     if (!router.isReady) { return; }
-    
+    // docId prop → targetDocId の同期が済むまでロードを見送る.
+    // 同期前に走ると, 古い targetDocId のまま URL 正規化 (router.replace) が実行され,
+    // 遷移直後の URL を巻き戻してしまう (diff の Swap 時のチラつきの原因)
+    if (targetDocId !== docId) { return; }
+
+    // このロードより新しいロードが始まったら, 途中結果を捨てるための世代トークン
+    const generation = ++loadGenerationRef.current;
+    const isStale = () => loadGenerationRef.current !== generation;
+
     const f = async () => {
       const currentTargetDocId = targetDocId;
       setIsLoading(true);
@@ -198,6 +207,7 @@ export const Main = (props: {
         actualDocId = "new";
       } else if (currentTargetDocId) {
         const d = await (JsonDocumentStore.fetchDocument(currentTargetDocId))
+        if (isStale()) { return; }
         if (d) {
           // URL の正規化. diff モードの場合は diff セグメントを保持する
           router.replace(diffDocId ? `/${d.id}/diff/${diffDocId}` : `/${d.id}`);
@@ -216,12 +226,9 @@ export const Main = (props: {
           actualDocId = "new";
       }
       
-      // 処理中にtargetDocIdが変更されていないかチェック
-      if (targetDocId !== currentTargetDocId) {
-        // 処理中に別のdocIdに変更された場合は、この結果を無視
-        return;
-      }
-      
+      // 処理中に別のロードが始まっていた場合は、この結果を無視
+      if (isStale()) { return; }
+
       try {
         const json = parseData(dataFormat, doc.json_string);
         setParsedData({ status: "accepted", json, text: doc.json_string });
@@ -232,6 +239,7 @@ export const Main = (props: {
       // diff モードの場合は比較相手 (旧側) をロードする
       if (diffDocId) {
         const other = await JsonDocumentStore.fetchDocument(diffDocId);
+        if (isStale()) { return; }
         if (other) {
           let parsedOther: ParsedJSONData;
           try {
@@ -268,7 +276,7 @@ export const Main = (props: {
       setIsLoading(false);
     };
     f();
-  }, [router.isReady, targetDocId, diffDocId]);
+  }, [router.isReady, targetDocId, docId, diffDocId]);
 
   // キーボードショートカット（Ctrl+F / Cmd+F）でフィルターパネルをトグルする
   // キーボードショートカット（Ctrl+E / Cmd+E）でEditモーダルを開く
