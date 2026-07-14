@@ -185,9 +185,10 @@ export const FlatJsonRow = (props: {
         : isHovered
           ? "secondary-background"
           : "";
+  const isChangedNewSide = diff?.status === "changed" && diff.side === "new";
   return (<div
     className={
-      `h-[2em] flex flex-row items-stretch gap-0 ${backgroundClass} ${isWeaken ? "weaken-row" : ""}`
+      `h-[2em] flex flex-row items-stretch gap-0 ${backgroundClass} ${isWeaken ? "weaken-row" : ""} ${isChangedNewSide ? "diff-changed-new-row" : ""}`
     }
     onMouseOver={() => setIsHovered(true)}
     onMouseOut={() => setIsHovered(false)}

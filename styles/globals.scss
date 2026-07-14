@@ -156,6 +156,11 @@ body {
   font-weight: bold;
 }
 
+/* changed ペアの新側はキーが旧側の行と重複するため, キーの文字色を沈めて値の変化に視線を集める */
+.diff-changed-new-row .item-key {
+  color: var(--foreground-secondary);
+}
+
 /* マッチナビゲーションパネル */
 .match-navigation-panel {
   position: fixed;
