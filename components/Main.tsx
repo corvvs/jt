@@ -199,7 +199,8 @@ export const Main = (props: {
       } else if (currentTargetDocId) {
         const d = await (JsonDocumentStore.fetchDocument(currentTargetDocId))
         if (d) {
-          router.replace(`/${d.id}`);
+          // URL の正規化. diff モードの場合は diff セグメントを保持する
+          router.replace(diffDocId ? `/${d.id}/diff/${diffDocId}` : `/${d.id}`);
           setDocument(d);
           doc = d;
           actualDocId = d.id;
