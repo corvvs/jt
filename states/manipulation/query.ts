@@ -1,4 +1,4 @@
-import { JsonRowItem } from "@/libs/jetson";
+import { JsonRowItem, markSelfAndAncestorsVisible } from "@/libs/jetson";
 import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { effectiveItemsAtom } from "../json";
@@ -133,14 +133,8 @@ export const filterMapsAtom = atom<FilteringMap | null>(
         const item = items[i];
         // item 自身がマッチした -> 自身と祖先が visible
         if (matchedMap[item.index]) {
-          upperVisibleMap[item.index] = true;
           lowerVisibleMap[item.index] = true;
-          // まだ visible でない祖先まで下から順に visible にしていく
-          for (let j = item.rowItems.length - 1; 0 <= j; j -= 1) {
-            const an = item.rowItems[j];
-            if (upperVisibleMap[an.index]) { break; }
-            upperVisibleMap[an.index] = true;
-          }
+          markSelfAndAncestorsVisible(upperVisibleMap, item);
           continue;
         }
         // 祖先にマッチしたものがいる -> 自身が visible

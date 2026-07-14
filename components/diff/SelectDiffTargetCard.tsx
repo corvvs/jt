@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { FaRegClock, FaRegFrown } from "react-icons/fa";
 import { GoDiff } from "react-icons/go";
 import { JsonDocumentPreview, JsonDocumentStore } from "@/data/document";
+import { formatDateTime } from "@/libs/format";
+import { diffPath, parseDocRoute } from "@/libs/routes";
 
 /**
  * diff の比較相手 (旧側) を保存済みドキュメントから選ぶカード
@@ -11,7 +13,7 @@ export function SelectDiffTargetCard(props: {
   closeModal: VoidFunction;
 }) {
   const router = useRouter();
-  const [docId] = (router.query.docId || []) as string[];
+  const { docId } = parseDocRoute(router.query);
   const [previews, setPreviews] = useState<JsonDocumentPreview[] | null>(null);
 
   useEffect(() => {
@@ -26,19 +28,6 @@ export function SelectDiffTargetCard(props: {
   const candidates = (previews ?? [])
     .filter((doc) => doc.id !== docId)
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
-
-  const formatDate = (date: Date) => {
-    if (!(date instanceof Date)) {
-      date = new Date(date);
-    }
-    return date.toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   return (
     <div
@@ -72,8 +61,9 @@ export function SelectDiffTargetCard(props: {
                   key={doc.id}
                   className="document-list-item"
                   onClick={() => {
+                    if (!docId) { return; }
                     props.closeModal();
-                    router.push(`/${docId}/diff/${doc.id}`);
+                    router.push(diffPath(docId, doc.id));
                   }}
                 >
                   <h4 className="font-medium truncate">
@@ -82,7 +72,7 @@ export function SelectDiffTargetCard(props: {
                   <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
                     <span className="flex items-center gap-1">
                       <FaRegClock />
-                      <span className="font-mono">{formatDate(doc.updated_at)}</span>
+                      <span className="font-mono">{formatDateTime(doc.updated_at)}</span>
                     </span>
                     <span className="font-mono">ID: {doc.id.substring(0, 8)}...</span>
                   </div>

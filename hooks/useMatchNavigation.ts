@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useManipulation } from '@/states/manipulation';
 import { useVisibleItems } from '@/states/json';
 import { JsonRowItem } from '@/libs/jetson';
@@ -80,11 +80,16 @@ export const useMatchNavigation = (
     setCurrentMatchIndex(-1);
   }, [filterMaps, isTargetItem]);
 
+  // 対象行の走査は全表示行に対する O(N) なので, 入力が変わった時だけ数え直す
+  const matchedCount = useMemo(() => matchedVisibleIndices().length, [matchedVisibleIndices]);
+
   return {
     goToNextMatch,
     goToPreviousMatch,
     goToFirstMatch,
-    matchedCount: matchedVisibleIndices().length,
+    matchedCount,
     currentMatchIndex: currentMatchIndex + 1, // 1-based for UI
   };
 };
+
+export type MatchNavigation = ReturnType<typeof useMatchNavigation>;

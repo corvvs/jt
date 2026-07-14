@@ -1,4 +1,5 @@
 import _ from "lodash";
+import type { DiffAnnotation } from "./diff";
 
 export type JsonValueObjectString = {
 	type: "string";
@@ -107,6 +108,11 @@ export type JsonRowItem = {
    * もしも整形済みであれば, それに忠実に表示してもよい
    */
   isPreformattedValue?: boolean;
+  /**
+   * diff ビュー (libs/diff.ts) が行に付与する注釈.
+   * 通常の flatten では設定されない.
+   */
+  diff?: DiffAnnotation;
 };
 
 export function makeVOTree(subtree: any): JsonValueObject {
@@ -148,41 +154,37 @@ export function makeVOTree(subtree: any): JsonValueObject {
 // 値が整形済みかどうかを判定するための正規表現
 export const RegexpIsPreformattedValue = /[\n\r\t](?!$)/;
 
+export type RowItemParent = {
+  item: JsonRowItem;
+  itemKey: string | number;
+};
+
 /**
- * `flattenJson` の補助関数.
- * JsonValueObject からなるツリー構造を再帰的にたどり, JsonRowItem の配列に変換する.
+ * 行アイテムを1つ生成して items に積み, 統計を計上する.
+ * 通常表示の flattenJson と diff ビュー (libs/diff.ts) が共有する行生成コア.
  */
-function flattenDigger(
-  subtree: JsonValueObject,
+export function appendRowItem(
   items: JsonRowItem[],
   branch: JsonRowItem[],
   jsonStats: JsonStats,
-  parent?: {
-    elementKey: string;
-    item: JsonRowItem;
-    itemKey: string | number;
-  }
+  right: JsonValueObject,
+  parent?: RowItemParent,
 ): JsonRowItem {
-  const parentIsContainer = typeof parent?.elementKey === "string";
-  const ownKey = parentIsContainer
-    ? `${parent.itemKey ?? items.length}`
-    : "";
-
-  const elementKey = parentIsContainer
-    ? (parent.elementKey.length > 0
-      ? parent.elementKey + "." + ownKey
+  const ownKey = parent ? `${parent.itemKey}` : "";
+  const elementKey = parent
+    ? (parent.item.elementKey.length > 0
+      ? parent.item.elementKey + "." + ownKey
       : ownKey
     ) : "";
   /**
    * **全体**インデックス
    */
   const index = items.length;
-  const lineNumber = items.length + 1;
   const item: JsonRowItem = {
     index,
-    lineNumber,
+    lineNumber: index + 1,
     elementKey,
-    right: subtree,
+    right,
     rowItems: [...branch],
     stats: {
       item_count: 1,
@@ -212,57 +214,75 @@ function flattenDigger(
     jsonStats.max_key_length[depth] = elementKey.length;
   }
 
-  switch (subtree.type) {
-    case "string": {
-      // isPreformattedValue の可能性をチェック
-      item.isPreformattedValue = RegexpIsPreformattedValue.test(subtree.value);
-      parent?.item.childs?.push(item);
-      break;
-    }
-    case "number": {
-      parent?.item.childs?.push(item);
-      break;
-    }
-    case "boolean": {
-      parent?.item.childs?.push(item);
-      break;
-    }
-    case "null": {
-      parent?.item.childs?.push(item);
-      break;
-    }
-    // 以上, 葉ノード
-    // 以下, 葉ノードではない
-    case "array": {
-      parent?.item.childs?.push(item);
+  if (right.type === "string") {
+    // isPreformattedValue の可能性をチェック
+    item.isPreformattedValue = RegexpIsPreformattedValue.test(right.value);
+  }
+  parent?.item.childs?.push(item);
+  return item;
+}
 
-      item.childs = [];
-      branch.push(item);
-      const children = subtree.value
-        .map((value, index) => flattenDigger(value, items, branch, jsonStats, { item, itemKey: index, elementKey }));
-      for (let i = 1; i < children.length; ++i) {
-        children[i - 1].nextSibling = children[i];
-        children[i].previousSibling = children[i - 1];
-      }
-      branch.pop();
-      break;
-    }
-    case "map": {
-      parent?.item.childs?.push(item);
-      item.childs = [];
+/**
+ * 同じ親を持つ子ノード列の previousSibling / nextSibling を接続する.
+ */
+export function wireSiblings(children: JsonRowItem[]) {
+  for (let i = 1; i < children.length; i += 1) {
+    children[i - 1].nextSibling = children[i];
+    children[i].previousSibling = children[i - 1];
+  }
+}
 
-      branch.push(item);
-      const children = _.map(
-        subtree.value,
-        (value, itemKey) => flattenDigger(value, items, branch, jsonStats, { item, itemKey, elementKey })
-      );
-      for (let i = 1; i < children.length; ++i) {
-        children[i - 1].nextSibling = children[i];
-        children[i].previousSibling = children[i - 1];
-      }
-      branch.pop();
-      break;
-    }
+/**
+ * nextSiblingOrParent を一括で接続する.
+ * NOTE: items が 親 → 子 の順に並んでいることを利用している.
+ */
+export function wireNextSiblingOrParent(items: JsonRowItem[]) {
+  for (const item of items) {
+    item.nextSiblingOrParent = item.nextSibling ?? item.parent?.nextSiblingOrParent;
+  }
+}
+
+export function isLeafType(type: JsonValueObject["type"]) {
+  return type === "string" || type === "number" || type === "boolean" || type === "null";
+}
+
+/**
+ * item 自身と, まだ visible でない祖先を visibleMap に立てる.
+ * 祖先は下から順に辿り, すでに visible ならそこで打ち切る.
+ */
+export function markSelfAndAncestorsVisible(
+  visibleMap: { [k: number]: boolean },
+  item: JsonRowItem,
+) {
+  visibleMap[item.index] = true;
+  for (let j = item.rowItems.length - 1; 0 <= j; j -= 1) {
+    const ancestor = item.rowItems[j];
+    if (visibleMap[ancestor.index]) { break; }
+    visibleMap[ancestor.index] = true;
+  }
+}
+
+/**
+ * `flattenJson` の補助関数.
+ * JsonValueObject からなるツリー構造を再帰的にたどり, JsonRowItem の配列に変換する.
+ */
+function flattenDigger(
+  subtree: JsonValueObject,
+  items: JsonRowItem[],
+  branch: JsonRowItem[],
+  jsonStats: JsonStats,
+  parent?: RowItemParent,
+): JsonRowItem {
+  const item = appendRowItem(items, branch, jsonStats, subtree, parent);
+
+  if (subtree.type === "array" || subtree.type === "map") {
+    item.childs = [];
+    branch.push(item);
+    const children = subtree.type === "array"
+      ? subtree.value.map((value, index) => flattenDigger(value, items, branch, jsonStats, { item, itemKey: index }))
+      : _.map(subtree.value, (value, itemKey) => flattenDigger(value, items, branch, jsonStats, { item, itemKey }));
+    wireSiblings(children);
+    branch.pop();
   }
   return item;
 }
@@ -279,10 +299,7 @@ export function flattenJson(json: any, rawText: string) {
     char_count: rawText.length,
   };
   flattenDigger(tree, items, branch, jsonStats);
-  for (const item of items) {
-    // NOTE: itemsが 親 → 子 の順に並んでいることを利用している
-    item.nextSiblingOrParent = item.nextSibling ?? item.parent?.nextSiblingOrParent;
-  }
+  wireNextSiblingOrParent(items);
 
   return {
     items,

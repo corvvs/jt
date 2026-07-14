@@ -23,6 +23,7 @@ import { sortKeysJson } from "@/libs/tree_manipulation";
 import { useDataFormat, DataFormat } from "@/states/config";
 import { useMatchNavigation } from "@/hooks/useMatchNavigation";
 import { isChangedDiffRow } from "@/libs/diff";
+import { docPath, diffPath } from "@/libs/routes";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -179,7 +180,18 @@ export const Main = (props: {
     const f = async () => {
       const currentTargetDocId = targetDocId;
       setIsLoading(true);
-      
+
+      const parseToData = (text: string): ParsedJSONData => {
+        try {
+          return { status: "accepted", json: parseData(dataFormat, text), text };
+        } catch (e) {
+          return { status: "rejected", error: e, text };
+        }
+      };
+
+      // 比較相手 (旧側) の fetch は本体ドキュメントの処理と並走させる
+      const otherDocPromise = diffDocId ? JsonDocumentStore.fetchDocument(diffDocId) : null;
+
       const newDocument = {
         name: "",
         json_string: defaultRawText,
@@ -210,7 +222,7 @@ export const Main = (props: {
         if (isStale()) { return; }
         if (d) {
           // URL の正規化. diff モードの場合は diff セグメントを保持する
-          router.replace(diffDocId ? `/${d.id}/diff/${diffDocId}` : `/${d.id}`);
+          router.replace(diffDocId ? diffPath(d.id, diffDocId) : docPath(d.id));
           setDocument(d);
           doc = d;
           actualDocId = d.id;
@@ -226,39 +238,27 @@ export const Main = (props: {
           actualDocId = "new";
       }
       
+      const other = otherDocPromise ? await otherDocPromise : null;
+
       // 処理中に別のロードが始まっていた場合は、この結果を無視
       if (isStale()) { return; }
 
-      try {
-        const json = parseData(dataFormat, doc.json_string);
-        setParsedData({ status: "accepted", json, text: doc.json_string });
-      } catch (e) {
-        setParsedData({ status: "rejected", error: e, text: doc.json_string });
-      }
+      // NOTE: ここから先の状態更新は同一同期ブロックで行う.
+      // parsedJson と diffTarget の更新が別フラッシュに割れると,
+      // 中間の食い違ったペアで diffJson が1回無駄に走る
+      setParsedData(parseToData(doc.json_string));
 
-      // diff モードの場合は比較相手 (旧側) をロードする
+      // diff モードの場合は比較相手 (旧側) を反映する
       if (diffDocId) {
-        const other = await JsonDocumentStore.fetchDocument(diffDocId);
-        if (isStale()) { return; }
-        if (other) {
-          let parsedOther: ParsedJSONData;
-          try {
-            const otherJson = parseData(dataFormat, other.json_string);
-            parsedOther = { status: "accepted", json: otherJson, text: other.json_string };
-          } catch (e) {
-            parsedOther = { status: "rejected", error: e, text: other.json_string };
-          }
-          if (parsedOther.status === "accepted") {
-            setDiffTarget({ docId: other.id, name: other.name, parsed: parsedOther });
-          } else {
-            toast.error("比較相手のドキュメントをパースできませんでした");
-            setDiffTarget(null);
-            router.replace(`/${actualDocId}`);
-          }
+        const parsedOther = other ? parseToData(other.json_string) : null;
+        if (other && parsedOther?.status === "accepted") {
+          setDiffTarget({ docId: other.id, name: other.name, parsed: parsedOther });
         } else {
-          toast.error("比較相手のドキュメントが見つかりません");
+          toast.error(other
+            ? "比較相手のドキュメントをパースできませんでした"
+            : "比較相手のドキュメントが見つかりません");
           setDiffTarget(null);
-          router.replace(`/${actualDocId}`);
+          router.replace(docPath(actualDocId));
         }
       } else {
         setDiffTarget(null);
@@ -448,7 +448,7 @@ export const Main = (props: {
     className="shrink grow flex flex-col"
   >
     <div className='shrink-0 grow-0 flex flex-col'>
-      <HeaderBar itemViewRef={itemViewRef} mode="json-viewer" />
+      <HeaderBar itemViewRef={itemViewRef} mode="json-viewer" diffNavigation={diffNavigation} />
     </div>
 
     <div

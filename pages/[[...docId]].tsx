@@ -11,10 +11,11 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import { PreformattedValueCardHolder } from "@/components/holders/modal/PreformattedValueCard";
 import { SelectDiffTargetCardHolder } from "@/components/holders/modal/SelectDiffTargetCard";
+import { parseDocRoute } from "@/libs/routes";
 
 export default function Home() {
   const router = useRouter();
-  const [docId, subview, subviewId] = (router.query.docId || []) as string[];
+  const { docId, diffDocId } = parseDocRoute(router.query);
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
@@ -27,9 +28,6 @@ export default function Home() {
   }
   
   const effectiveDocId = docId || '_list';
-
-  // /{docId}/diff/{otherDocId} で diff モード
-  const diffDocId = subview === "diff" && subviewId ? subviewId : undefined;
 
   // _listパスの場合はドキュメント一覧を表示
   const isDocumentListView = effectiveDocId === '_list';

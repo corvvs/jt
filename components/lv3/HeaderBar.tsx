@@ -12,8 +12,8 @@ import { useAtom } from "jotai";
 import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
 import { useDiffOnly, useDiffTarget } from "@/states/diff";
-import { isChangedDiffRow } from "@/libs/diff";
-import { useMatchNavigation } from "@/hooks/useMatchNavigation";
+import { docPath, diffPath, parseDocRoute } from "@/libs/routes";
+import { MatchNavigation } from "@/hooks/useMatchNavigation";
 import { GoDiff } from "react-icons/go";
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -88,18 +88,37 @@ const NarrowingLine = (props: {
   </div>)
 }
 
+const DiffLineAction = (props: {
+  onClick: () => void;
+  title: string;
+  active?: boolean;
+  children: React.ReactNode;
+}) => (
+  <p
+    className={`stats-item narrowing-status shrink-0 grow-0 cursor-pointer ${props.active ? "diff-only-active" : ""}`}
+    onClick={props.onClick}
+    title={props.title}
+  >
+    <span>{props.children}</span>
+  </p>
+);
+
 const DiffLine = (props: {
-  itemViewRef: MutableRefObject<any>;
+  /**
+   * Main と共有する差分行ナビゲーション (カーソルを1つに保つため props で受ける)
+   */
+  diffNavigation?: MatchNavigation;
 }) => {
   const { diffTarget } = useDiffTarget();
   const { document } = useJSON();
   const [diffFlattened] = useAtom(diffFlattenedAtom);
   const { diffOnly, setDiffOnly } = useDiffOnly();
-  const diffNavigation = useMatchNavigation(props.itemViewRef, isChangedDiffRow);
   const router = useRouter();
   if (!diffTarget) { return null; }
-  const [docId] = (router.query.docId || []) as string[];
+  const { docId } = parseDocRoute(router.query);
+  if (!docId) { return null; }
   const diffStats = diffFlattened?.diffStats;
+  const diffNavigation = props.diffNavigation;
 
   return (<div
     className="narrowing-line shrink-0 grow-0 flex flex-row gap-1 text-sm stats items-center"
@@ -122,44 +141,30 @@ const DiffLine = (props: {
       <span className="diff-status-changed">±{diffStats.changed}</span>
     </p>}
 
-    <p
-      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
-      onClick={() => diffNavigation.goToPreviousMatch()}
-      title="前の差分行へ移動する"
-    >
-      <span>‹</span>
-    </p>
+    {diffNavigation && <>
+      <DiffLineAction onClick={() => diffNavigation.goToPreviousMatch()} title="前の差分行へ移動する">
+        ‹
+      </DiffLineAction>
+      <DiffLineAction onClick={() => diffNavigation.goToNextMatch()} title="次の差分行へ移動する">
+        ›
+      </DiffLineAction>
+    </>}
 
-    <p
-      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
-      onClick={() => diffNavigation.goToNextMatch()}
-      title="次の差分行へ移動する"
-    >
-      <span>›</span>
-    </p>
-
-    <p
-      className={`stats-item narrowing-status shrink-0 grow-0 cursor-pointer ${diffOnly ? "diff-only-active" : ""}`}
+    <DiffLineAction
       onClick={() => setDiffOnly(!diffOnly)}
       title="差分のある行 (とその祖先) だけを表示する"
+      active={diffOnly}
     >
-      <span>Diff only</span>
-    </p>
+      Diff only
+    </DiffLineAction>
 
-    <p
-      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
-      onClick={() => router.push(`/${diffTarget.docId}/diff/${docId}`)}
-      title="新旧を入れ替える"
-    >
+    <DiffLineAction onClick={() => router.push(diffPath(diffTarget.docId, docId))} title="新旧を入れ替える">
       <span className="flex flex-row items-center gap-1"><FaExchangeAlt /><span>Swap</span></span>
-    </p>
+    </DiffLineAction>
 
-    <p
-      className="stats-item narrowing-status shrink-0 grow-0 cursor-pointer"
-      onClick={() => router.push(`/${docId}`)}
-    >
-      <span>Exit</span>
-    </p>
+    <DiffLineAction onClick={() => router.push(docPath(docId))} title="diff モードを終了する">
+      Exit
+    </DiffLineAction>
   </div>);
 };
 
@@ -170,7 +175,7 @@ const OpetationButtons = (props: {
   const { openModal: openEditDataModal } = useEditJsonModal();
   const { openModal: openSelectDiffTargetModal } = useSelectDiffTargetModal();
   const { diffTarget } = useDiffTarget();
-  const { flatJsons } = useJSON();
+  const flatJsons = useEffectiveItems();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   const {
@@ -292,12 +297,13 @@ const MainLine = (props: {
 export const HeaderBar = (props: {
   itemViewRef: MutableRefObject<any>;
   mode?: HeaderMode;
+  diffNavigation?: MatchNavigation;
 }) => {
   const mode = props.mode || 'json-viewer';
 
   return (<>
     <MainLine mode={mode} />
-    {mode === 'json-viewer' && <DiffLine itemViewRef={props.itemViewRef} />}
+    {mode === 'json-viewer' && <DiffLine diffNavigation={props.diffNavigation} />}
     {mode === 'json-viewer' && <NarrowingLine itemViewRef={props.itemViewRef} />}
   </>);
 };

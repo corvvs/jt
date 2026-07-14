@@ -1,10 +1,10 @@
-import { JsonGauge, JsonRowItem, JsonStats, flattenJson, makeGauge } from '@/libs/jetson';
+import { JsonGauge, JsonRowItem, JsonStats, flattenJson, makeGauge, markSelfAndAncestorsVisible } from '@/libs/jetson';
 import { diffJson } from '@/libs/diff';
 import { diffOnlyAtom, diffTargetAtom } from './diff';
+import { narrowedRangeAtom } from './manipulation/narrowing';
+import { filterMapsAtom } from './manipulation/query';
 import { atom, useAtom } from 'jotai';
-import { useMemo } from 'react';
 import { toggleAtom } from './view';
-import { useManipulation } from './manipulation';
 import _ from 'lodash';
 import { JsonPartialDocument } from '@/data/document';
 import { DataFormat, DataFormats, useAutoTrimming, useDataFormat } from './config';
@@ -141,7 +141,7 @@ export const diffFlattenedAtom = atom(
       const current = get(baseAtoms.parsedJson);
       if (!current) { return null; }
       if (current.status !== "accepted") { return null; }
-      return diffJson(target.parsed.json, current.json, { newText: current.text });
+      return diffJson(target.parsed.json, current.json, current.text);
     } catch (e) {
       console.error(e);
       return null;
@@ -162,13 +162,7 @@ export const diffOnlyVisibleMapAtom = atom(
     for (const item of diff.items) {
       const status = item.diff.status;
       if (status === "added" || status === "removed" || status === "changed") {
-        visibleMap[item.index] = true;
-        // まだ visible でない祖先を下から順に visible にしていく
-        for (let j = item.rowItems.length - 1; 0 <= j; j -= 1) {
-          const ancestor = item.rowItems[j];
-          if (visibleMap[ancestor.index]) { break; }
-          visibleMap[ancestor.index] = true;
-        }
+        markSelfAndAncestorsVisible(visibleMap, item);
       }
     }
     return visibleMap;
@@ -190,35 +184,34 @@ export const useEffectiveItems = () => {
   return effectiveItems;
 };
 
-export const useVisibleItems = () => {
-  const flatJsons = useEffectiveItems();
-  const [toggleState] = useAtom(toggleAtom);
-  const { manipulation, filterMaps } = useManipulation();
-  const [diffOnlyVisibleMap] = useAtom(diffOnlyVisibleMapAtom);
-
-  return useMemo((): { filteredItems: JsonRowItem[]; visibleItems: JsonRowItem[]; gauge: JsonGauge; } | null => {
+/**
+ * 絞り込み (ナローイング → Diff only → 検索 → フォールディング) を適用した表示行.
+ * derived atom なので, 複数の消費者 (Main / FooterBar / ナビゲーション等) で計算が共有される.
+ */
+export const visibleItemsAtom = atom(
+  (get): { filteredItems: JsonRowItem[]; visibleItems: JsonRowItem[]; gauge: JsonGauge; } | null => {
+    const flatJsons = get(effectiveItemsAtom);
     if (!flatJsons) { return null; }
     const { items } = flatJsons;
-  
+
+    const toggleState = get(toggleAtom);
+    const narrowedRanges = get(narrowedRangeAtom);
+    const filterMaps = get(filterMapsAtom);
+    const diffOnlyVisibleMap = get(diffOnlyVisibleMapAtom);
+
     // 表示すべきitemを選別する
-    const topNarrowingRange = _.last(manipulation.narrowedRanges);
-    const filterByNarrowing = topNarrowingRange
-      ? (item: JsonRowItem) => {
-          const { from, to } = topNarrowingRange;
-          return from <= item.index && item.index < to;
-        }
-      : () => true;
-    const narrowedItems = items.filter(filterByNarrowing);
+    const topNarrowingRange = _.last(narrowedRanges);
+    const narrowedItems = topNarrowingRange
+      ? items.filter((item) => topNarrowingRange.from <= item.index && item.index < topNarrowingRange.to)
+      : items;
 
-    const filterByDiffOnly = diffOnlyVisibleMap
-      ? (item: JsonRowItem) => !!diffOnlyVisibleMap[item.index]
-      : () => true;
-    const diffOnlyItems = narrowedItems.filter(filterByDiffOnly);
+    const diffOnlyItems = diffOnlyVisibleMap
+      ? narrowedItems.filter((item) => !!diffOnlyVisibleMap[item.index])
+      : narrowedItems;
 
-    const filterByQuery = filterMaps
-      ? (item: JsonRowItem) => filterMaps.visible[item.index]
-      : () => true;
-    const filteredItems = diffOnlyItems.filter(filterByQuery);
+    const filteredItems = filterMaps
+      ? diffOnlyItems.filter((item) => filterMaps.visible[item.index])
+      : diffOnlyItems;
 
     let nextOpenCandidate: number = -1;
     const openedItems = filteredItems.filter((item) => {
@@ -243,7 +236,12 @@ export const useVisibleItems = () => {
       visibleItems,
       gauge: makeGauge(narrowedItems),
     };
-  }, [flatJsons, toggleState, manipulation, filterMaps, diffOnlyVisibleMap]);
+  },
+);
+
+export const useVisibleItems = () => {
+  const [visibles] = useAtom(visibleItemsAtom);
+  return visibles;
 };
 
 /**
@@ -251,7 +249,6 @@ export const useVisibleItems = () => {
  */
 export const useJSON = () => {
   const [document, setDocument] = useAtom(baseAtoms.document);
-  const [flatJsons] = useAtom(jsonFlattenedAtom);
   const [json, setParsedData] = useAtom(baseAtoms.parsedJson);
   const autoTrimming = useAutoTrimming()
   return {
@@ -262,7 +259,6 @@ export const useJSON = () => {
       if (!document) { return; }
       setDocument({ ...document, name: title, json_string: text });
     },
-    flatJsons,
     json,
     parseData: (dataFormat: DataFormat, text: string) => parseData(dataFormat, text, autoTrimming.isValid ? autoTrimming.autoTrimming : ""),
     unparseData: (dataFormat: DataFormat, data: any, space: number) => unparseData(dataFormat, data, space),
