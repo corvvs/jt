@@ -110,9 +110,11 @@ const DiffStatusCell = (props: {
       case "removed":
         return { glyph: "−", className: "diff-status-removed", alt: "旧側にのみ存在します" };
       case "changed":
+        // 形は added / removed と同じ + / − だが, グリフと行背景の色 (琥珀) で
+        // 「同一キーの値変更」であることを区別する
         return props.item.diff.side === "old"
-          ? { glyph: "∓", className: "diff-status-changed", alt: "値が変更されています (これは変更前の値)" }
-          : { glyph: "±", className: "diff-status-changed", alt: "値が変更されています (これは変更後の値)" };
+          ? { glyph: "−", className: "diff-status-changed", alt: "値が変更されています (これは変更前の値)" }
+          : { glyph: "+", className: "diff-status-changed", alt: "値が変更されています (これは変更後の値)" };
       case "child_changed":
         return { glyph: "·", className: "diff-status-child-changed", alt: "内部に差分があります" };
       default:
