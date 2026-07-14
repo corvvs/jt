@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DiffRowItem, diffJson } from "./diff";
+import { DiffRowItem, diffJson, isChangedDiffRow } from "./diff";
 
 /**
  * elementKey で行を引く (置換で同一キーが2行になるケースでは使わないこと)
@@ -22,21 +22,36 @@ describe("diffJson: 葉", () => {
     expect(diffStats).toEqual({ added: 0, removed: 0, changed: 0 });
   });
 
-  it("値が変わった葉は changed で counterpart に旧値を持つ", () => {
+  it("値が変わった葉は 旧/新 の changed 2行ペアになる", () => {
     const { items, diffStats } = diffJson(5, 6);
-    expect(items.length).toBe(1);
-    expect(items[0].diff.status).toBe("changed");
-    expect(items[0].right).toEqual({ type: "number", value: 6 });
-    expect(items[0].diff.counterpart).toEqual({ type: "number", value: 5 });
+    expect(items.length).toBe(2);
+    expect(items[0].diff).toEqual({ status: "changed", side: "old" });
+    expect(items[0].right).toEqual({ type: "number", value: 5 });
+    expect(items[1].diff).toEqual({ status: "changed", side: "new" });
+    expect(items[1].right).toEqual({ type: "number", value: 6 });
+    // ペアは兄弟として接続される
+    expect(items[0].nextSibling).toBe(items[1]);
+    // カウントはペアで1
     expect(diffStats.changed).toBe(1);
   });
 
-  it("葉同士の型変化は changed 1行 (置換にしない)", () => {
+  it("葉同士の型変化も changed ペア (置換にしない)", () => {
     const { items, diffStats } = diffJson("5", 5);
-    expect(items.length).toBe(1);
-    expect(items[0].diff.status).toBe("changed");
-    expect(items[0].diff.counterpart).toEqual({ type: "string", value: "5" });
+    expect(items.length).toBe(2);
+    expect(items[0].diff).toEqual({ status: "changed", side: "old" });
+    expect(items[0].right).toEqual({ type: "string", value: "5" });
+    expect(items[1].diff).toEqual({ status: "changed", side: "new" });
     expect(diffStats).toEqual({ added: 0, removed: 0, changed: 1 });
+  });
+
+  it("差分ナビゲーションは changed ペアの新側だけを対象にする", () => {
+    const { items } = diffJson({ a: 1, b: 2 }, { a: 9, c: 3 });
+    const pair = rowsOf(items, "a");
+    expect(isChangedDiffRow(pair[0])).toBe(false); // old 側
+    expect(isChangedDiffRow(pair[1])).toBe(true);  // new 側
+    expect(isChangedDiffRow(rowOf(items, "b"))).toBe(true); // removed
+    expect(isChangedDiffRow(rowOf(items, "c"))).toBe(true); // added
+    expect(isChangedDiffRow(rowOf(items, ""))).toBe(false); // child_changed
   });
 
   it("null 同士は same", () => {
@@ -73,7 +88,7 @@ describe("diffJson: map", () => {
     );
     expect(rowOf(items, "a").diff.status).toBe("same");
     expect(rowOf(items, "a.x").diff.status).toBe("same");
-    expect(rowOf(items, "b").diff.status).toBe("changed");
+    expect(rowsOf(items, "b").map((row) => row.diff.status)).toEqual(["changed", "changed"]);
     expect(rowOf(items, "").diff.status).toBe("child_changed");
   });
 
@@ -82,7 +97,7 @@ describe("diffJson: map", () => {
       { a: { b: { c: 1 } } },
       { a: { b: { c: 2 } } },
     );
-    expect(rowOf(items, "a.b.c").diff.status).toBe("changed");
+    expect(rowsOf(items, "a.b.c").map((row) => row.diff.status)).toEqual(["changed", "changed"]);
     expect(rowOf(items, "a.b").diff.status).toBe("child_changed");
     expect(rowOf(items, "a").diff.status).toBe("child_changed");
     expect(rowOf(items, "").diff.status).toBe("child_changed");
@@ -105,9 +120,13 @@ describe("diffJson: array", () => {
     expect(diffStats.removed).toBe(2);
   });
 
-  it("同一添字の値変化は changed", () => {
+  it("同一添字の値変化は changed ペア", () => {
     const { items } = diffJson([1], [2]);
-    expect(rowOf(items, "0").diff.status).toBe("changed");
+    const pair = rowsOf(items, "0");
+    expect(pair.map((row) => row.diff)).toEqual([
+      { status: "changed", side: "old" },
+      { status: "changed", side: "new" },
+    ]);
     expect(rowOf(items, "").diff.status).toBe("child_changed");
   });
 });
@@ -173,9 +192,12 @@ describe("diffJson: 行アイテムとしての整合性", () => {
 
   it("items は親 → 子の DFS 順で, rowItems が祖先列になっている", () => {
     const { items } = diffJson({ a: { b: 1 } }, { a: { b: 2 } });
-    const ab = rowOf(items, "a.b");
-    expect(ab.rowItems.map((item) => item.elementKey)).toEqual(["", "a"]);
-    expect(ab.parent?.elementKey).toBe("a");
+    const pair = rowsOf(items, "a.b");
+    expect(pair.length).toBe(2);
+    for (const row of pair) {
+      expect(row.rowItems.map((item) => item.elementKey)).toEqual(["", "a"]);
+      expect(row.parent?.elementKey).toBe("a");
+    }
   });
 
   it("stats.item_count が行数と一致する", () => {

@@ -10,15 +10,15 @@ export type DiffStatus =
   | "same"          // 葉: 値が一致 / コンテナ: 子孫まで完全一致
   | "added"         // 新側にのみ存在
   | "removed"       // 旧側にのみ存在
-  | "changed"       // 葉: 値が変化
+  | "changed"       // 葉: 値が変化 (変更前/変更後の2行ペアで出力される)
   | "child_changed" // コンテナ: 自身は両側に存在するが子孫に差分がある
 
 export type DiffAnnotation = {
   status: DiffStatus;
   /**
-   * status === "changed" の葉のみ: 旧側の値
+   * status === "changed" の葉のみ: 変更前 (old) の行か変更後 (new) の行か
    */
-  counterpart?: JsonValueObject;
+  side?: "old" | "new";
 };
 
 /**
@@ -38,13 +38,15 @@ export function isDiffRowItem(item: JsonRowItem): item is DiffRowItem {
 }
 
 /**
- * 差分のある行 (added / removed / changed) かどうか.
- * 差分ナビゲーションや Diff only 表示の対象判定に使う.
+ * 差分ナビゲーションの対象行かどうか.
+ * changed は変更前/変更後の2行ペアで表示されるため,
+ * 1つの変更で2回止まらないよう新側の行だけを対象にする.
  */
 export function isChangedDiffRow(item: JsonRowItem): boolean {
   if (!isDiffRowItem(item)) { return false; }
-  const status = item.diff.status;
-  return status === "added" || status === "removed" || status === "changed";
+  const { status, side } = item.diff;
+  if (status === "changed") { return side !== "old"; }
+  return status === "added" || status === "removed";
 }
 
 export type DiffStats = {
@@ -87,7 +89,7 @@ function createRow(
   right: JsonValueObject,
   status: DiffStatus,
   parent: ParentRef | undefined,
-  counterpart?: JsonValueObject,
+  side?: "old" | "new",
 ): DiffRowItem {
   const ownKey = parent ? `${parent.itemKey}` : "";
   const elementKey = parent
@@ -108,7 +110,7 @@ function createRow(
     },
     itemKey: parent?.itemKey,
     parent: parent?.item,
-    diff: counterpart ? { status, counterpart } : { status },
+    diff: side ? { status, side } : { status },
   };
   ctx.items.push(item);
 
@@ -169,6 +171,23 @@ function emitSubtree(
 }
 
 /**
+ * 値が変化した葉を, 変更前 (旧) / 変更後 (新) の2行ペアとして出力する.
+ * 両行を対等な見た目で表示するための表現で,
+ * added / removed とは背景色とグリフで区別される.
+ */
+function emitChangedPair(
+  ctx: BuildContext,
+  oldVO: JsonValueObject,
+  newVO: JsonValueObject,
+  parent: ParentRef | undefined,
+): DiffRowItem[] {
+  const oldRow = createRow(ctx, oldVO, "changed", parent, "old");
+  const newRow = createRow(ctx, newVO, "changed", parent, "new");
+  ctx.diffStats.changed += 1;
+  return [oldRow, newRow];
+}
+
+/**
  * 両側に存在するキーパスを処理する.
  * - 葉同士: 値比較で same / changed (型違いの葉同士も changed)
  * - コンテナ同士(同型): 子をマージして再帰. 子孫に差分があれば child_changed
@@ -183,9 +202,7 @@ function emitBoth(
 ): { rows: DiffRowItem[]; changed: boolean } {
   if (oldVO.type !== newVO.type) {
     if (isLeafType(oldVO.type) && isLeafType(newVO.type)) {
-      const item = createRow(ctx, newVO, "changed", parent, oldVO);
-      ctx.diffStats.changed += 1;
-      return { rows: [item], changed: true };
+      return { rows: emitChangedPair(ctx, oldVO, newVO, parent), changed: true };
     }
     const removed = emitSubtree(ctx, oldVO, "removed", parent);
     const added = emitSubtree(ctx, newVO, "added", parent);
@@ -259,9 +276,7 @@ function emitBoth(
   if (oldVO.value === newVO.value) {
     return { rows: [createRow(ctx, newVO, "same", parent)], changed: false };
   }
-  const item = createRow(ctx, newVO, "changed", parent, oldVO);
-  ctx.diffStats.changed += 1;
-  return { rows: [item], changed: true };
+  return { rows: emitChangedPair(ctx, oldVO, newVO, parent), changed: true };
 }
 
 /**

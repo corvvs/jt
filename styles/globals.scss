@@ -151,11 +151,6 @@ body {
   color: var(--foreground-secondary);
 }
 
-.diff-old-value {
-  color: var(--foreground-secondary);
-  text-decoration: line-through;
-}
-
 .diff-only-active {
   color: var(--matched-foreground);
   font-weight: bold;

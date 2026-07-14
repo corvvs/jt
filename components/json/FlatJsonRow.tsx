@@ -110,7 +110,9 @@ const DiffStatusCell = (props: {
       case "removed":
         return { glyph: "−", className: "diff-status-removed", alt: "旧側にのみ存在します" };
       case "changed":
-        return { glyph: "±", className: "diff-status-changed", alt: "値が変化しています" };
+        return props.item.diff.side === "old"
+          ? { glyph: "∓", className: "diff-status-changed", alt: "値が変更されています (これは変更前の値)" }
+          : { glyph: "±", className: "diff-status-changed", alt: "値が変更されています (これは変更後の値)" };
       case "child_changed":
         return { glyph: "·", className: "diff-status-child-changed", alt: "内部に差分があります" };
       default:
@@ -206,7 +208,6 @@ export const FlatJsonRow = (props: {
       vo={right}
       elementKey={elementKey}
       matched={isMatched}
-      counterpart={diff?.status === "changed" ? diff.counterpart : undefined}
     />
 
     {isLeaf && isHovered && <ValueMenuCell item={item} />}

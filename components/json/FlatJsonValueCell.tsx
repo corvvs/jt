@@ -92,61 +92,21 @@ const ValueNullCell = (props: {
   </div>;
 }
 
-function voToDisplayString(vo: JsonValueObject): string {
-  switch (vo.type) {
-    case "string":
-      return vo.value;
-    case "number":
-      return `${vo.value}`;
-    case "boolean":
-      return vo.value ? "True" : "False";
-    case "null":
-      return "(null)";
-    default:
-      // コンテナは changed にならないのでここには来ない
-      return "";
-  }
-}
-
 export const FlatJsonValueCell = (props: {
   vo: JsonValueObject;
   elementKey: string;
   matched?: boolean;
-  /**
-   * diff ビューで値が変化した場合の旧値
-   */
-  counterpart?: JsonValueObject;
 }) => {
-  const currentCell = (() => {
-    switch (props.vo.type) {
-      case "string":
-        return <ValueStringCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
-      case "number":
-        return <ValueNumberCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
-      case "boolean":
-        return <ValueBooleanCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
-      case "null":
-        return <ValueNullCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
-      default:
-        return null;
-    }
-  })();
-
-  if (!props.counterpart) {
-    return currentCell;
+  switch (props.vo.type) {
+    case "string":
+      return <ValueStringCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
+    case "number":
+      return <ValueNumberCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
+    case "boolean":
+      return <ValueBooleanCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
+    case "null":
+      return <ValueNullCell vo={props.vo} elementKey={props.elementKey} matched={props.matched} />;
+    default:
+      return null;
   }
-
-  const oldValue = voToDisplayString(props.counterpart);
-  return <>
-    <div
-      className="json-structure item-value p-1 flex items-center shrink-0"
-      title={oldValue}
-    >
-      <p className="diff-old-value max-w-[16em] truncate">{oldValue}</p>
-    </div>
-    <div className="p-1 flex items-center shrink-0 secondary-foreground">
-      <p>→</p>
-    </div>
-    {currentCell}
-  </>;
 }
