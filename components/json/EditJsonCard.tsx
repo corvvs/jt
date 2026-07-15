@@ -13,6 +13,7 @@ import { TiArrowMinimise } from "react-icons/ti";
 import { MdContentPasteGo, MdOutlineDeleteOutline } from "react-icons/md";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { useAutoTrimming, useDataFormat } from "@/states/config";
+import { docPath, parseDocRoute } from "@/libs/routes";
 import { MultipleButtons } from "../lv1/MultipleButtons";
 
 const OperationPanel = (props: {
@@ -52,9 +53,9 @@ const OperationPanel = (props: {
       name: title,
       json_string: text,
     });
-    const [docId] = (router.query.docId || []) as string[];
+    const { docId } = parseDocRoute(router.query);
     if (id !== docId) {
-      router.replace(`/${id}`);
+      router.replace(docPath(id));
     }
 
     props.closeModal();

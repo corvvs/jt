@@ -174,7 +174,6 @@ const OpetationButtons = (props: {
   const { mode } = props;
   const { openModal: openEditDataModal } = useEditJsonModal();
   const { openModal: openSelectDiffTargetModal } = useSelectDiffTargetModal();
-  const { diffTarget } = useDiffTarget();
   const flatJsons = useEffectiveItems();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
@@ -215,7 +214,7 @@ const OpetationButtons = (props: {
       <MenuButton
         onClick={() => openEditDataModal()}
         onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons || !!diffTarget}
+        disabled={!flatJsons}
       >
         <InlineIcon i={<VscEdit />} />
         <span>Edit</span>
