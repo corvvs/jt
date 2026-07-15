@@ -134,8 +134,48 @@ type ChildEntry = {
 };
 
 /**
+ * 旧キー列と新キー列を, 共通キーをアンカーにした合成順に並べる.
+ * - 削除キーは旧文書での位置に, 追加キーは新文書での位置に interleave される
+ *   (unified diff と同様, 削除とその置き換えが隣接して表示される)
+ * - 旧キー同士・追加キー同士の相対順はそれぞれ保存される
+ * - 両側に存在するキーの順序が食い違う場合 (並び替え) は旧順を優先し, 差分にはしない
+ */
+function mergeMapKeys(
+  oldMap: JsonValueObjectMap["value"],
+  newMap: JsonValueObjectMap["value"],
+): string[] {
+  const oldKeys = Object.keys(oldMap);
+  const newKeys = Object.keys(newMap);
+  const keys: string[] = [];
+  const emitted = new Set<string>();
+  const push = (key: string) => {
+    keys.push(key);
+    emitted.add(key);
+  };
+  let i = 0;
+  let j = 0;
+  while (i < oldKeys.length || j < newKeys.length) {
+    if (i < oldKeys.length && emitted.has(oldKeys[i])) { i += 1; continue; }
+    if (j < newKeys.length && emitted.has(newKeys[j])) { j += 1; continue; }
+    if (i >= oldKeys.length) { push(newKeys[j]); j += 1; continue; }
+    if (j >= newKeys.length) { push(oldKeys[i]); i += 1; continue; }
+    const oldKey = oldKeys[i];
+    const newKey = newKeys[j];
+    if (oldKey === newKey) { push(oldKey); i += 1; j += 1; continue; }
+    // 削除キーは旧文書での位置に
+    if (!(oldKey in newMap)) { push(oldKey); i += 1; continue; }
+    // 追加キーは新文書での位置に
+    if (!(newKey in oldMap)) { push(newKey); j += 1; continue; }
+    // 両方とも共通キーで順序だけが食い違う (並び替え) -> 旧順を優先して消化
+    push(oldKey);
+    i += 1;
+  }
+  return keys;
+}
+
+/**
  * 同型コンテナ同士の子を対応付けたエントリ列を返す.
- * - map: 旧側の出現順に並べ, 新側にのみあるキーを末尾に足す (キーの並び替えは差分にしない)
+ * - map: mergeMapKeys による合成順 (共通キーをアンカーに削除/追加を interleave)
  * - array: 添字対応 (v1 制限)
  */
 function containerEntries(
@@ -153,11 +193,7 @@ function containerEntries(
   if (oldVO.type === "map" && newVO.type === "map") {
     const oldMap = oldVO.value;
     const newMap = newVO.value;
-    const keys = [
-      ...Object.keys(oldMap),
-      ...Object.keys(newMap).filter((key) => !(key in oldMap)),
-    ];
-    return keys.map((key) => ({
+    return mergeMapKeys(oldMap, newMap).map((key) => ({
       itemKey: key,
       oldChild: oldMap[key],
       newChild: newMap[key],

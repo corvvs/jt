@@ -70,9 +70,23 @@ describe("diffJson: map", () => {
     expect(diffStats).toEqual({ added: 1, removed: 1, changed: 0 });
   });
 
-  it("キー順は 旧側の出現順 → 新側にのみあるキー", () => {
-    const { items } = diffJson({ a: 1, b: 2 }, { c: 3, a: 1 });
-    expect(items.map((item) => item.elementKey)).toEqual(["", "a", "b", "c"]);
+  it("削除と追加が同じ位置なら隣接して並ぶ (置換の表示)", () => {
+    const { items } = diffJson({ a: 1, b: 2, c: 3 }, { a: 1, d: 2, c: 3 });
+    expect(items.map((item) => item.elementKey)).toEqual(["", "a", "b", "d", "c"]);
+    expect(rowOf(items, "b").diff.status).toBe("removed");
+    expect(rowOf(items, "d").diff.status).toBe("added");
+  });
+
+  it("追加キーは新文書での位置に現れる (先頭への追加は先頭に)", () => {
+    const { items } = diffJson({ a: 1, b: 2 }, { c: 3, a: 1, b: 2 });
+    expect(items.map((item) => item.elementKey)).toEqual(["", "c", "a", "b"]);
+    expect(rowOf(items, "c").diff.status).toBe("added");
+  });
+
+  it("並び替えと追加が混在しても旧キーの相対順は保存される", () => {
+    const { items, diffStats } = diffJson({ a: 1, b: 2 }, { x: 0, b: 2, y: 9, a: 1 });
+    expect(items.map((item) => item.elementKey)).toEqual(["", "x", "a", "b", "y"]);
+    expect(diffStats).toEqual({ added: 2, removed: 0, changed: 0 });
   });
 
   it("キーの並び替えだけでは差分にならない", () => {
