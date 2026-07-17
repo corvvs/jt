@@ -10,10 +10,12 @@ import { ThemeObserver } from "@/components/holders/ThemeObserver";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/react"
 import { PreformattedValueCardHolder } from "@/components/holders/modal/PreformattedValueCard";
+import { SelectDiffTargetCardHolder } from "@/components/holders/modal/SelectDiffTargetCard";
+import { parseDocRoute } from "@/libs/routes";
 
 export default function Home() {
   const router = useRouter();
-  const [docId] = (router.query.docId || []) as string[];
+  const { docId, diffDocId } = parseDocRoute(router.query);
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
@@ -33,9 +35,10 @@ export default function Home() {
   return (
     <Layout isDocumentListView={isDocumentListView}>
       <GoogleAnalytics />
-      {isDocumentListView ? <DocumentList /> : <Main docId={effectiveDocId} />}
+      {isDocumentListView ? <DocumentList /> : <Main docId={effectiveDocId} diffDocId={diffDocId} />}
       <ToastHolder />
       <EditJsonCardHolder />
+      <SelectDiffTargetCardHolder />
       <PreformattedValueCardHolder />
       <ThemeObserver />
       <SpeedInsights />

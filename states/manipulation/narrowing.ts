@@ -6,7 +6,7 @@ type IndexRange = { from: number; to: number; };
 type NarrowingStack = IndexRange[];
 export const defaultNarrowedRange: NarrowingStack = [];
 
-const narrowedRangeAtom = atom<NarrowingStack>(defaultNarrowedRange);
+export const narrowedRangeAtom = atom<NarrowingStack>(defaultNarrowedRange);
 
 const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   const indexFrom = index;

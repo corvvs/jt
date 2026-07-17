@@ -5,10 +5,17 @@ import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
+import { diffFlattenedAtom, useEffectiveItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
-import { FaChevronRight, FaList, FaSearch } from "react-icons/fa";
+import { FaChevronRight, FaExchangeAlt, FaList, FaSearch } from "react-icons/fa";
+import { useAtom } from "jotai";
 import _ from "lodash";
-import { useEditJsonModal } from "@/states/modal";
+import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
+import { useDiffOnly, useDiffTarget } from "@/states/diff";
+import { docPath, diffPath, parseDocRoute } from "@/libs/routes";
+import { MatchNavigation } from "@/hooks/useMatchNavigation";
+import { GoDiff } from "react-icons/go";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import { ThemeSelector } from "../lv2/ThemeSelector";
 import { useTransientBackdrop } from "@/features/TransientBackdrop";
@@ -19,7 +26,7 @@ const NarrowingLine = (props: {
   itemViewRef: MutableRefObject<any>;
 }) => {
   const { manipulation, popNarrowedRange } = useManipulation();
-  const { flatJsons } = useJSON();
+  const flatJsons = useEffectiveItems();
   if (!flatJsons) { return null; }
   if (manipulation.narrowedRanges.length === 0) { return null; }
   const allItems = flatJsons.items;
@@ -81,12 +88,93 @@ const NarrowingLine = (props: {
   </div>)
 }
 
+const DiffLineAction = (props: {
+  onClick: () => void;
+  title: string;
+  active?: boolean;
+  children: React.ReactNode;
+}) => (
+  <p
+    className={`stats-item narrowing-status shrink-0 grow-0 cursor-pointer ${props.active ? "diff-only-active" : ""}`}
+    onClick={props.onClick}
+    title={props.title}
+  >
+    <span>{props.children}</span>
+  </p>
+);
+
+const DiffLine = (props: {
+  /**
+   * Main と共有する差分行ナビゲーション (カーソルを1つに保つため props で受ける)
+   */
+  diffNavigation?: MatchNavigation;
+}) => {
+  const { diffTarget } = useDiffTarget();
+  const { document } = useJSON();
+  const [diffFlattened] = useAtom(diffFlattenedAtom);
+  const { diffOnly, setDiffOnly } = useDiffOnly();
+  const router = useRouter();
+  if (!diffTarget) { return null; }
+  const { docId } = parseDocRoute(router.query);
+  if (!docId) { return null; }
+  const diffStats = diffFlattened?.diffStats;
+  const diffNavigation = props.diffNavigation;
+
+  return (<div
+    className="narrowing-line shrink-0 grow-0 flex flex-row gap-1 text-sm stats items-center"
+  >
+    <p className="line-title shrink-0 grow-0">Diff</p>
+
+    <p className="stats-item shrink-0 grow-0">
+      <span>old: {diffTarget.name || "無題のドキュメント"}</span>
+    </p>
+
+    <p><FaChevronRight /></p>
+
+    <p className="stats-item shrink-0 grow-0">
+      <span>new: {document?.name || "無題のドキュメント"}</span>
+    </p>
+
+    {diffStats && <p className="stats-item shrink-0 grow-0 flex flex-row gap-2 font-monospacy">
+      <span className="diff-status-added">+{diffStats.added}</span>
+      <span className="diff-status-removed">−{diffStats.removed}</span>
+      <span className="diff-status-changed">±{diffStats.changed}</span>
+    </p>}
+
+    {diffNavigation && <>
+      <DiffLineAction onClick={() => diffNavigation.goToPreviousMatch()} title="前の差分行へ移動する">
+        ‹
+      </DiffLineAction>
+      <DiffLineAction onClick={() => diffNavigation.goToNextMatch()} title="次の差分行へ移動する">
+        ›
+      </DiffLineAction>
+    </>}
+
+    <DiffLineAction
+      onClick={() => setDiffOnly(!diffOnly)}
+      title="差分のある行 (とその祖先) だけを表示する"
+      active={diffOnly}
+    >
+      Diff only
+    </DiffLineAction>
+
+    <DiffLineAction onClick={() => router.push(diffPath(diffTarget.docId, docId))} title="新旧を入れ替える">
+      <span className="flex flex-row items-center gap-1"><FaExchangeAlt /><span>Swap</span></span>
+    </DiffLineAction>
+
+    <DiffLineAction onClick={() => router.push(docPath(docId))} title="diff モードを終了する">
+      Exit
+    </DiffLineAction>
+  </div>);
+};
+
 const OpetationButtons = (props: {
   mode: HeaderMode;
 }) => {
   const { mode } = props;
   const { openModal: openEditDataModal } = useEditJsonModal();
-  const { flatJsons } = useJSON();
+  const { openModal: openSelectDiffTargetModal } = useSelectDiffTargetModal();
+  const flatJsons = useEffectiveItems();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   const {
@@ -147,6 +235,17 @@ const OpetationButtons = (props: {
 
     {mode === 'json-viewer' && (
       <MenuButton
+        onClick={() => openSelectDiffTargetModal()}
+        onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
+      >
+        <InlineIcon i={<GoDiff />} />
+        <span>Diff</span>
+      </MenuButton>
+    )}
+
+    {mode === 'json-viewer' && (
+      <MenuButton
         onClick={() => foldAll()}
         onMouseEnter={handleMouseEnter}
         disabled={!flatJsons}
@@ -197,11 +296,13 @@ const MainLine = (props: {
 export const HeaderBar = (props: {
   itemViewRef: MutableRefObject<any>;
   mode?: HeaderMode;
+  diffNavigation?: MatchNavigation;
 }) => {
   const mode = props.mode || 'json-viewer';
 
   return (<>
     <MainLine mode={mode} />
+    {mode === 'json-viewer' && <DiffLine diffNavigation={props.diffNavigation} />}
     {mode === 'json-viewer' && <NarrowingLine itemViewRef={props.itemViewRef} />}
   </>);
 };

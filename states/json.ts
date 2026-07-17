@@ -1,8 +1,10 @@
-import { JsonGauge, JsonRowItem, flattenJson, makeGauge } from '@/libs/jetson';
+import { JsonGauge, JsonRowItem, JsonStats, flattenJson, makeGauge, markSelfAndAncestorsVisible } from '@/libs/jetson';
+import { diffJson } from '@/libs/diff';
+import { diffOnlyAtom, diffTargetAtom } from './diff';
+import { narrowedRangeAtom } from './manipulation/narrowing';
+import { filterMapsAtom } from './manipulation/query';
 import { atom, useAtom } from 'jotai';
-import { useMemo } from 'react';
 import { toggleAtom } from './view';
-import { useManipulation } from './manipulation';
 import _ from 'lodash';
 import { JsonPartialDocument } from '@/data/document';
 import { DataFormat, DataFormats, useAutoTrimming, useDataFormat } from './config';
@@ -63,7 +65,7 @@ export const defaultRawText = JSON.stringify({
   "notice": "アルファ版のため、予告なく大規模・破壊的な変更をします。",
 }, null, 2);
 
-type ParsedJSONData = {
+export type ParsedJSONData = {
   status: "accepted";
   json: any;
   text: string;
@@ -130,29 +132,86 @@ export const jsonFlattenedAtom = atom(
   },
 );
 
-export const useVisibleItems = () => {
-  const { flatJsons } = useJSON();
-  const [toggleState] = useAtom(toggleAtom);
-  const { manipulation, filterMaps } = useManipulation();
+export const diffFlattenedAtom = atom(
+  (get) => {
+    try {
+      const target = get(diffTargetAtom);
+      if (!target) { return null; }
+      if (target.parsed.status !== "accepted") { return null; }
+      const current = get(baseAtoms.parsedJson);
+      if (!current) { return null; }
+      if (current.status !== "accepted") { return null; }
+      return diffJson(target.parsed.json, current.json, current.text);
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  },
+);
 
-  return useMemo((): { filteredItems: JsonRowItem[]; visibleItems: JsonRowItem[]; gauge: JsonGauge; } | null => {
+/**
+ * Diff only 表示 (差分のある行 + その祖先だけを表示) の visible map.
+ * OFF または diff モードでない場合は null.
+ */
+export const diffOnlyVisibleMapAtom = atom(
+  (get) => {
+    if (!get(diffOnlyAtom)) { return null; }
+    const diff = get(diffFlattenedAtom);
+    if (!diff) { return null; }
+    const visibleMap: { [k: number]: boolean } = {};
+    for (const item of diff.items) {
+      const status = item.diff.status;
+      if (status === "added" || status === "removed" || status === "changed") {
+        markSelfAndAncestorsVisible(visibleMap, item);
+      }
+    }
+    return visibleMap;
+  },
+);
+
+/**
+ * 表示パイプライン (ナローイング → 検索 → フォールディング) が読む行アイテムの単一供給点.
+ * diff モードでは merged 行アイテム列に切り替わる.
+ */
+export const effectiveItemsAtom = atom(
+  (get): { items: JsonRowItem[]; stats: JsonStats } | null => {
+    return get(diffFlattenedAtom) ?? get(jsonFlattenedAtom);
+  },
+);
+
+export const useEffectiveItems = () => {
+  const [effectiveItems] = useAtom(effectiveItemsAtom);
+  return effectiveItems;
+};
+
+/**
+ * 絞り込み (ナローイング → Diff only → 検索 → フォールディング) を適用した表示行.
+ * derived atom なので, 複数の消費者 (Main / FooterBar / ナビゲーション等) で計算が共有される.
+ */
+export const visibleItemsAtom = atom(
+  (get): { filteredItems: JsonRowItem[]; visibleItems: JsonRowItem[]; gauge: JsonGauge; } | null => {
+    const flatJsons = get(effectiveItemsAtom);
     if (!flatJsons) { return null; }
     const { items } = flatJsons;
-  
-    // 表示すべきitemを選別する
-    const topNarrowingRange = _.last(manipulation.narrowedRanges);
-    const filterByNarrowing = topNarrowingRange
-      ? (item: JsonRowItem) => {
-          const { from, to } = topNarrowingRange;
-          return from <= item.index && item.index < to;
-        }
-      : () => true;
-    const narrowedItems = items.filter(filterByNarrowing);
 
-    const filterByQuery = filterMaps
-      ? (item: JsonRowItem) => filterMaps.visible[item.index]
-      : () => true;
-    const filteredItems = narrowedItems.filter(filterByQuery);
+    const toggleState = get(toggleAtom);
+    const narrowedRanges = get(narrowedRangeAtom);
+    const filterMaps = get(filterMapsAtom);
+    const diffOnlyVisibleMap = get(diffOnlyVisibleMapAtom);
+
+    // 表示すべきitemを選別する
+    const topNarrowingRange = _.last(narrowedRanges);
+    const narrowedItems = topNarrowingRange
+      ? items.filter((item) => topNarrowingRange.from <= item.index && item.index < topNarrowingRange.to)
+      : items;
+
+    const diffOnlyItems = diffOnlyVisibleMap
+      ? narrowedItems.filter((item) => !!diffOnlyVisibleMap[item.index])
+      : narrowedItems;
+
+    const filteredItems = filterMaps
+      ? diffOnlyItems.filter((item) => filterMaps.visible[item.index])
+      : diffOnlyItems;
 
     let nextOpenCandidate: number = -1;
     const openedItems = filteredItems.filter((item) => {
@@ -177,7 +236,12 @@ export const useVisibleItems = () => {
       visibleItems,
       gauge: makeGauge(narrowedItems),
     };
-  }, [flatJsons, toggleState, manipulation, filterMaps]);
+  },
+);
+
+export const useVisibleItems = () => {
+  const [visibles] = useAtom(visibleItemsAtom);
+  return visibles;
 };
 
 /**
@@ -185,7 +249,6 @@ export const useVisibleItems = () => {
  */
 export const useJSON = () => {
   const [document, setDocument] = useAtom(baseAtoms.document);
-  const [flatJsons] = useAtom(jsonFlattenedAtom);
   const [json, setParsedData] = useAtom(baseAtoms.parsedJson);
   const autoTrimming = useAutoTrimming()
   return {
@@ -196,7 +259,6 @@ export const useJSON = () => {
       if (!document) { return; }
       setDocument({ ...document, name: title, json_string: text });
     },
-    flatJsons,
     json,
     parseData: (dataFormat: DataFormat, text: string) => parseData(dataFormat, text, autoTrimming.isValid ? autoTrimming.autoTrimming : ""),
     unparseData: (dataFormat: DataFormat, data: any, space: number) => unparseData(dataFormat, data, space),

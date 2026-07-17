@@ -7,6 +7,7 @@ import { HeaderBar } from "./lv3/HeaderBar";
 import { MultipleButtons } from "./lv1/MultipleButtons";
 import { InlineIcon } from "./lv1/InlineIcon";
 import { ClipboardAccess } from "@/libs/sideeffect";
+import { formatDateTime } from "@/libs/format";
 
 type SortOption = 'created_desc' | 'updated_desc';
 
@@ -138,19 +139,6 @@ const DocumentListBody = () => {
     }
   };
 
-  const formatDate = (date: Date) => {
-    if (!(date instanceof Date)) {
-      date = new Date(date);
-    }
-    return date.toLocaleString('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const formatSize = (bytes: number | undefined) => {
     if (bytes === undefined) return '不明';
     if (bytes === 0) return '0 B';
@@ -237,10 +225,10 @@ const DocumentListBody = () => {
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center gap-1">
                     <FaRegClock />
-                    <span>更新: <span className="font-mono">{formatDate(doc.updated_at)}</span></span>
+                    <span>更新: <span className="font-mono">{formatDateTime(doc.updated_at)}</span></span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span>作成: <span className="font-mono">{formatDate(doc.created_at)}</span></span>
+                    <span>作成: <span className="font-mono">{formatDateTime(doc.created_at)}</span></span>
                   </div>
                   <div className="flex items-center gap-1">
                     <span>サイズ: </span>

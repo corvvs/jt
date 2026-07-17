@@ -6,7 +6,10 @@ import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { FaRegFrown, FaRegMehRollingEyes } from 'react-icons/fa';
-import { defaultRawText, useVisibleItems } from "@/states/json";
+import { defaultRawText, useVisibleItems, type ParsedJSONData } from "@/states/json";
+import { useDiffTarget } from "@/states/diff";
+import { toggleAtom } from "@/states/view";
+import { useSetAtom } from "jotai";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
@@ -19,6 +22,8 @@ import { toast } from "react-toastify";
 import { sortKeysJson } from "@/libs/tree_manipulation";
 import { useDataFormat, DataFormat } from "@/states/config";
 import { useMatchNavigation } from "@/hooks/useMatchNavigation";
+import { isChangedDiffRow } from "@/libs/diff";
+import { docPath, diffPath } from "@/libs/routes";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -104,7 +109,7 @@ const JsonItemsView = (props: {
       itemViewRef={props.itemViewRef}
       data={visibleItems} // データ
       renderItem={(item) => <FlatJsonRow
-        key={item.elementKey}
+        key={item.index}
         item={item}
         manipulationHook={manipulationHook}
         toggleSingleHook={toggleSingleHook}
@@ -118,20 +123,30 @@ const JsonItemsView = (props: {
 
 export const Main = (props: {
   docId?: string;
+  diffDocId?: string;
 }) => {
-  const { docId } = props;
+  const { docId, diffDocId } = props;
   const {
     document: currentDocument,
     setDocument,
     parseData,
     setParsedData,
   } = useJSON();
+  const { setDiffTarget } = useDiffTarget();
+  const setToggleState = useSetAtom(toggleAtom);
+  const prevDiffDocIdRef = useRef<string | undefined>(undefined);
+  const loadGenerationRef = useRef(0);
   const { dataFormat, setDataFormat } = useDataFormat();
-  const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused } = useManipulation();
+  const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused, clearManipulation } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const itemViewRef = useRef<any>(null);
   const matchNavigation = useMatchNavigation(itemViewRef);
+  const diffNavigation = useMatchNavigation(itemViewRef, isChangedDiffRow);
+  // diff モード中に検索マッチがなければ, F3 系のジャンプは差分行を対象にする
+  const activeNavigation = (diffDocId && matchNavigation.matchedCount === 0)
+    ? diffNavigation
+    : matchNavigation;
   const router = useRouter();
 
   // 表示しようとしているdocIDと、ロードが完了したdocIDを別々に管理
@@ -153,11 +168,30 @@ export const Main = (props: {
 
   useEffect(() => {
     if (!router.isReady) { return; }
-    
+    // docId prop → targetDocId の同期が済むまでロードを見送る.
+    // 同期前に走ると, 古い targetDocId のまま URL 正規化 (router.replace) が実行され,
+    // 遷移直後の URL を巻き戻してしまう (diff の Swap 時のチラつきの原因)
+    if (targetDocId !== docId) { return; }
+
+    // このロードより新しいロードが始まったら, 途中結果を捨てるための世代トークン
+    const generation = ++loadGenerationRef.current;
+    const isStale = () => loadGenerationRef.current !== generation;
+
     const f = async () => {
       const currentTargetDocId = targetDocId;
       setIsLoading(true);
-      
+
+      const parseToData = (text: string): ParsedJSONData => {
+        try {
+          return { status: "accepted", json: parseData(dataFormat, text), text };
+        } catch (e) {
+          return { status: "rejected", error: e, text };
+        }
+      };
+
+      // 比較相手 (旧側) の fetch は本体ドキュメントの処理と並走させる
+      const otherDocPromise = diffDocId ? JsonDocumentStore.fetchDocument(diffDocId) : null;
+
       const newDocument = {
         name: "",
         json_string: defaultRawText,
@@ -185,8 +219,10 @@ export const Main = (props: {
         actualDocId = "new";
       } else if (currentTargetDocId) {
         const d = await (JsonDocumentStore.fetchDocument(currentTargetDocId))
+        if (isStale()) { return; }
         if (d) {
-          router.replace(`/${d.id}`);
+          // URL の正規化. diff モードの場合は diff セグメントを保持する
+          router.replace(diffDocId ? diffPath(d.id, diffDocId) : docPath(d.id));
           setDocument(d);
           doc = d;
           actualDocId = d.id;
@@ -202,25 +238,45 @@ export const Main = (props: {
           actualDocId = "new";
       }
       
-      // 処理中にtargetDocIdが変更されていないかチェック
-      if (targetDocId !== currentTargetDocId) {
-        // 処理中に別のdocIdに変更された場合は、この結果を無視
-        return;
+      const other = otherDocPromise ? await otherDocPromise : null;
+
+      // 処理中に別のロードが始まっていた場合は、この結果を無視
+      if (isStale()) { return; }
+
+      // NOTE: ここから先の状態更新は同一同期ブロックで行う.
+      // parsedJson と diffTarget の更新が別フラッシュに割れると,
+      // 中間の食い違ったペアで diffJson が1回無駄に走る
+      setParsedData(parseToData(doc.json_string));
+
+      // diff モードの場合は比較相手 (旧側) を反映する
+      if (diffDocId) {
+        const parsedOther = other ? parseToData(other.json_string) : null;
+        if (other && parsedOther?.status === "accepted") {
+          setDiffTarget({ docId: other.id, name: other.name, parsed: parsedOther });
+        } else {
+          toast.error(other
+            ? "比較相手のドキュメントをパースできませんでした"
+            : "比較相手のドキュメントが見つかりません");
+          setDiffTarget(null);
+          router.replace(docPath(actualDocId));
+        }
+      } else {
+        setDiffTarget(null);
       }
-      
-      try {
-        const json = parseData(dataFormat, doc.json_string);
-        setParsedData({ status: "accepted", json, text: doc.json_string });
-      } catch (e) {
-        setParsedData({ status: "rejected", error: e, text: doc.json_string });
+
+      // diff モードの出入りで行アイテムの index 空間が変わるため, 操作状態をリセットする
+      if (prevDiffDocIdRef.current !== diffDocId) {
+        clearManipulation();
+        setToggleState({});
+        prevDiffDocIdRef.current = diffDocId;
       }
-      
+
       // ロードが完了したdocIDを設定し、ローディング状態を解除
       setLoadedDocId(actualDocId);
       setIsLoading(false);
     };
     f();
-  }, [router.isReady, targetDocId]);
+  }, [router.isReady, targetDocId, docId, diffDocId]);
 
   // キーボードショートカット（Ctrl+F / Cmd+F）でフィルターパネルをトグルする
   // キーボードショートカット（Ctrl+E / Cmd+E）でEditモーダルを開く
@@ -282,9 +338,9 @@ export const Main = (props: {
       if (event.key === 'F3') {
         event.preventDefault();
         if (event.shiftKey) {
-          matchNavigation.goToPreviousMatch();
+          activeNavigation.goToPreviousMatch();
         } else {
-          matchNavigation.goToNextMatch();
+          activeNavigation.goToNextMatch();
         }
       }
 
@@ -292,16 +348,16 @@ export const Main = (props: {
       if ((event.ctrlKey || event.metaKey) && event.key === 'g') {
         event.preventDefault();
         if (event.shiftKey) {
-          matchNavigation.goToPreviousMatch();
+          activeNavigation.goToPreviousMatch();
         } else {
-          matchNavigation.goToNextMatch();
+          activeNavigation.goToNextMatch();
         }
       }
 
       // Ctrl+1: 最初のマッチした行に移動
       if ((event.ctrlKey || event.metaKey) && event.key === '1') {
         event.preventDefault();
-        matchNavigation.goToFirstMatch();
+        activeNavigation.goToFirstMatch();
       }
     };
 
@@ -309,7 +365,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, matchNavigation, router, dataFormat, parseData]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
@@ -389,7 +445,7 @@ export const Main = (props: {
     className="shrink grow flex flex-col"
   >
     <div className='shrink-0 grow-0 flex flex-col'>
-      <HeaderBar itemViewRef={itemViewRef} mode="json-viewer" />
+      <HeaderBar itemViewRef={itemViewRef} mode="json-viewer" diffNavigation={diffNavigation} />
     </div>
 
     <div

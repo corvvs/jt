@@ -28,6 +28,13 @@
   --selected-row: #c6f1c8;
   --line-number: royalblue;
 
+  --diff-added-row: #d6ecd4;
+  --diff-removed-row: #f2dad8;
+  --diff-changed-row: #f0e7cb;
+  --diff-added-foreground: #2e7d43;
+  --diff-removed-foreground: #c24444;
+  --diff-changed-foreground: #9a7b1c;
+
   --theme-transition: 0.33s ease-in-out;
   --theme-transition-time: 0.33s;
   --flippable-transition: 0.16s ease-out;
@@ -59,6 +66,13 @@
     --narrowing-base: #5822a3;
     --selected-row: #096865;
     --line-number: #858dff;
+
+    --diff-added-row: #2c4632;
+    --diff-removed-row: #4a2e2e;
+    --diff-changed-row: #4a4028;
+    --diff-added-foreground: #73d98a;
+    --diff-removed-foreground: #e88787;
+    --diff-changed-foreground: #e0c25e;
   }
 }
 
@@ -106,6 +120,51 @@ body {
 .matched-row {
   background-color: var(--matched-row);
   box-shadow: inset 3px 0 0 var(--matched-foreground);
+}
+
+/* diff ビュー */
+.diff-added-row {
+  background-color: var(--diff-added-row);
+}
+
+.diff-removed-row {
+  background-color: var(--diff-removed-row);
+}
+
+.diff-changed-row {
+  background-color: var(--diff-changed-row);
+}
+
+.diff-status-added {
+  color: var(--diff-added-foreground);
+}
+
+.diff-status-removed {
+  color: var(--diff-removed-foreground);
+}
+
+.diff-status-changed {
+  color: var(--diff-changed-foreground);
+}
+
+.diff-status-child-changed {
+  color: var(--foreground-secondary);
+}
+
+.diff-only-active {
+  color: var(--matched-foreground);
+  font-weight: bold;
+}
+
+/* changed ペアの新側はキーが旧側の行と重複するため, キーの文字色を沈めて値の変化に視線を集める */
+.diff-changed-new-row .item-key {
+  color: var(--foreground-secondary);
+}
+
+/* changed ペアの2行をグリフ列の縦バーで繋ぐ (matched-row の左バーとはスロットを分ける)
+   バーはグリフ列の右端 (キー列との境界側)。左端に置く場合は inset 3px 0 0 にする */
+.diff-changed-pair-cell {
+  box-shadow: inset -3px 0 0 var(--diff-changed-foreground);
 }
 
 /* マッチナビゲーションパネル */

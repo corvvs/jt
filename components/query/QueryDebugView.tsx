@@ -2,7 +2,7 @@ import { useAdvancedQuery } from "@/libs/advanced_query"
 import { QuerySyntaxError } from "@/libs/advanced_query/QuerySyntaxError";
 import { matchByQuery } from "@/libs/advanced_query/matcher";
 import { GenericQuery, KeyStringQuery } from "@/libs/advanced_query/types";
-import { useJSON } from "@/states";
+import { useEffectiveItems } from "@/states/json";
 import _ from "lodash";
 
 
@@ -182,7 +182,7 @@ const SyntaxErrorContents = (props: {
 
 export const QueryDebugView = () => {
   const { parsedQuery, advancedMatcher } = useAdvancedQuery();
-  const { flatJsons } = useJSON();
+  const flatJsons = useEffectiveItems();
   if (!parsedQuery) { return null; }
   if (!flatJsons) { return null; }
 
