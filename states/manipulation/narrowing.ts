@@ -8,7 +8,7 @@ export const defaultNarrowedRange: NarrowingStack = [];
 
 export const narrowedRangeAtom = atom<NarrowingStack>(defaultNarrowedRange);
 
-const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
+export const deriveNarrowdRange = (index: number, items: JsonRowItem[]) => {
   const indexFrom = index;
   const itemFrom = items[indexFrom];
   const fromRowsLength = itemFrom.rowItems.length;
