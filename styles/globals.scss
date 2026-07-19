@@ -771,6 +771,28 @@ body {
   color: var(--foreground-string);
 }
 
+.profile-value-row {
+  &.is-clickable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--background);
+
+      .profile-value-literal {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+    }
+  }
+
+  // 現在の検索クエリがこの値のファセットと一致している (= 絞り込み中)
+  &.is-active .profile-value-literal {
+    color: var(--foreground);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
 .profile-values {
   color: var(--foreground-schema);
 }
