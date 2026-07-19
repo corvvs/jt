@@ -1,49 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { VscClose, VscEdit, VscPinned, VscTrash } from "react-icons/vsc";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { usePins, usePinsPreference, ResolvedPin } from "@/states/pins";
 import { useDiffTarget } from "@/states/diff";
 import { PinNavigation } from "@/hooks/usePinNavigation";
 
+/**
+ * メモの表示・編集領域。編集への入口 (鉛筆アイコン) は PinRow のアクション列にあり,
+ * ここではメモ本文を全幅で出す (ピンエリアではキーパスよりメモの方が価値がある)。
+ */
 const PinMemo = (props: {
   memo: string;
+  editing: boolean;
+  onStartEditing: () => void;
+  onStopEditing: () => void;
   onChange: (memo: string) => void;
 }) => {
-  const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(props.memo);
 
-  const startEditing = () => { setDraft(props.memo); setEditing(true); };
+  // 編集に入るたびに下書きを現在のメモで初期化する
+  useEffect(() => {
+    if (props.editing) { setDraft(props.memo); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.editing]);
 
-  if (!editing) {
-    // メモ本文は選択・コピーできるプレーンテキストにして, 編集への入口は鉛筆アイコンに分ける
+  if (!props.editing) {
+    // メモ本文は選択・コピーできるプレーンテキスト (クリックしても編集にならない)
     if (!props.memo) {
       return (
         <button
-          className="pin-memo-placeholder text-left text-xs flex flex-row items-center gap-1"
+          className="pin-memo-placeholder text-left text-xs"
           title="メモを追加する"
-          onClick={startEditing}
+          onClick={props.onStartEditing}
         >
-          <InlineIcon i={<VscEdit />} />
-          <span>メモを追加…</span>
+          メモを追加…
         </button>
       );
     }
-    return (
-      <div className="flex flex-row items-start gap-1 min-w-0">
-        <p className="pin-memo text-xs shrink grow min-w-0 break-words">{props.memo}</p>
-        <button
-          className="flippable shrink-0 px-1 flex flex-row items-center"
-          title="メモを編集する"
-          onClick={startEditing}
-        >
-          <InlineIcon i={<VscEdit />} />
-        </button>
-      </div>
-    );
+    return <p className="pin-memo text-xs break-words">{props.memo}</p>;
   }
 
   const commit = () => {
-    setEditing(false);
+    props.onStopEditing();
     if (draft !== props.memo) { props.onChange(draft); }
   };
 
@@ -59,7 +57,7 @@ const PinMemo = (props: {
       onKeyDown={(e) => {
         e.stopPropagation();
         if (e.key === "Enter") { commit(); }
-        if (e.key === "Escape") { setDraft(props.memo); setEditing(false); }
+        if (e.key === "Escape") { props.onStopEditing(); }
       }}
     />
   );
@@ -72,6 +70,7 @@ const PinRow = (props: {
   onUpdateMemo: (memo: string) => void;
 }) => {
   const { pin, item } = props.resolved;
+  const [editingMemo, setEditingMemo] = useState(false);
   const keypathLabel = pin.keypath || "(ルート)";
 
   return (
@@ -89,6 +88,13 @@ const PinRow = (props: {
         </button>
         <button
           className="flippable shrink-0 px-1 flex flex-row items-center"
+          title="メモを編集する"
+          onClick={() => setEditingMemo(true)}
+        >
+          <InlineIcon i={<VscEdit />} />
+        </button>
+        <button
+          className="flippable shrink-0 px-1 flex flex-row items-center"
           title="ピンを外す"
           onClick={props.onRemove}
         >
@@ -98,7 +104,13 @@ const PinRow = (props: {
       <p className="pin-value secondary-foreground font-monospacy text-xs overflow-hidden text-ellipsis whitespace-nowrap break-keep">
         {item ? pin.valuePreview : "キーパスが見つかりません (ドキュメントが編集された可能性)"}
       </p>
-      <PinMemo memo={pin.memo} onChange={props.onUpdateMemo} />
+      <PinMemo
+        memo={pin.memo}
+        editing={editingMemo}
+        onStartEditing={() => setEditingMemo(true)}
+        onStopEditing={() => setEditingMemo(false)}
+        onChange={props.onUpdateMemo}
+      />
     </div>
   );
 };
