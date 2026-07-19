@@ -251,7 +251,7 @@ const PinStatusCell = (props: {
         : <div
             ref={viewRef}
             tabIndex={-1}
-            className="flex flex-row items-start gap-1 outline-none"
+            className="flex flex-col outline-none"
             onKeyDown={(e) => {
               e.stopPropagation();
               if (e.key === "Escape") { pinsHook.closePendingMemo(); }
@@ -265,26 +265,28 @@ const PinStatusCell = (props: {
               }
             }}
           >
-            {/* ボタン群はバルーン左端 (= グリフ直下の固定位置) に置く:
+            {/* ボタン行はバルーン上端 (= グリフ直下の固定位置):
                 ピン巡回でメモの長さが変わっても位置が動かず, 連打で巡回できる */}
-            {jumpablePins.length >= 2 && <>
+            <div className="flex flex-row items-center">
+              {jumpablePins.length >= 2 && <>
+                <button
+                  className="flippable shrink-0 px-1 flex flex-row items-center"
+                  title="前のピンへ (↑)"
+                  onClick={() => jumpToNeighborPin(-1)}
+                ><InlineIcon i={<VscChevronUp />} /></button>
+                <button
+                  className="flippable shrink-0 px-1 flex flex-row items-center"
+                  title="次のピンへ (↓)"
+                  onClick={() => jumpToNeighborPin(1)}
+                ><InlineIcon i={<VscChevronDown />} /></button>
+              </>}
               <button
                 className="flippable shrink-0 px-1 flex flex-row items-center"
-                title="前のピンへ (↑)"
-                onClick={() => jumpToNeighborPin(-1)}
-              ><InlineIcon i={<VscChevronUp />} /></button>
-              <button
-                className="flippable shrink-0 px-1 flex flex-row items-center"
-                title="次のピンへ (↓)"
-                onClick={() => jumpToNeighborPin(1)}
-              ><InlineIcon i={<VscChevronDown />} /></button>
-            </>}
-            <button
-              className="flippable shrink-0 px-1 flex flex-row items-center"
-              title="メモを編集する"
-              onClick={() => pinsHook.openMemoEdit(item.elementKey)}
-            ><InlineIcon i={<VscEdit />} /></button>
-            {/* メモ本文は選択・コピーできるプレーンテキスト */}
+                title="メモを編集する"
+                onClick={() => pinsHook.openMemoEdit(item.elementKey)}
+              ><InlineIcon i={<VscEdit />} /></button>
+            </div>
+            {/* メモ本文は全幅を使う, 選択・コピーできるプレーンテキスト */}
             <span className={`pin-memo-view text-sm px-1 max-w-[24em] break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}>
               {pin.memo || "メモはありません"}
             </span>
