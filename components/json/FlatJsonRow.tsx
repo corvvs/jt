@@ -265,8 +265,10 @@ const PinStatusCell = (props: {
               }
             }}
           >
-            {/* メモ本文は選択・コピーできるプレーンテキスト。編集への入口は鉛筆アイコン */}
-            <span className={`pin-memo-view text-sm px-1 max-w-[24em] break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}>
+            {/* メモ本文は選択・コピーできるプレーンテキスト。編集への入口は鉛筆アイコン。
+                幅は編集時の入力欄と同じ固定幅: ピン巡回でメモの長さが変わっても
+                ↑/↓ ボタンの位置が動かないようにする */}
+            <span className={`pin-memo-view text-sm px-1 w-[18em] shrink-0 break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}>
               {pin.memo || "メモはありません"}
             </span>
             <button
