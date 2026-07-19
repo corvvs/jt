@@ -1,18 +1,16 @@
-import { CompoundQuery, GenericQuery, TokenToQuery } from "./types";
+import { QueryToken } from "./types";
 
 export class QuerySyntaxError implements Error {
-  public name = "QuerySyntaxError"; 
+  public name = "QuerySyntaxError";
 
   constructor(
     public subname: string,
     public message: string,
     public payload: {
-      compound?: CompoundQuery;
-      rest?: GenericQuery[];
-      starter?: TokenToQuery;
-      ender?: TokenToQuery;
-      opens?: CompoundQuery[],
-      stack?: GenericQuery[]
+      /** エラーの原因となったトークン */
+      token?: QueryToken;
+      /** 位置: トークナイズエラーならクエリ文字列中の文字位置, パースエラーならトークン位置 */
+      position?: number;
     } = {}
   ) {
   }
