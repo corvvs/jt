@@ -1,13 +1,16 @@
 import { JsonGauge, JsonRowItem, isLeafType } from "@/libs/jetson";
 import { DiffAnnotation } from "@/libs/diff";
 import _ from "lodash";
+import { VscPinned } from "react-icons/vsc";
 import { FlatJsonValueCell } from "./FlatJsonValueCell";
 import { useState } from "react";
 import { useManipulation } from "@/states/manipulation";
+import { usePins } from "@/states/pins";
 import { FlatJsonLeadingCell } from "./leading/Leading";
 import { LineNumberCell } from "./LineNumberCell";
 import { useToggleSingle } from "@/states/view";
 import { CopyButton, DownloadButton } from "../lv3/CopyButton";
+import { PinToggleButton } from "../lv3/PinButton";
 
 const LeadingCells = (props: {
   item: JsonRowItem;
@@ -153,16 +156,33 @@ const ValueMenuCell = (props: {
   return <div
     className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
+    <PinToggleButton item={props.item} />
     {showCopyValueButton && <CopyValueButton item={props.item} />}
     {showCopyValueButton && <DownloadValueButton item={props.item} />}
     {showCopyKeyPathButton && <CopyKeyPathButton item={props.item} />}
     </div>
 }
 
+/**
+ * ピンが打たれた行を示すグリフ列.
+ * ドキュメントにピンが1つも無い間は列ごと描画されない (FlatJsonRow 側で制御).
+ */
+const PinStatusCell = (props: {
+  item: JsonRowItem;
+  pinsHook: ReturnType<typeof usePins>;
+}) => {
+  const pin = props.pinsHook.pinMap.get(props.item.elementKey);
+  return <div
+    className="grow-0 shrink-0 w-[1.25em] flex items-center justify-center pin-status-cell"
+    title={pin ? (pin.memo || pin.keypath || "(ルート)") : undefined}
+  >{pin ? <VscPinned /> : null}</div>;
+};
+
 export const FlatJsonRow = (props: {
   item: JsonRowItem;
   manipulationHook: ReturnType<typeof useManipulation>;
   toggleSingleHook: ReturnType<typeof useToggleSingle>;
+  pinsHook: ReturnType<typeof usePins>;
   gauge?: JsonGauge;
 }) => {
   
@@ -199,6 +219,9 @@ export const FlatJsonRow = (props: {
     onMouseOut={() => setIsHovered(false)}
   >
     <LineNumberCell item={item} />
+
+    {/* diff モードではピンを扱わない (行の index 空間が別物になる) */}
+    {props.pinsHook.hasPins && !diff && <PinStatusCell item={item} pinsHook={props.pinsHook} />}
 
     <DiffStatusCell item={item} />
 

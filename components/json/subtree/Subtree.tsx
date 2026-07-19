@@ -9,6 +9,7 @@ import { useEffectiveItems } from "@/states/json";
 import { useToggleSingle } from "@/states/view";
 import { extractSubtree } from "@/libs/partial_tree";
 import { CopyButton, DownloadButton } from "@/components/lv3/CopyButton";
+import { PinToggleButton } from "@/components/lv3/PinButton";
 
 const CopySubtreeButton = (props: {
   item: JsonRowItem;
@@ -101,6 +102,7 @@ export const SubtreeMenuCell = (props: {
   return (<div
     className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
+    <PinToggleButton item={props.item} />
     <CopySubtreeButton item={props.item} rawJson={rawJson} />
     <DownloadSubtreeButton item={props.item} rawJson={rawJson} />
     <NarrowSubtreeButton
