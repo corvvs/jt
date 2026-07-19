@@ -1,157 +1,161 @@
-import _ from "lodash";
 import { JsonRowItem } from "../jetson";
-import { GroupedQuery, KeyPathQuery, KeyQuery, Query, ValueQuery } from "./types";
+import { GroupedQuery, KeyPathQuery, PredicateQuery, Query, SegmentQuery, ValueQuery } from "./types";
 
-function matchSubtreeByKeyQueries(item: JsonRowItem, queries: KeyQuery[], i: number): boolean {
-  if (i < 0 || queries.length <= i) { return true; }
-  const q = queries[i];
-  // q と item.childs が戦う
-  if (!item.childs) { return false; }
-  return item.childs.some(child => {
-    if (!matchByKeyQuery(child, q)) { return false; }
-    return matchSubtreeByKeyQueries(child, queries, i + 1);
-  });
-}
+/**
+ * セグメントパターン → 正規表現のキャッシュ.
+ * パターンはクエリ文字列由来なので種類は高々ユーザーが打った数に留まる.
+ */
+const patternRegexCache = new Map<string, RegExp>();
 
-function matchByKeyQuery(
-  item: JsonRowItem,
-  keyQuery: KeyQuery,
-) {
-  if (keyQuery.string) {
-    if (typeof item.itemKey === "undefined") {
-      return false;
-    }
-    const stringifiedItemKey = item.itemKey.toString();
-    const rex = new RegExp(
+const patternToRegex = (pattern: string): RegExp => {
+  let rex = patternRegexCache.get(pattern);
+  if (!rex) {
+    rex = new RegExp(
       "^" +
-      keyQuery.string.token
-        .replaceAll(/[.+?^${}()|[\]\\]/g, '\\$&')
+      pattern
+        .replaceAll(/[.+?^${}()|[\]\\]/g, "\\$&")
         .replaceAll("*", ".*") +
       "$"
     );
-    if (!stringifiedItemKey.match(rex)) {
+    patternRegexCache.set(pattern, rex);
+  }
+  return rex;
+};
+
+const matchPattern = (itemKey: string | number | undefined, pattern: string): boolean => {
+  if (typeof itemKey === "undefined") { return false; }
+  return itemKey.toString().match(patternToRegex(pattern)) !== null;
+};
+
+/**
+ * 値の照合.
+ * - 引用形 ("...") : 文字列値との厳密一致 (数値 42 に "42" はマッチしない)
+ * - 裸 : toString 比較. 数値・真偽値は文字列表現で比較する. null は token "null" にマッチ
+ */
+const matchValue = (item: JsonRowItem, valueQuery: ValueQuery): boolean => {
+  const value = item.right.value;
+  if (valueQuery.quoted) {
+    return typeof value === "string" && value === valueQuery.token;
+  }
+  if (value === null) {
+    return valueQuery.token === "null";
+  }
+  return value?.toString() === valueQuery.token;
+};
+
+/**
+ * セグメントがノードに合致するか (キー名 + 付随する述語すべて).
+ */
+const matchSegmentAt = (node: JsonRowItem, segment: SegmentQuery): boolean => {
+  if (!matchPattern(node.itemKey, segment.pattern!)) { return false; }
+  return (segment.predicates ?? []).every((p) => matchPredicate(node, p));
+};
+
+/**
+ * 述語: node の部分木が述語のクエリを満たすか.
+ * - キーパスなし ([:v]) : node 自身を含む部分木のどこかに値がマッチするノードがある
+ * - キーパスあり : チェーンが node の配下に存在する. $ 付きなら node 直下から,
+ *   なしなら部分木のどこから始まってもよい. 値はチェーン末端のノードで評価する
+ */
+const matchPredicate = (node: JsonRowItem, predicate: PredicateQuery): boolean => {
+  const { keyPathQuery, valueQuery } = predicate.query;
+  if (!keyPathQuery) {
+    if (!valueQuery) { return true; }
+    return existsInSubtree(node, (d) => matchValue(d, valueQuery));
+  }
+  if (keyPathQuery.anchored) {
+    return matchChainDown(node, keyPathQuery.segments, 0, valueQuery);
+  }
+  // 非アンカー: 任意の深さだけ潜ってからチェーンを開始してよい (仮想的な先頭 ** と同じ)
+  return existsInSubtree(node, (start) => matchChainDown(start, keyPathQuery.segments, 0, valueQuery));
+};
+
+const existsInSubtree = (node: JsonRowItem, hit: (d: JsonRowItem) => boolean): boolean => {
+  if (hit(node)) { return true; }
+  return (node.childs ?? []).some((child) => existsInSubtree(child, hit));
+};
+
+/**
+ * node の子から下へ segments[si..] のチェーンを辿れるか.
+ * チェーン末端のノードで valueQuery を評価する (valueQuery が無ければ到達のみで真).
+ */
+const matchChainDown = (
+  node: JsonRowItem,
+  segments: SegmentQuery[],
+  si: number,
+  valueQuery: ValueQuery | undefined,
+): boolean => {
+  const segment = segments[si];
+  if (!segment) { return false; }
+  const isLast = si === segments.length - 1;
+
+  if (segment.kind === "descendants") {
+    if (isLast) {
+      // 末尾の ** : node 自身とその全子孫が終端の候補 (0 個以上のセグメント)
+      return existsInSubtree(node, (d) => (valueQuery ? matchValue(d, valueQuery) : true));
+    }
+    // 0 個消費して次のセグメントへ / 1 レベル潜って ** を継続
+    if (matchChainDown(node, segments, si + 1, valueQuery)) { return true; }
+    return (node.childs ?? []).some((child) => matchChainDown(child, segments, si, valueQuery));
+  }
+
+  return (node.childs ?? []).some((child) => {
+    if (!matchSegmentAt(child, segment)) { return false; }
+    if (isLast) {
+      return valueQuery ? matchValue(child, valueQuery) : true;
+    }
+    return matchChainDown(child, segments, si + 1, valueQuery);
+  });
+};
+
+/**
+ * キーパスクエリを「item で終わるチェーン」として上方向に照合する.
+ * path = [ルート, ..., 親, item] に対し segments が末尾 (item) で終わるように並ぶこと.
+ * anchored ($) の場合はチェーンを消費し切ったときルートだけが残っていること
+ * (= チェーンがルート直下から始まること).
+ */
+const matchKeyPathAt = (item: JsonRowItem, keyPathQuery: KeyPathQuery): boolean => {
+  const path = [...item.rowItems, item];
+  const { segments, anchored } = keyPathQuery;
+
+  const match = (pi: number, si: number): boolean => {
+    if (si < 0) {
+      return anchored ? pi === 0 : true;
+    }
+    const segment = segments[si];
+    if (segment.kind === "descendants") {
+      // 0 個消費 / path[pi] を ** に食わせて遡る (ルート pi=0 は食わせない)
+      return match(pi, si - 1) || (pi >= 1 && match(pi - 1, si));
+    }
+    if (pi < 0) { return false; }
+    if (!matchSegmentAt(path[pi], segment)) { return false; }
+    return match(pi - 1, si - 1);
+  };
+
+  return match(path.length - 1, segments.length - 1);
+};
+
+export function matchByQuery(item: JsonRowItem, query: GroupedQuery | Query): boolean {
+  switch (query.type) {
+    case "GroupedQuery": {
+      switch (query.op) {
+        case "and":
+          return query.queries.every((q) => matchByQuery(item, q));
+        case "or":
+          return query.queries.some((q) => matchByQuery(item, q));
+      }
       return false;
     }
-  }
-  return true;
-}
-
-function hasAtSymbol(keyPathQuery: KeyPathQuery): boolean {
-  return keyPathQuery.tokens.some(token => token.position === "@");
-}
-
-function matchValueQueryInSubtree(item: JsonRowItem, valueQuery: ValueQuery): boolean {
-  // 子孫ノードすべてをチェック
-  function checkDescendants(node: JsonRowItem): boolean {
-    // 現在のノードでValueQueryをチェック
-    if (matchValueQueryDirect(node, valueQuery)) {
-      return true;
-    }
-    
-    // 子ノードがあれば再帰的にチェック
-    if (node.childs) {
-      return node.childs.some(child => checkDescendants(child));
-    }
-    
-    return false;
-  }
-  
-  return checkDescendants(item);
-}
-
-function matchValueQueryDirect(item: JsonRowItem, valueQuery: ValueQuery): boolean {
-  // まだ Key 1つだけしか対応してない
-  if (valueQuery.tokens.length >= 1) {
-    return item.right.value?.toString() === valueQuery.tokens[0].token;
-  }
-  return false;
-}
-
-export function matchByQuery(
-  item: JsonRowItem,
-  query: GroupedQuery | Query | KeyPathQuery | ValueQuery,
-  level: number = 0,
-): boolean {
-  switch (query.type) {
-  case "GroupedQuery": {
-  
-    switch (query.op) {
-      case "and":
-        return query.queries.every((q) => matchByQuery(item, q, level + 1));
-      case "or":
-        return query.queries.some((q) => matchByQuery(item, q, level + 1));
-    }
-    console.error("SOMETHING WRONG!!!");
-    break;
-  } 
-  case "Query": {
-
-    // KeyPathQueryに@が含まれているかチェック
-    if (query.keyPathQuery && hasAtSymbol(query.keyPathQuery)) {
-      // @が含まれる場合：KeyPathQueryで対象ノードを特定し、ValueQueryを子孫に適用
-      const keyPathMatched = matchByQuery(item, query.keyPathQuery, level + 1);
-      if (!keyPathMatched) {
+    case "Query": {
+      // キーパスと値は同じノード (チェーン末端 = item) で評価する
+      if (query.keyPathQuery && !matchKeyPathAt(item, query.keyPathQuery)) {
         return false;
       }
-      
-      // ValueQueryがある場合は子孫ノードで適用
-      if (query.valueQuery) {
-        return matchValueQueryInSubtree(item, query.valueQuery);
-      }
-      
-      return true;
-    } else {
-      // @が含まれない場合：従来通りのAND条件
-      return  (query.keyPathQuery ? matchByQuery(item, query.keyPathQuery, level + 1) : true) &&
-              (query.valueQuery ? matchByQuery(item, query.valueQuery, level + 1) : true);
-    }
-  } 
-  case "KeyPathQuery": {
-
-
-    // こいつが本体
-    const atIndex = query.tokens.findIndex(t => t.position === "@");
-    const formerSize = atIndex < 0 ? query.tokens.length : atIndex + 1;
-    const former = _.slice(query.tokens, 0, formerSize);
-    const latter = _.slice(query.tokens, formerSize);
-
-
-    // - former: 要素のキーパスに後方一致するべき KeyQuery 列
-    // - latter: 要素を部分木とする部分木に含まれるべきキーパスを表す KeyQuery 列
-
-    const matchedFormer = former.length === 0 ? true : (item => {
-      // まず末尾要素がマッチするかどうかを確かめる
-      let fi = former.length - 1;
-      let ki = item.rowItems.length;
-      if (!matchByKeyQuery(item, former[fi])) { return false; }
-      fi -= 1;
-      ki -= 1;
-      for (; 0 <= fi; fi -= 1, ki -= 1) {
-        // 遡って1つずつマッチを確認する
-        if (ki < 0) { return false; }
-        const it = item.rowItems[ki];
-        const q = former[fi];
-        if (!matchByKeyQuery(it, q)) { return false; }
-        if (q.position === "$" && ki !== 0) { return false; }
+      if (query.valueQuery && !matchValue(item, query.valueQuery)) {
+        return false;
       }
       return true;
-    })(item);
-
-    if (!matchedFormer) {
-      return false;
     }
-    if (latter.length === 0) {
-      return true;
-    }
-    return matchSubtreeByKeyQueries(item, latter, 0);
   }
-  case "ValueQuery": {
-    return matchValueQueryDirect(item, query);
-  }
-  default: 
-    console.error("SOMETHING WRONG...");
-  }
-
-
   return false;
 }

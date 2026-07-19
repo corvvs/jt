@@ -74,7 +74,7 @@ const QueryInputField = () => {
 
   const placeholder = filteringPreference.mode === "simple"
     ? "キーまたは値に部分一致"
-    : "検索クエリを入力...";
+    : 'items.*[status:"error"] のように入力...';
 
   return <div>
     <input

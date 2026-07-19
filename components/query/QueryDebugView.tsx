@@ -1,13 +1,30 @@
 import { useAdvancedQuery } from "@/libs/advanced_query"
 import { QuerySyntaxError } from "@/libs/advanced_query/QuerySyntaxError";
-import { matchByQuery } from "@/libs/advanced_query/matcher";
-import { GenericQuery, KeyStringQuery } from "@/libs/advanced_query/types";
+import { GroupedQuery, Query, SegmentQuery } from "@/libs/advanced_query/types";
 import { useEffectiveItems } from "@/states/json";
-import _ from "lodash";
 
+
+const SegmentView = (props: {
+  segment: SegmentQuery;
+}) => {
+  const { segment } = props;
+  return (<div className="flex flex-col border-2 p-2">
+    {
+      segment.kind === "descendants"
+        ? <p className="text-green-600">**</p>
+        : <p>&quot;{segment.pattern}&quot;</p>
+    }
+    {
+      (segment.predicates ?? []).map((predicate, i) => <div key={i} className="flex flex-col">
+        <h4 className="text-green-600">Predicate</h4>
+        <QueryUnitView queryUnit={predicate.query} />
+      </div>)
+    }
+  </div>);
+};
 
 const QueryUnitView = (props: {
-  queryUnit: GenericQuery;
+  queryUnit: GroupedQuery | Query;
 }) => {
   const qu = props.queryUnit;
   switch (qu.type) {
@@ -30,79 +47,32 @@ const QueryUnitView = (props: {
 
       {
         qu.keyPathQuery ? <>
-          <h4 className="text-green-600">KeyPathQuery</h4>
+          <h4 className="text-green-600">
+            KeyPathQuery{qu.keyPathQuery.anchored ? " ($)" : ""}
+          </h4>
           <div
-            className="flex flex-row items-center border-2 p-2"
+            className="flex flex-row items-center border-2 p-2 gap-2"
           >
-            <QueryUnitView queryUnit={qu.keyPathQuery} />
+            {
+              qu.keyPathQuery.segments.map((segment, i) => <SegmentView key={i} segment={segment} />)
+            }
           </div>
         </> : null
       }
 
       {
         qu.valueQuery ? <>
-          <h4 className="text-green-600">ValueQuery</h4>
+          <h4 className="text-green-600">
+            ValueQuery{qu.valueQuery.quoted ? " (quoted)" : ""}
+          </h4>
           <div
             className="flex flex-row items-center border-2 p-2"
           >
-            <QueryUnitView queryUnit={qu.valueQuery} />
+            <p>&quot;{qu.valueQuery.token}&quot;</p>
           </div>
         </> : null
       }
     </div>);
-
-  case "KeyPathQuery": return (<div
-    className="border-2 p-2"
-    >
-    <h3 className="text-red-400 font-bold">{qu.type}</h3>
-
-    <div
-      className="flex flex-col items-start border-2 p-2 gap-2"
-    >
-      { 
-        qu.tokens.map((u, i) => <div
-          key={i}
-          className="flex flex-col"
-        >
-          <h3 className="text-red-400 font-bold">{u.type}</h3>
-          <p>position: { u.position }</p>
-          {
-            u.string
-              ? <p>&quot;{u.string.token}&quot;</p>
-              : null
-          }
-        </div>)
-      }
-    </div>
-  </div>);
-
-
-  case "ValueQuery": return (<div
-    className="border-2 p-2"
-    >
-    <h3 className="text-red-400 font-bold">{qu.type}</h3>
-
-    <div
-      className="flex flex-row items-center border-2 p-2"
-    >
-      { 
-        qu.tokens.map((u, i) => <div
-          key={i}
-          className="flex flex-col"
-        >
-          <h3 className="text-red-400 font-bold">{u.type}</h3>
-          <p>&quot;{u.token}&quot;</p>
-        </div>)
-      }
-    </div>
-  </div>);
-
-
-  default: return (<div
-    className="border-2 p-2"
-    >
-    <h3 className="text-red-400 font-bold">{qu.type}</h3>
-  </div>);
   }
 }
 
@@ -118,65 +88,22 @@ const SyntaxErrorContents = (props: {
     </div>
 
     {
-      error.payload.ender
-        ? <>
-            <h2 className="text-red-400 font-bold">Ender</h2>
-            <div>
-              {error.payload.ender.token}
-            </div>
-        </>
+      error.payload.token
+        ? <div>
+            <h3 className="text-red-400 font-bold">Token</h3>
+            <p>{error.payload.token.type}{error.payload.token.token ? `: "${error.payload.token.token}"` : ""}</p>
+          </div>
         : null
     }
 
     {
-      error.payload.compound
-        ? <>
-            <h2 className="text-red-400 font-bold">Compound</h2>
-            <QueryUnitView queryUnit={error.payload.compound!} />
-        </>
+      typeof error.payload.position === "number"
+        ? <div>
+            <h3 className="text-red-400 font-bold">Position</h3>
+            <p>{error.payload.position}</p>
+          </div>
         : null
     }
-
-    {
-      error.payload.rest
-        ? <>
-            <h2 className="text-red-400 font-bold">Rest</h2>
-            <div
-              className="flex flex-row flex-wrap p-1 gap-1 items-center"
-            >
-              {
-                error.payload.rest!.map((query, i) => {
-                    return <QueryUnitView
-                      queryUnit={query}
-                      key={i}
-                    />
-                })
-              }
-            </div>
-          </>
-        : null
-    }
-
-    {
-      error.payload.opens
-        ? <>
-            <h2 className="text-red-400 font-bold">Opens</h2>
-            <div
-              className="flex flex-row flex-wrap p-1 gap-1 items-center"
-            >
-              {
-                error.payload.opens!.map((query, i) => {
-                    return <QueryUnitView
-                      queryUnit={query}
-                      key={i}
-                    />
-                })
-              }
-            </div>
-          </>
-        : null
-    }
-
   </>
 };
 
