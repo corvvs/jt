@@ -1,5 +1,6 @@
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import _ from "lodash";
+import { toast } from "react-toastify";
 import { JsonRowItem } from "@/libs/jetson";
 import { DocumentPin, pinValuePreview } from "@/libs/pins";
 import { DocumentPinsStore } from "@/data/pins";
@@ -44,6 +45,13 @@ export type PendingMemoState = {
 };
 
 const pendingMemoAtom = atom<PendingMemoState | null>(null);
+
+/**
+ * 外したピンのメモの退避先 (keypath → memo).
+ * メモ付きのピンを外してもメモは即座には失われず, 同じ行にピンを付け直すと復元される。
+ * セッション内・ドキュメント単位の安全網で, 永続化はせずドキュメント切替でクリアされる。
+ */
+const removedMemosAtom = atom<Map<string, string>>(new Map());
 
 /**
  * 行描画が O(1) でピン状態を引くための Map (keypath → pin)
@@ -97,9 +105,11 @@ const persistPins = (docId: string, pins: DocumentPin[]) => {
 export const usePinsLoader = () => {
   const setPinsState = useSetAtom(pinsStateAtom);
   const setPendingMemo = useSetAtom(pendingMemoAtom);
+  const setRemovedMemos = useSetAtom(removedMemosAtom);
 
   const loadPinsForDocument = async (docId: string | undefined) => {
     setPendingMemo(null);
+    setRemovedMemos(new Map());
     // "new" は保存前の一時 ID なのでピンの帰属先にしない
     if (!docId || docId === "new") {
       setPinsState({ docId: null, pins: [], loaded: false });
@@ -121,6 +131,7 @@ export const usePinsLoader = () => {
 export const usePins = () => {
   const [pinsState, setPinsState] = useAtom(pinsStateAtom);
   const [pendingMemo, setPendingMemo] = useAtom(pendingMemoAtom);
+  const [removedMemos, setRemovedMemos] = useAtom(removedMemosAtom);
   const pinMap = useAtomValue(pinMapAtom);
 
   const applyPins = (pins: DocumentPin[]) => {
@@ -135,19 +146,35 @@ export const usePins = () => {
       removePin(item.elementKey);
       return;
     }
+    // 以前このキーパスのピンを外していたら, 退避してあったメモを復元する
+    const restoredMemo = removedMemos.get(item.elementKey);
     const pin: DocumentPin = {
       keypath: item.elementKey,
-      memo: "",
+      memo: restoredMemo ?? "",
       created_at: new Date(),
       valuePreview: pinValuePreview(item.right),
     };
     applyPins([...pinsState.pins, pin]);
+    if (restoredMemo !== undefined) {
+      setRemovedMemos((prev) => {
+        const next = new Map(prev);
+        next.delete(item.elementKey);
+        return next;
+      });
+    }
     // その場でメモを打てるように, ピンを打った行にメモバルーンを編集状態で出す
+    // (メモを復元した場合は復元されたことがそのまま見える)
     setPendingMemo({ keypath: item.elementKey, editing: true });
   };
 
   const removePin = (keypath: string) => {
+    const removed = pinsState.pins.find((pin) => pin.keypath === keypath);
     applyPins(pinsState.pins.filter((pin) => pin.keypath !== keypath));
+    // メモ付きのピンを外すときはメモを退避し, 付け直しで戻せるようにする
+    if (removed?.memo) {
+      setRemovedMemos((prev) => new Map(prev).set(keypath, removed.memo));
+      toast("ピンを外しました — 同じ行に付け直すとメモが戻ります");
+    }
     if (pendingMemo?.keypath === keypath) {
       setPendingMemo(null);
     }
