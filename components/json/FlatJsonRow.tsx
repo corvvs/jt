@@ -1,7 +1,7 @@
 import { JsonGauge, JsonRowItem, isLeafType } from "@/libs/jetson";
 import { DiffAnnotation } from "@/libs/diff";
 import _ from "lodash";
-import { VscPinned } from "react-icons/vsc";
+import { FaThumbtack } from "react-icons/fa";
 import { FlatJsonValueCell } from "./FlatJsonValueCell";
 import { useState } from "react";
 import { useManipulation } from "@/states/manipulation";
@@ -173,9 +173,45 @@ const PinStatusCell = (props: {
 }) => {
   const pin = props.pinsHook.pinMap.get(props.item.elementKey);
   return <div
-    className="grow-0 shrink-0 w-[1.25em] flex items-center justify-center pin-status-cell"
+    className="grow-0 shrink-0 w-[1.25em] flex items-center justify-center pin-status-cell text-xs"
     title={pin ? (pin.memo || pin.keypath || "(ルート)") : undefined}
-  >{pin ? <VscPinned /> : null}</div>;
+  >{pin ? <FaThumbtack /> : null}</div>;
+};
+
+/**
+ * ピンを打った直後にその行に出すクイックメモ入力.
+ * Enter で確定 / Esc・フォーカス喪失で閉じる. 何も入力しなければメモ無しのピンのまま
+ * 消えるだけなので, メモが不要なときの追加アクションは無い.
+ */
+const PinQuickMemoCell = (props: {
+  item: JsonRowItem;
+  pinsHook: ReturnType<typeof usePins>;
+}) => {
+  const [draft, setDraft] = useState("");
+  const { updatePinMemo, closePendingMemo } = props.pinsHook;
+
+  const commit = () => {
+    const memo = draft.trim();
+    if (memo) { updatePinMemo(props.item.elementKey, memo); }
+    closePendingMemo();
+  };
+
+  return <div className="grow-0 shrink-0 flex flex-row items-center p-1">
+    <input
+      className="pin-memo-input text-sm px-1 w-[18em]"
+      autoFocus
+      placeholder="メモ (Enter で確定 / Esc で閉じる)"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      // グローバルショートカット (Cmd+A 等) に入力中のキーを奪われないようにする
+      onKeyDown={(e) => {
+        e.stopPropagation();
+        if (e.key === "Enter") { commit(); }
+        if (e.key === "Escape") { closePendingMemo(); }
+      }}
+      onBlur={commit}
+    />
+  </div>;
 };
 
 export const FlatJsonRow = (props: {
@@ -242,5 +278,8 @@ export const FlatJsonRow = (props: {
     />
 
     {isLeaf && isHovered && <ValueMenuCell item={item} />}
+
+    {props.pinsHook.pendingMemoKeypath === elementKey && !diff &&
+      <PinQuickMemoCell item={item} pinsHook={props.pinsHook} />}
   </div>)
 }

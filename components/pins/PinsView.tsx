@@ -37,7 +37,9 @@ const PinMemo = (props: {
       placeholder="メモ"
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
+      // グローバルショートカット (Cmd+A 等) に入力中のキーを奪われないようにする
       onKeyDown={(e) => {
+        e.stopPropagation();
         if (e.key === "Enter") { commit(); }
         if (e.key === "Escape") { setDraft(props.memo); setEditing(false); }
       }}

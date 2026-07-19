@@ -1,6 +1,5 @@
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import _ from "lodash";
-import { toast } from "react-toastify";
 import { JsonRowItem } from "@/libs/jetson";
 import { DocumentPin, pinValuePreview } from "@/libs/pins";
 import { DocumentPinsStore } from "@/data/pins";
@@ -33,6 +32,12 @@ type PinsState = {
 };
 
 const pinsStateAtom = atom<PinsState>({ docId: null, pins: [], loaded: false });
+
+/**
+ * ピンを打った直後にその行へ出すクイックメモ入力の対象キーパス.
+ * Enter で確定 / Esc・フォーカス喪失で閉じる (何もしなければメモ無しのピンのまま).
+ */
+const pendingMemoKeypathAtom = atom<string | null>(null);
 
 /**
  * 行描画が O(1) でピン状態を引くための Map (keypath → pin)
@@ -85,8 +90,10 @@ const persistPins = (docId: string, pins: DocumentPin[]) => {
  */
 export const usePinsLoader = () => {
   const setPinsState = useSetAtom(pinsStateAtom);
+  const setPendingMemoKeypath = useSetAtom(pendingMemoKeypathAtom);
 
   const loadPinsForDocument = async (docId: string | undefined) => {
+    setPendingMemoKeypath(null);
     // "new" は保存前の一時 ID なのでピンの帰属先にしない
     if (!docId || docId === "new") {
       setPinsState({ docId: null, pins: [], loaded: false });
@@ -107,6 +114,7 @@ export const usePinsLoader = () => {
 
 export const usePins = () => {
   const [pinsState, setPinsState] = useAtom(pinsStateAtom);
+  const [pendingMemoKeypath, setPendingMemoKeypath] = useAtom(pendingMemoKeypathAtom);
   const pinMap = useAtomValue(pinMapAtom);
 
   const applyPins = (pins: DocumentPin[]) => {
@@ -118,7 +126,7 @@ export const usePins = () => {
   const togglePin = (item: JsonRowItem) => {
     if (!pinsState.docId || !pinsState.loaded) { return; }
     if (pinMap.has(item.elementKey)) {
-      applyPins(pinsState.pins.filter((pin) => pin.keypath !== item.elementKey));
+      removePin(item.elementKey);
       return;
     }
     const pin: DocumentPin = {
@@ -128,11 +136,15 @@ export const usePins = () => {
       valuePreview: pinValuePreview(item.right),
     };
     applyPins([...pinsState.pins, pin]);
-    toast("ピンを打ちました — 一覧は Cmd/Ctrl+Shift+P");
+    // その場でメモを打てるように, ピンを打った行にクイックメモ入力を出す
+    setPendingMemoKeypath(item.elementKey);
   };
 
   const removePin = (keypath: string) => {
     applyPins(pinsState.pins.filter((pin) => pin.keypath !== keypath));
+    if (pendingMemoKeypath === keypath) {
+      setPendingMemoKeypath(null);
+    }
   };
 
   const updatePinMemo = (keypath: string, memo: string) => {
@@ -145,6 +157,8 @@ export const usePins = () => {
     /** ピンを打てる状態か (帰属先ドキュメントが確定し, 保存済みピンの読み込みが済んでいる) */
     canPin: !!pinsState.docId && pinsState.loaded,
     pinMap,
+    pendingMemoKeypath,
+    closePendingMemo: () => setPendingMemoKeypath(null),
     togglePin,
     removePin,
     updatePinMemo,
