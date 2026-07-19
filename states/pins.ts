@@ -159,6 +159,8 @@ export const usePins = () => {
     pinMap,
     pendingMemoKeypath,
     closePendingMemo: () => setPendingMemoKeypath(null),
+    /** 既存ピンのメモバルーンを開く (グリフクリック用) */
+    openMemoInput: (keypath: string) => setPendingMemoKeypath(keypath),
     togglePin,
     removePin,
     updatePinMemo,

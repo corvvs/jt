@@ -3,7 +3,7 @@ import { DiffAnnotation } from "@/libs/diff";
 import _ from "lodash";
 import { FaThumbtack } from "react-icons/fa";
 import { FlatJsonValueCell } from "./FlatJsonValueCell";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useManipulation } from "@/states/manipulation";
 import { usePins } from "@/states/pins";
 import { FlatJsonLeadingCell } from "./leading/Leading";
@@ -164,53 +164,63 @@ const ValueMenuCell = (props: {
 }
 
 /**
- * ピンが打たれた行を示すグリフ列.
- * ドキュメントにピンが1つも無い間は列ごと描画されない (FlatJsonRow 側で制御).
+ * ピンが打たれた行を示すグリフ列 + メモバルーン.
+ * グリフはボタンで, 押すとグリフ直下にメモの表示・編集バルーンが開閉する。
+ * ピンを打った直後のクイックメモ入力も同じバルーン (この場合は空の下書き)。
+ * Enter・グリフ再クリック・フォーカス喪失で確定 / Esc で破棄して閉じる。
+ * 何も入力しなければメモ無しのピンのまま閉じるだけで, メモ不要時の追加アクションは無い。
+ * ドキュメントにピンが1つも無い間は列ごと描画されない (FlatJsonRow 側で制御)。
  */
 const PinStatusCell = (props: {
   item: JsonRowItem;
   pinsHook: ReturnType<typeof usePins>;
 }) => {
-  const pin = props.pinsHook.pinMap.get(props.item.elementKey);
-  return <div
-    className="grow-0 shrink-0 w-[1.25em] flex items-center justify-center pin-status-cell text-xs"
-    title={pin ? (pin.memo || pin.keypath || "(ルート)") : undefined}
-  >{pin ? <FaThumbtack /> : null}</div>;
-};
-
-/**
- * ピンを打った直後にその行に出すクイックメモ入力.
- * Enter で確定 / Esc・フォーカス喪失で閉じる. 何も入力しなければメモ無しのピンのまま
- * 消えるだけなので, メモが不要なときの追加アクションは無い.
- */
-const PinQuickMemoCell = (props: {
-  item: JsonRowItem;
-  pinsHook: ReturnType<typeof usePins>;
-}) => {
+  const { item, pinsHook } = props;
+  const pin = pinsHook.pinMap.get(item.elementKey);
+  const isOpen = !!pin && pinsHook.pendingMemoKeypath === item.elementKey;
   const [draft, setDraft] = useState("");
-  const { updatePinMemo, closePendingMemo } = props.pinsHook;
+
+  // バルーンが開くたびに下書きを現在のメモで初期化する
+  useEffect(() => {
+    if (isOpen) { setDraft(pin?.memo ?? ""); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const commit = () => {
-    const memo = draft.trim();
-    if (memo) { updatePinMemo(props.item.elementKey, memo); }
-    closePendingMemo();
+    if (pin) {
+      const memo = draft.trim();
+      if (memo !== pin.memo) { pinsHook.updatePinMemo(item.elementKey, memo); }
+    }
+    pinsHook.closePendingMemo();
   };
 
-  return <div className="grow-0 shrink-0 flex flex-row items-center p-1">
-    <input
-      className="pin-memo-input text-sm px-1 w-[18em]"
-      autoFocus
-      placeholder="メモ (Enter で確定 / Esc で閉じる)"
-      value={draft}
-      onChange={(e) => setDraft(e.target.value)}
-      // グローバルショートカット (Cmd+A 等) に入力中のキーを奪われないようにする
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (e.key === "Enter") { commit(); }
-        if (e.key === "Escape") { closePendingMemo(); }
-      }}
-      onBlur={commit}
-    />
+  return <div
+    className="grow-0 shrink-0 w-[2em] relative flex flex-row items-stretch justify-center pin-status-cell text-xs"
+  >
+    {pin && <button
+      className="pin-status-button grow flex flex-row items-center justify-center"
+      title={pin.memo || "メモを追加する"}
+      // バルーンが開いている間はフォーカスを奪わない:
+      // 入力の blur (確定) が先に走ると再レンダリングでクリックが失われるため
+      onMouseDown={isOpen ? (e) => e.preventDefault() : undefined}
+      onClick={() => isOpen ? commit() : pinsHook.openMemoInput(item.elementKey)}
+    ><FaThumbtack /></button>}
+    {isOpen && <div className="pin-memo-balloon absolute top-full left-0 z-20 p-1">
+      <input
+        className="pin-memo-input text-sm px-1 w-[18em]"
+        autoFocus
+        placeholder="メモ (Enter で確定 / Esc で閉じる)"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        // グローバルショートカット (Cmd+A 等) に入力中のキーを奪われないようにする
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === "Enter") { commit(); }
+          if (e.key === "Escape") { pinsHook.closePendingMemo(); }
+        }}
+        onBlur={commit}
+      />
+    </div>}
   </div>;
 };
 
@@ -278,10 +288,8 @@ export const FlatJsonRow = (props: {
       matched={isMatched}
     />
 
-    {/* クイックメモ入力が出ている間はメニューを出したままにする:
-        ホバーが外れてもピンボタンの位置が動かず, もう一度押せばピンを外せる */}
+    {/* メモバルーンが開いている間はメニューを出したままにする:
+        ホバーが外れてもピンを外すボタンがその場に残る */}
     {isLeaf && (isHovered || isPendingMemo) && <ValueMenuCell item={item} />}
-
-    {isPendingMemo && <PinQuickMemoCell item={item} pinsHook={props.pinsHook} />}
   </div>)
 }
