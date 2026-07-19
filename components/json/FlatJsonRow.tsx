@@ -239,6 +239,7 @@ export const FlatJsonRow = (props: {
   } = item;
   const isLeaf = isLeafType(right.type);
   const diff = item.diff;
+  const isPendingMemo = props.pinsHook.pendingMemoKeypath === elementKey && !diff;
   // 行の背景は優先順: 検索マッチ > diff 状態 > ナローイング起点 > ホバー
   const backgroundClass = [
     (isMatched && filteringPreference.resultAppearance !== "just") ? "matched-row" : "",
@@ -277,9 +278,10 @@ export const FlatJsonRow = (props: {
       matched={isMatched}
     />
 
-    {isLeaf && isHovered && <ValueMenuCell item={item} />}
+    {/* クイックメモ入力が出ている間はメニューを出したままにする:
+        ホバーが外れてもピンボタンの位置が動かず, もう一度押せばピンを外せる */}
+    {isLeaf && (isHovered || isPendingMemo) && <ValueMenuCell item={item} />}
 
-    {props.pinsHook.pendingMemoKeypath === elementKey && !diff &&
-      <PinQuickMemoCell item={item} pinsHook={props.pinsHook} />}
+    {isPendingMemo && <PinQuickMemoCell item={item} pinsHook={props.pinsHook} />}
   </div>)
 }

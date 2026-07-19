@@ -5,6 +5,7 @@ export const IconButton = (
     icon: IconType;
     alt?: string;
     onClick?: () => void;
+    onMouseDown?: (e: React.MouseEvent) => void;
   }
 ) => {
   const Icon = props.icon;
@@ -14,6 +15,7 @@ export const IconButton = (
         'border-2 rounded-md p-1'
       }
       onClick={props.onClick}
+      onMouseDown={props.onMouseDown}
       title={props.alt}
     >
       <Icon />

@@ -10,6 +10,7 @@ import { useToggleSingle } from "@/states/view";
 import { extractSubtree } from "@/libs/partial_tree";
 import { CopyButton, DownloadButton } from "@/components/lv3/CopyButton";
 import { PinToggleButton } from "@/components/lv3/PinButton";
+import { usePins } from "@/states/pins";
 
 const CopySubtreeButton = (props: {
   item: JsonRowItem;
@@ -95,8 +96,11 @@ export const SubtreeMenuCell = (props: {
   const { manipulation } = props.manipulationHook;
   const { json } = useJSON();
   const flatJsons = useEffectiveItems();
+  const { pendingMemoKeypath } = usePins();
   const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
-  if (!json || json.status !== "accepted" || !props.isHovered && !isNarrowed) { return null; }
+  // クイックメモ入力が出ている間はメニューを出したままにする (ピンボタンの位置を動かさない)
+  const isPendingMemo = pendingMemoKeypath === props.item.elementKey;
+  if (!json || json.status !== "accepted" || (!props.isHovered && !isNarrowed && !isPendingMemo)) { return null; }
   const rawJson = json.json;
 
   return (<div
