@@ -27,6 +27,7 @@
   --narrowing-base: #9e62f3;
   --selected-row: #c6f1c8;
   --line-number: royalblue;
+  --pin-glyph: #3c39d5;
 
   --diff-added-row: #d6ecd4;
   --diff-removed-row: #f2dad8;
@@ -66,6 +67,7 @@
     --narrowing-base: #5822a3;
     --selected-row: #096865;
     --line-number: #858dff;
+    --pin-glyph: #8ab4ff;
 
     --diff-added-row: #2c4632;
     --diff-removed-row: #4a2e2e;
@@ -682,7 +684,7 @@ body {
 }
 
 .pin-status-cell {
-  color: var(--foreground-key);
+  color: var(--pin-glyph);
 }
 
 .pin-row {
