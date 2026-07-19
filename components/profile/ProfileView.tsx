@@ -19,7 +19,9 @@ import {
 } from "@/libs/profile";
 import { useProfile, useProfilePreference } from "@/states/profile";
 import { useDiffTarget } from "@/states/diff";
+import { useManipulation } from "@/states/manipulation";
 import { ClipboardAccess } from "@/libs/sideeffect";
+import { composeFacetQuery } from "@/libs/facet";
 
 /**
  * ツリーの初期展開深さ
@@ -51,6 +53,27 @@ const TypeDisplayNames: Record<JsonValueType, string> = {
 
 const formatRate = (rate: number) => `${Math.round(rate * 1000) / 10}%`;
 
+/**
+ * ファセットの適用/解除 (プロファイル → 検索の結線)。
+ * クリックで advanced モードに切り替えてクエリをセットし検索パネルを開く。
+ * すでに同じクエリなら解除 (クエリを空にする)。
+ */
+const useFacetActions = () => {
+  const { manipulation, setFilteringQuery, setFilteringMode, setFilteringBooleanPreference } = useManipulation();
+
+  const applyFacet = (facetQuery: string, isActive: boolean) => {
+    if (isActive) {
+      setFilteringQuery("");
+      return;
+    }
+    setFilteringMode("advanced");
+    setFilteringQuery(facetQuery);
+    setFilteringBooleanPreference("showPanel", true);
+  };
+
+  return { filteringQuery: manipulation.filteringQuery, applyFacet };
+};
+
 const TypeChips = (props: { node: ProfileNode }) => {
   const { typeCounts } = props.node;
   const types = TypeNameOrder.filter((t) => typeCounts[t]);
@@ -69,11 +92,29 @@ const TypeChips = (props: { node: ProfileNode }) => {
 
 const NodeStats = (props: {
   node: ProfileNode;
+  keypath: string;
   showValues: boolean;
   toggleShowValues: () => void;
 }) => {
-  const { node } = props;
+  const { node, keypath } = props;
+  const { filteringQuery, applyFacet } = useFacetActions();
   const stats: JSX.Element[] = [];
+
+  // true / false / null の統計チップをファセットとしてクリック可能にする
+  const facetChip = (key: string, literal: string, label: string, enabled: boolean) => {
+    const facetQuery = enabled ? composeFacetQuery(keypath, literal) : null;
+    const isActive = facetQuery !== null && filteringQuery === facetQuery;
+    return (
+      <span
+        key={key}
+        className={`profile-stat shrink-0 ${facetQuery ? "profile-facet-stat" : ""} ${isActive ? "is-active" : ""}`}
+        title={facetQuery ? `クリックで ${literal} に絞り込む (再クリックで解除)` : undefined}
+        onClick={facetQuery ? () => applyFacet(facetQuery, isActive) : undefined}
+      >
+        {label}
+      </span>
+    );
+  };
 
   if (node.numberStats) {
     const { min, max } = node.numberStats;
@@ -85,20 +126,14 @@ const NodeStats = (props: {
   }
 
   if (node.booleanStats) {
-    stats.push(
-      <span key="boolean" className="profile-stat shrink-0">
-        true:{node.booleanStats.trueCount} false:{node.booleanStats.falseCount}
-      </span>,
-    );
+    const { trueCount, falseCount } = node.booleanStats;
+    stats.push(facetChip("true", "true", `true:${trueCount}`, trueCount > 0));
+    stats.push(facetChip("false", "false", `false:${falseCount}`, falseCount > 0));
   }
 
   const nullCount = node.typeCounts.null ?? 0;
   if (nullCount > 0 && nullCount < node.total) {
-    stats.push(
-      <span key="null" className="profile-stat shrink-0">
-        null {formatRate(nullCount / node.total)}
-      </span>,
-    );
+    stats.push(facetChip("null", "null", `null ${formatRate(nullCount / node.total)}`, true));
   }
 
   if (node.uniqueValues) {
@@ -119,8 +154,14 @@ const NodeStats = (props: {
   return <>{stats}</>;
 };
 
-const ValueDistribution = (props: { node: ProfileNode; depth: number }) => {
-  const { node, depth } = props;
+const ValueDistribution = (props: {
+  node: ProfileNode;
+  depth: number;
+  /** このノードのキーパスパターン (ファセットクエリの合成に使う) */
+  keypath: string;
+}) => {
+  const { node, depth, keypath } = props;
+  const { filteringQuery, applyFacet } = useFacetActions();
   const entries = uniqueValueEntries(node);
   const top = entries.slice(0, ValueDistributionLimit);
   const rest = entries.length - top.length;
@@ -132,25 +173,35 @@ const ValueDistribution = (props: { node: ProfileNode; depth: number }) => {
       className="profile-values flex flex-col"
       style={{ paddingLeft: `${depth * 0.8 + 1.6}rem` }}
     >
-      {top.map(([literal, count]) => (
-        <div key={literal} className="flex flex-row items-center gap-2">
-          <span
-            className="profile-value-literal shrink overflow-hidden text-ellipsis whitespace-nowrap break-keep"
-            title={literal}
+      {top.map(([literal, count]) => {
+        const facetQuery = composeFacetQuery(keypath, literal);
+        const isActive = facetQuery !== null && filteringQuery === facetQuery;
+        return (
+          <div
+            key={literal}
+            className={`profile-value-row flex flex-row items-center gap-2 ${facetQuery ? "is-clickable" : ""} ${isActive ? "is-active" : ""}`}
+            title={
+              facetQuery
+                ? `${literal}\nクリックでこの値に絞り込む (再クリックで解除)`
+                : `${literal}\nクエリで表現できない値のため絞り込めません`
+            }
+            onClick={facetQuery ? () => applyFacet(facetQuery, isActive) : undefined}
           >
-            {literal}
-          </span>
-          <span className="profile-stat shrink-0 ml-auto">×{count}</span>
-          <span className="profile-value-bar-track w-20 shrink-0 flex flex-row items-center">
-            <span
-              className="profile-value-bar"
-              style={{
-                width: `${maxCount > 0 ? (count / maxCount) * 100 : 0}%`,
-              }}
-            />
-          </span>
-        </div>
-      ))}
+            <span className="profile-value-literal shrink overflow-hidden text-ellipsis whitespace-nowrap break-keep">
+              {literal}
+            </span>
+            <span className="profile-stat shrink-0 ml-auto">×{count}</span>
+            <span className="profile-value-bar-track w-20 shrink-0 flex flex-row items-center">
+              <span
+                className="profile-value-bar"
+                style={{
+                  width: `${maxCount > 0 ? (count / maxCount) * 100 : 0}%`,
+                }}
+              />
+            </span>
+          </div>
+        );
+      })}
       {rest > 0 && <div className="profile-stat">他 {rest} 種</div>}
       {node.uniqueValues?.capped && (
         <div className="profile-stat">
@@ -171,11 +222,15 @@ const ProfileNodeRow = (props: {
   depth: number;
   parent: ProfileNode | null;
   /**
+   * このノードのキーパスパターン (例: items.*.status)。ルートは rootKey (全体なら "")
+   */
+  keypath: string;
+  /**
    * この深さ未満のノードを初期展開する (Fold All = 0 / Unfold All = Infinity)
    */
   defaultOpenDepth: number;
 }) => {
-  const { node, depth, parent, defaultOpenDepth } = props;
+  const { node, depth, parent, keypath, defaultOpenDepth } = props;
   const [isOpen, setIsOpen] = useState(depth < defaultOpenDepth);
   const [showValues, setShowValues] = useState(false);
   const hasChildren = !!node.children && node.children.size > 0;
@@ -225,12 +280,13 @@ const ProfileNodeRow = (props: {
         )}
         <NodeStats
           node={node}
+          keypath={keypath}
           showValues={showValues}
           toggleShowValues={() => setShowValues((prev) => !prev)}
         />
       </div>
 
-      {showValues && <ValueDistribution node={node} depth={depth} />}
+      {showValues && <ValueDistribution node={node} depth={depth} keypath={keypath} />}
 
       {isOpen &&
         hasChildren &&
@@ -240,6 +296,7 @@ const ProfileNodeRow = (props: {
             node={child}
             depth={depth + 1}
             parent={node}
+            keypath={keypath ? `${keypath}.${key}` : key}
             defaultOpenDepth={defaultOpenDepth}
           />
         ))}
@@ -328,6 +385,7 @@ export const ProfileView = () => {
               node={profile.profile}
               depth={0}
               parent={null}
+              keypath={profile.rootKey}
               defaultOpenDepth={defaultOpenDepth}
             />
           </div>

@@ -771,6 +771,43 @@ body {
   color: var(--foreground-string);
 }
 
+// クリック可能な統計チップ (true/false/null のファセット)。下線 = クリック可能の慣行に合わせる
+.profile-facet-stat {
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    color: var(--foreground);
+  }
+
+  &.is-active {
+    color: var(--foreground);
+  }
+}
+
+.profile-value-row {
+  &.is-clickable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--background);
+
+      .profile-value-literal {
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+      }
+    }
+  }
+
+  // 現在の検索クエリがこの値のファセットと一致している (= 絞り込み中)
+  &.is-active .profile-value-literal {
+    color: var(--foreground);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
 .profile-values {
   color: var(--foreground-schema);
 }
