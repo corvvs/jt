@@ -2,12 +2,13 @@ import { JsonGauge, JsonRowItem, isLeafType } from "@/libs/jetson";
 import { DiffAnnotation } from "@/libs/diff";
 import _ from "lodash";
 import { FaThumbtack } from "react-icons/fa";
-import { VscEdit } from "react-icons/vsc";
+import { VscChevronDown, VscChevronUp, VscEdit } from "react-icons/vsc";
+import { useAtomValue, useSetAtom } from "jotai";
 import { FlatJsonValueCell } from "./FlatJsonValueCell";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { useEffect, useRef, useState } from "react";
 import { useManipulation } from "@/states/manipulation";
-import { usePins } from "@/states/pins";
+import { usePins, resolvedPinsAtom, pinJumpRequestAtom } from "@/states/pins";
 import { FlatJsonLeadingCell } from "./leading/Leading";
 import { LineNumberCell } from "./LineNumberCell";
 import { useToggleSingle } from "@/states/view";
@@ -185,6 +186,17 @@ const PinStatusCell = (props: {
   const isEditing = isOpen && !!pending?.editing;
   const [draft, setDraft] = useState("");
   const viewRef = useRef<HTMLDivElement>(null);
+  const resolvedPins = useAtomValue(resolvedPinsAtom);
+  const requestPinJump = useSetAtom(pinJumpRequestAtom);
+
+  // バルーンから前後のピンへ移動する (文書順・端で折り返し・移動先でもバルーンを開く)
+  const jumpablePins = resolvedPins.filter((r) => r.item);
+  const jumpToNeighborPin = (direction: 1 | -1) => {
+    const currentIndex = jumpablePins.findIndex((r) => r.pin.keypath === item.elementKey);
+    if (currentIndex < 0 || jumpablePins.length < 2) { return; }
+    const dest = jumpablePins[(currentIndex + direction + jumpablePins.length) % jumpablePins.length];
+    requestPinJump({ keypath: dest.pin.keypath, openBalloon: true });
+  };
 
   // 編集に入るたびに下書きを現在のメモで初期化する
   useEffect(() => {
@@ -243,6 +255,8 @@ const PinStatusCell = (props: {
             onKeyDown={(e) => {
               e.stopPropagation();
               if (e.key === "Escape") { pinsHook.closePendingMemo(); }
+              if (e.key === "ArrowUp") { e.preventDefault(); jumpToNeighborPin(-1); }
+              if (e.key === "ArrowDown") { e.preventDefault(); jumpToNeighborPin(1); }
             }}
             // 外側をクリックしたら閉じる (バルーン内へのフォーカス移動では閉じない)
             onBlur={(e) => {
@@ -260,6 +274,18 @@ const PinStatusCell = (props: {
               title="メモを編集する"
               onClick={() => pinsHook.openMemoEdit(item.elementKey)}
             ><InlineIcon i={<VscEdit />} /></button>
+            {jumpablePins.length >= 2 && <>
+              <button
+                className="flippable shrink-0 px-1 flex flex-row items-center"
+                title="前のピンへ (↑)"
+                onClick={() => jumpToNeighborPin(-1)}
+              ><InlineIcon i={<VscChevronUp />} /></button>
+              <button
+                className="flippable shrink-0 px-1 flex flex-row items-center"
+                title="次のピンへ (↓)"
+                onClick={() => jumpToNeighborPin(1)}
+              ><InlineIcon i={<VscChevronDown />} /></button>
+            </>}
           </div>
       }
     </div>}

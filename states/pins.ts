@@ -44,7 +44,19 @@ export type PendingMemoState = {
   editing: boolean;
 };
 
-const pendingMemoAtom = atom<PendingMemoState | null>(null);
+export const pendingMemoAtom = atom<PendingMemoState | null>(null);
+
+/**
+ * ピンへのジャンプ要求.
+ * itemViewRef (スクロール手段) を持たないバルーン等から発行し,
+ * usePinNavigation が実行する。openBalloon が真なら移動先でバルーンを表示状態で開く。
+ */
+export type PinJumpRequest = {
+  keypath: string;
+  openBalloon: boolean;
+};
+
+export const pinJumpRequestAtom = atom<PinJumpRequest | null>(null);
 
 /**
  * 外したピンのメモの退避先 (keypath → memo).
