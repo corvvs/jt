@@ -1,5 +1,5 @@
 import React, { MutableRefObject } from "react";
-import { VscEdit, VscNewFile } from 'react-icons/vsc';
+import { VscEdit, VscGraph, VscNewFile } from 'react-icons/vsc';
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
@@ -12,6 +12,7 @@ import { useAtom } from "jotai";
 import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
 import { useDiffOnly, useDiffTarget } from "@/states/diff";
+import { useProfilePreference } from "@/states/profile";
 import { docPath, diffPath, parseDocRoute } from "@/libs/routes";
 import { MatchNavigation } from "@/hooks/useMatchNavigation";
 import { GoDiff } from "react-icons/go";
@@ -177,6 +178,7 @@ const OpetationButtons = (props: {
   const flatJsons = useEffectiveItems();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
+  const { profilePreference, setShowProfilePanel } = useProfilePreference();
   const {
     handleMouseEnter,
     handleMouseLeave,
@@ -242,6 +244,18 @@ const OpetationButtons = (props: {
         <InlineIcon i={<GoDiff />} />
         <span>Diff</span>
       </MenuButton>
+    )}
+
+    {mode === 'json-viewer' && (
+      <MenuToggleButton
+        isToggled={profilePreference.showPanel}
+        onClick={(value) => setShowProfilePanel(value)}
+        onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
+      >
+        <InlineIcon i={<VscGraph />} />
+        <span>Profile</span>
+      </MenuToggleButton>
     )}
 
     {mode === 'json-viewer' && (

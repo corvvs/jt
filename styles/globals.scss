@@ -343,6 +343,11 @@ body {
 }
 
 .menu-toggle-button {
+  &.is-toggled {
+    color: var(--background);
+    background-color: var(--foreground);
+  }
+
   &:hover {
     color: var(--background);
     // background-color: var(--foreground);
@@ -640,6 +645,81 @@ body {
 .filter-panel-inner {
   will-change: transform;
   backface-visibility: hidden;
+}
+
+.profile-view {
+  background-color: var(--background-secondary);
+  transition: background-color var(--theme-transition);
+}
+
+.profile-panel-container {
+  will-change: width;
+}
+
+.profile-panel-inner {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.profile-node-row {
+  &:hover {
+    background-color: var(--background);
+  }
+}
+
+.profile-close-button {
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.profile-key {
+  color: var(--foreground-key);
+}
+
+.profile-stat,
+.profile-occurrence {
+  color: var(--foreground-schema);
+}
+
+.profile-occurrence-partial {
+  color: var(--foreground-schema);
+  font-weight: bold;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.profile-unique {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+
+  &.is-open {
+    color: var(--foreground);
+  }
+}
+
+.profile-type {
+  &.profile-type-string { color: var(--foreground-string); }
+  &.profile-type-number { color: var(--foreground-number); }
+  &.profile-type-boolean { color: var(--foreground-true); }
+  &.profile-type-null { color: var(--foreground-false); }
+  &.profile-type-map,
+  &.profile-type-array { color: var(--foreground); }
+}
+
+.profile-value-literal {
+  color: var(--foreground-string);
+}
+
+.profile-values {
+  color: var(--foreground-schema);
+}
+
+.profile-value-bar {
+  display: block;
+  height: 0.6em;
+  background-color: var(--foreground-schema);
+  opacity: 0.6;
 }
 
 /* Document List - カスタムクラス */

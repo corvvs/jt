@@ -24,6 +24,8 @@ import { useDataFormat, DataFormat } from "@/states/config";
 import { useMatchNavigation } from "@/hooks/useMatchNavigation";
 import { isChangedDiffRow } from "@/libs/diff";
 import { docPath, diffPath } from "@/libs/routes";
+import { ProfileView } from "./profile/ProfileView";
+import { useProfilePreference } from "@/states/profile";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -140,6 +142,7 @@ export const Main = (props: {
   const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused, clearManipulation } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
+  const { profilePreference, setShowProfilePanel } = useProfilePreference();
   const itemViewRef = useRef<any>(null);
   const matchNavigation = useMatchNavigation(itemViewRef);
   const diffNavigation = useMatchNavigation(itemViewRef, isChangedDiffRow);
@@ -307,6 +310,12 @@ export const Main = (props: {
         openEditJsonModal();
       }
 
+      // Cmd+P: プロファイルパネルをトグルする
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'p') {
+        event.preventDefault(); // 印刷ダイアログを奪う
+        setShowProfilePanel(!profilePreference.showPanel);
+      }
+
       // Cmd+Shift+A: クリップボードの内容を現在のタブに取り込む
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'A' || event.key === 'a')) {
         event.preventDefault();
@@ -365,7 +374,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, profilePreference.showPanel, setShowProfilePanel, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
@@ -469,12 +478,27 @@ export const Main = (props: {
       <div
         className="shrink grow text-base"
       >
-        <JsonItemsView 
-          itemViewRef={itemViewRef} 
+        <JsonItemsView
+          itemViewRef={itemViewRef}
           targetDocId={targetDocId}
           loadedDocId={loadedDocId}
           isLoading={isLoading}
         />
+      </div>
+
+      <div
+        className={`profile-panel-container shrink-0 grow-0 flex flex-col justify-stretch transition-all duration-100 ease-out overflow-hidden ${
+          profilePreference.showPanel ? 'w-96' : 'w-0'
+        }`}
+      >
+        <div
+          className={`profile-panel-inner w-96 h-full transition-transform duration-300 ease-out flex flex-col ${
+            profilePreference.showPanel ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {/* パネルを閉じている間はマウントしない (profileAtom の購読を切り, 計算を止める) */}
+          {profilePreference.showPanel && <ProfileView />}
+        </div>
       </div>
 
     </div>
