@@ -6,24 +6,26 @@ import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { FaRegFrown, FaRegMehRollingEyes } from 'react-icons/fa';
-import { defaultRawText, useVisibleItems, type ParsedJSONData } from "@/states/json";
+import { defaultRawText, effectiveItemsAtom, useVisibleItems, type ParsedJSONData } from "@/states/json";
 import { useDiffTarget } from "@/states/diff";
 import { toggleAtom } from "@/states/view";
-import { useSetAtom } from "jotai";
+import { useSetAtom, useStore } from "jotai";
 import { HeaderBar } from "./lv3/HeaderBar";
 import { useManipulation } from "@/states/manipulation";
 import { QueryView } from "./query/QueryView";
 import { useEditJsonModal, usePreformattedValueModal } from "@/states/modal";
 import { useToggleSingle } from "@/states/view";
 import { useRouter } from "next/router";
-import { JsonPartialDocument, JsonDocumentStore } from "@/data/document";
+import { JsonPartialDocument, JsonDocumentStore, generateDocumentID } from "@/data/document";
 import { ClipboardAccess } from "@/libs/sideeffect";
 import { toast } from "react-toastify";
 import { sortKeysJson } from "@/libs/tree_manipulation";
 import { useDataFormat, DataFormat } from "@/states/config";
 import { useMatchNavigation } from "@/hooks/useMatchNavigation";
 import { isChangedDiffRow } from "@/libs/diff";
-import { docPath, diffPath } from "@/libs/routes";
+import { docPath, diffPath, SHARED_ROUTE_DOC_ID } from "@/libs/routes";
+import { decodeSharePayload, deriveSharedDocId, shareErrorMessage } from "@/libs/share";
+import { pendingViewStateAtom, applySharedViewState } from "@/states/share";
 import { ProfileView } from "./profile/ProfileView";
 import { useProfilePreference } from "@/states/profile";
 
@@ -138,6 +140,9 @@ export const Main = (props: {
   const setToggleState = useSetAtom(toggleAtom);
   const prevDiffDocIdRef = useRef<string | undefined>(undefined);
   const loadGenerationRef = useRef(0);
+  const store = useStore();
+  // 共有リンクの hash は読み取り次第 URL から消すため, StrictMode の二重 effect 用に退避する
+  const consumedShareHashRef = useRef<string | null>(null);
   const { dataFormat, setDataFormat } = useDataFormat();
   const { filteringPreference, setFilteringBooleanPreference, manipulation, popNarrowedRange, filterInputFocused, clearManipulation } = useManipulation();
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
@@ -214,9 +219,55 @@ export const Main = (props: {
         setDocument(newDocument);
       }
 
+      // 共有リンクの取り込み (1周目). 成功時は router.replace で通常ロード (2周目) に引き継ぐ
+      if (currentTargetDocId === SHARED_ROUTE_DOC_ID) {
+        // fragment は最初に URL から消す: デコードや保存の await 中に計測 beacon 等が
+        // location を読んでも, 共有データが載っていない状態にする
+        const rawHash = window.location.hash || consumedShareHashRef.current || "";
+        consumedShareHashRef.current = rawHash;
+        if (window.location.hash) {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        }
+        try {
+          const payload = await decodeSharePayload(rawHash);
+          if (isStale()) { return; }
+          if (payload.doc.format !== dataFormat) {
+            setDataFormat(payload.doc.format);
+          }
+          const sharedId = await deriveSharedDocId(payload.doc);
+          const existing = await JsonDocumentStore.fetchDocument(sharedId);
+          if (isStale()) { return; }
+          // 受信者が同じ共有ドキュメントをローカル編集済みの場合は上書きせず別ドキュメントにする
+          const saveId = existing && existing.json_string !== payload.doc.json_string
+            ? generateDocumentID()
+            : sharedId;
+          if (!existing || saveId !== sharedId) {
+            await JsonDocumentStore.saveDocument({
+              id: saveId,
+              name: payload.doc.name,
+              json_string: payload.doc.json_string,
+            });
+            if (isStale()) { return; }
+          }
+          store.set(pendingViewStateAtom, { docId: saveId, view: payload.view });
+          consumedShareHashRef.current = null;
+          router.replace(docPath(saveId));
+          toast("共有リンクからドキュメントを取り込みました");
+        } catch (e) {
+          // StrictMode の二重 effect で古い世代が失敗しても, toast や遷移は新しい世代に任せる
+          if (isStale()) { return; }
+          console.error("Failed to import shared document:", e);
+          consumedShareHashRef.current = null;
+          toast.error(shareErrorMessage(e));
+          router.replace('/_list');
+        }
+        // setLoadedDocId しない: Loading 表示のまま replace 先のロードに引き継ぐ
+        return;
+      }
+
       let doc: JsonPartialDocument = newDocument
       let actualDocId = currentTargetDocId;
-      
+
       if (currentTargetDocId === "new") {
         await setNewDocument();
         actualDocId = "new";
@@ -272,6 +323,20 @@ export const Main = (props: {
         clearManipulation();
         setToggleState({});
         prevDiffDocIdRef.current = diffDocId;
+      }
+
+      // 共有リンク由来のビュー状態を, Loading 表示が外れる前に注入する.
+      // setParsedData 直後なので effectiveItemsAtom は新しい flatten 結果を返す (計算はキャッシュされ再利用される)
+      const pendingViewState = store.get(pendingViewStateAtom);
+      if (pendingViewState) {
+        if (pendingViewState.docId === actualDocId && !diffDocId) {
+          const flattened = store.get(effectiveItemsAtom);
+          if (flattened) {
+            applySharedViewState(store, flattened.items, pendingViewState.view);
+          }
+        }
+        // docId 不一致でも破棄する: 別ドキュメントへの取り違え適用を防ぐ
+        store.set(pendingViewStateAtom, null);
       }
 
       // ロードが完了したdocIDを設定し、ローディング状態を解除
