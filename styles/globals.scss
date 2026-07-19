@@ -327,11 +327,20 @@ body {
 }
 
 .flippable {
-  &:hover {
+  // 無効時は hover フリップさせない (見た目を変えない)
+  &:not(:disabled):hover {
     color: var(--background);
     // background-color: var(--foreground);
     transition: color var(--flippable-transition);
     // transition: background-color var(--flippable-transition);
+  }
+
+  // 無効時は背景に溶ける薄さにして「無効」であることを示す.
+  // pointer-events: none で hover をコンテナへ透過させ, backdrop が
+  // 無効ボタンの上に取り残されないようにする (useTransientBackdrop 参照).
+  &:disabled {
+    opacity: 0.35;
+    pointer-events: none;
   }
 }
 
@@ -350,11 +359,20 @@ body {
     background-color: var(--foreground);
   }
 
-  &:hover {
+  // 無効時は hover フリップさせない (見た目を変えない)
+  &:not(:disabled):hover {
     color: var(--background);
     // background-color: var(--foreground);
     transition: color var(--flippable-transition);
     transition: background-color var(--flippable-transition);
+  }
+
+  // 無効時は背景に溶ける薄さにして「無効」であることを示す.
+  // pointer-events: none で hover をコンテナへ透過させ, backdrop が
+  // 無効ボタンの上に取り残されないようにする (useTransientBackdrop 参照).
+  &:disabled {
+    opacity: 0.35;
+    pointer-events: none;
   }
 }
 

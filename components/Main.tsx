@@ -141,7 +141,7 @@ export const Main = (props: {
     parseData,
     setParsedData,
   } = useJSON();
-  const { setDiffTarget } = useDiffTarget();
+  const { diffTarget, setDiffTarget } = useDiffTarget();
   const setToggleState = useSetAtom(toggleAtom);
   const prevDiffDocIdRef = useRef<string | undefined>(undefined);
   const loadGenerationRef = useRef(0);
@@ -154,6 +154,10 @@ export const Main = (props: {
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const { profilePreference, setShowProfilePanel } = useProfilePreference();
   const { pinsPreference, setShowPinsPanel } = usePinsPreference();
+  // diff モード中は Profile/Pins は使えないので畳む.
+  // preference 自体は書き換えないため, diff を抜けると元の開閉状態に復元される.
+  const showProfilePanel = profilePreference.showPanel && !diffTarget;
+  const showPinsPanel = pinsPreference.showPanel && !diffTarget;
   const { loadPinsForDocument } = usePinsLoader();
   const itemViewRef = useRef<any>(null);
   const matchNavigation = useMatchNavigation(itemViewRef);
@@ -392,13 +396,15 @@ export const Main = (props: {
       // Cmd+P: プロファイルパネルをトグルする
       if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'p') {
         event.preventDefault(); // 印刷ダイアログを奪う
-        setShowProfilePanel(!profilePreference.showPanel);
+        // diff モード中はプロファイルを使えないのでトグルしない (ヘッダーボタンも disabled)
+        if (!diffTarget) { setShowProfilePanel(!profilePreference.showPanel); }
       }
 
       // Cmd+Shift+P: ピンパネルをトグルする
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'P' || event.key === 'p')) {
         event.preventDefault();
-        setShowPinsPanel(!pinsPreference.showPanel);
+        // diff モード中はピンを使えないのでトグルしない (ヘッダーボタンも disabled)
+        if (!diffTarget) { setShowPinsPanel(!pinsPreference.showPanel); }
       }
 
       // Cmd+Shift+A: クリップボードの内容を現在のタブに取り込む
@@ -459,7 +465,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, profilePreference.showPanel, setShowProfilePanel, pinsPreference.showPanel, setShowPinsPanel, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, profilePreference.showPanel, setShowProfilePanel, pinsPreference.showPanel, setShowPinsPanel, diffTarget, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
@@ -573,30 +579,30 @@ export const Main = (props: {
 
       <div
         className={`profile-panel-container shrink-0 grow-0 flex flex-col justify-stretch transition-all duration-100 ease-out overflow-hidden ${
-          profilePreference.showPanel ? 'w-96' : 'w-0'
+          showProfilePanel ? 'w-96' : 'w-0'
         }`}
       >
         <div
           className={`profile-panel-inner w-96 h-full transition-transform duration-300 ease-out flex flex-col ${
-            profilePreference.showPanel ? 'translate-x-0' : 'translate-x-full'
+            showProfilePanel ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
           {/* パネルを閉じている間はマウントしない (profileAtom の購読を切り, 計算を止める) */}
-          {profilePreference.showPanel && <ProfileView />}
+          {showProfilePanel && <ProfileView />}
         </div>
       </div>
 
       <div
         className={`pins-panel-container shrink-0 grow-0 flex flex-col justify-stretch transition-all duration-100 ease-out overflow-hidden ${
-          pinsPreference.showPanel ? 'w-96' : 'w-0'
+          showPinsPanel ? 'w-96' : 'w-0'
         }`}
       >
         <div
           className={`pins-panel-inner w-96 h-full transition-transform duration-300 ease-out flex flex-col ${
-            pinsPreference.showPanel ? 'translate-x-0' : 'translate-x-full'
+            showPinsPanel ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
-          {pinsPreference.showPanel && <PinsView pinNavigation={pinNavigation} />}
+          {showPinsPanel && <PinsView pinNavigation={pinNavigation} />}
         </div>
       </div>
 
