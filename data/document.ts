@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { TransactionReadWrite, fetchItemById, fetchItemsIDB, getTransaction, saveItemIDB, deleteItemIDB } from './indexed_db';
+import { TransactionReadWrite, fetchItemById, fetchItemsIDB, getTransaction, saveItemIDB, deleteItemIDB, JetStoreNames } from './indexed_db';
 import _ from 'lodash';
 
 export type PartialKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -23,10 +23,7 @@ export function generateDocumentID() {
   return uuidv4();
 }
 
-const storeName = {
-  JsonDocument: "JsonDocument",
-  JsonDocumentPreview: "JsonDocumentPreview",
-};
+const storeName = JetStoreNames;
 
 async function saveDocument(data: JsonPartialDocument) {
 
@@ -43,7 +40,7 @@ async function saveDocument(data: JsonPartialDocument) {
     jet_version: "0-alpha-1",
   };
 
-  const transaction: TransactionReadWrite = await getTransaction(1, "readwrite", [
+  const transaction: TransactionReadWrite = await getTransaction("readwrite", [
     storeName.JsonDocument, storeName.JsonDocumentPreview,
   ]);
   await saveItemIDB(transaction, storeName.JsonDocument, savedDocument);
@@ -67,7 +64,7 @@ async function saveDocumentPreview(transaction: TransactionReadWrite, data: Json
 }
 
 async function fetchLatest() {
-  const transaction = await getTransaction(1, "readonly", [
+  const transaction = await getTransaction("readonly", [
     storeName.JsonDocument, storeName.JsonDocumentPreview,
   ]);
   const result = await fetchItemsIDB(transaction, storeName.JsonDocumentPreview, { skip: 0, limit: 1 });
@@ -79,14 +76,14 @@ async function fetchLatest() {
 }
 
 async function fetchDocument(id: string) {
-  const transaction = await getTransaction(1, "readonly", [
+  const transaction = await getTransaction("readonly", [
     storeName.JsonDocument, storeName.JsonDocumentPreview,
   ]);
   return (await fetchItemById(transaction, storeName.JsonDocument, id)) as JsonDocument;
 }
 
 async function listPreviews(scope: { skip: number; limit: number; } = { skip: 0, limit: 100 }) {
-  const transaction = await getTransaction(1, "readonly", [
+  const transaction = await getTransaction("readonly", [
     storeName.JsonDocument, storeName.JsonDocumentPreview,
   ]);
   const result = await fetchItemsIDB(transaction, storeName.JsonDocumentPreview, scope);
@@ -102,11 +99,13 @@ async function listPreviews(scope: { skip: number; limit: number; } = { skip: 0,
 
 
 async function deleteDocument(id: string) {
-  const transaction: TransactionReadWrite = await getTransaction(1, "readwrite", [
-    storeName.JsonDocument, storeName.JsonDocumentPreview,
+  const transaction: TransactionReadWrite = await getTransaction("readwrite", [
+    storeName.JsonDocument, storeName.JsonDocumentPreview, storeName.DocumentPins,
   ]);
   await deleteItemIDB(transaction, storeName.JsonDocument, id);
   await deleteItemIDB(transaction, storeName.JsonDocumentPreview, id);
+  // ドキュメントに付随するピンも一緒に消す
+  await deleteItemIDB(transaction, storeName.DocumentPins, id);
 }
 
 export const JsonDocumentStore = {
