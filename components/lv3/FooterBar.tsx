@@ -3,6 +3,7 @@ import { useJSON } from "@/states";
 import { useEffectiveItems, useVisibleItems } from "@/states/json";
 import _ from "lodash";
 import React, { MutableRefObject } from "react";
+import { ShareButton } from "./ShareButton";
 
 const MainLine = (props: {
   stats: JsonStats;
@@ -34,6 +35,7 @@ const MainLine = (props: {
     <div
       className="shrink grow flex flex-row justify-end items-center"
     >
+      <ShareButton />
       {
         document && document.name
           ? <div
