@@ -9,6 +9,8 @@ import { useEffectiveItems } from "@/states/json";
 import { useToggleSingle } from "@/states/view";
 import { extractSubtree } from "@/libs/partial_tree";
 import { CopyButton, DownloadButton } from "@/components/lv3/CopyButton";
+import { PinToggleButton } from "@/components/lv3/PinButton";
+import { usePins } from "@/states/pins";
 
 const CopySubtreeButton = (props: {
   item: JsonRowItem;
@@ -94,13 +96,17 @@ export const SubtreeMenuCell = (props: {
   const { manipulation } = props.manipulationHook;
   const { json } = useJSON();
   const flatJsons = useEffectiveItems();
+  const { pendingMemo } = usePins();
   const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
-  if (!json || json.status !== "accepted" || !props.isHovered && !isNarrowed) { return null; }
+  // メモバルーンが開いている間はメニューを出したままにする (ピンボタンの位置を動かさない)
+  const isPendingMemo = pendingMemo?.keypath === props.item.elementKey;
+  if (!json || json.status !== "accepted" || (!props.isHovered && !isNarrowed && !isPendingMemo)) { return null; }
   const rawJson = json.json;
 
   return (<div
     className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
+    <PinToggleButton item={props.item} />
     <CopySubtreeButton item={props.item} rawJson={rawJson} />
     <DownloadSubtreeButton item={props.item} rawJson={rawJson} />
     <NarrowSubtreeButton

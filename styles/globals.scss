@@ -27,6 +27,7 @@
   --narrowing-base: #9e62f3;
   --selected-row: #c6f1c8;
   --line-number: royalblue;
+  --pin-glyph: #3c39d5;
 
   --diff-added-row: #d6ecd4;
   --diff-removed-row: #f2dad8;
@@ -66,6 +67,7 @@
     --narrowing-base: #5822a3;
     --selected-row: #096865;
     --line-number: #858dff;
+    --pin-glyph: #8ab4ff;
 
     --diff-added-row: #2c4632;
     --diff-removed-row: #4a2e2e;
@@ -665,6 +667,64 @@ body {
   &:hover {
     background-color: var(--background);
   }
+}
+
+.pins-view {
+  background-color: var(--background-secondary);
+  transition: background-color var(--theme-transition);
+}
+
+.pins-panel-container {
+  will-change: width;
+}
+
+.pins-panel-inner {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.pin-status-cell {
+  color: var(--pin-glyph);
+}
+
+.pin-status-button {
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.pin-memo-balloon {
+  // 包含ブロック (幅 2em のグリフセル) への shrink-to-fit で幅が潰れないようにする
+  width: max-content;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.pin-memo-view {
+  color: var(--foreground);
+}
+
+.pin-row {
+  &:hover {
+    background-color: var(--background);
+  }
+}
+
+.pin-keypath {
+  color: var(--foreground-key);
+}
+
+.pin-memo-placeholder {
+  opacity: 0.5;
+}
+
+.pin-memo-input {
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 2px;
 }
 
 .profile-close-button {

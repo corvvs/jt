@@ -28,6 +28,9 @@ import { decodeSharePayload, deriveSharedDocId, shareErrorMessage } from "@/libs
 import { pendingViewStateAtom, applySharedViewState } from "@/states/share";
 import { ProfileView } from "./profile/ProfileView";
 import { useProfilePreference } from "@/states/profile";
+import { PinsView } from "./pins/PinsView";
+import { usePins, usePinsLoader, usePinsPreference } from "@/states/pins";
+import { usePinNavigation } from "@/hooks/usePinNavigation";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -74,6 +77,7 @@ const JsonItemsView = (props: {
   const { openModal } = useEditJsonModal();
   const manipulationHook = useManipulation();
   const toggleSingleHook = useToggleSingle();
+  const pinsHook = usePins();
 
   // targetDocIdとloadedDocIdが一致していない場合、またはロード中の場合はローディング表示
   if (props.isLoading || props.targetDocId !== props.loadedDocId) {
@@ -117,6 +121,7 @@ const JsonItemsView = (props: {
         item={item}
         manipulationHook={manipulationHook}
         toggleSingleHook={toggleSingleHook}
+        pinsHook={pinsHook}
         gauge={gauge}
       />
       }
@@ -148,9 +153,12 @@ export const Main = (props: {
   const { isOpen: isEditJsonModalOpen, openModal: openEditJsonModal } = useEditJsonModal();
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const { profilePreference, setShowProfilePanel } = useProfilePreference();
+  const { pinsPreference, setShowPinsPanel } = usePinsPreference();
+  const { loadPinsForDocument } = usePinsLoader();
   const itemViewRef = useRef<any>(null);
   const matchNavigation = useMatchNavigation(itemViewRef);
   const diffNavigation = useMatchNavigation(itemViewRef, isChangedDiffRow);
+  const pinNavigation = usePinNavigation(itemViewRef);
   // diff モード中に検索マッチがなければ, F3 系のジャンプは差分行を対象にする
   const activeNavigation = (diffDocId && matchNavigation.matchedCount === 0)
     ? diffNavigation
@@ -173,6 +181,12 @@ export const Main = (props: {
       setLoadedDocId(undefined);
     }
   }, [docId, targetDocId]);
+
+  // ロード完了したドキュメントに付随するピンを読み込む
+  useEffect(() => {
+    loadPinsForDocument(loadedDocId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadedDocId]);
 
   useEffect(() => {
     if (!router.isReady) { return; }
@@ -381,6 +395,12 @@ export const Main = (props: {
         setShowProfilePanel(!profilePreference.showPanel);
       }
 
+      // Cmd+Shift+P: ピンパネルをトグルする
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'P' || event.key === 'p')) {
+        event.preventDefault();
+        setShowPinsPanel(!pinsPreference.showPanel);
+      }
+
       // Cmd+Shift+A: クリップボードの内容を現在のタブに取り込む
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'A' || event.key === 'a')) {
         event.preventDefault();
@@ -439,7 +459,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, profilePreference.showPanel, setShowProfilePanel, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, profilePreference.showPanel, setShowProfilePanel, pinsPreference.showPanel, setShowPinsPanel, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
@@ -563,6 +583,20 @@ export const Main = (props: {
         >
           {/* パネルを閉じている間はマウントしない (profileAtom の購読を切り, 計算を止める) */}
           {profilePreference.showPanel && <ProfileView />}
+        </div>
+      </div>
+
+      <div
+        className={`pins-panel-container shrink-0 grow-0 flex flex-col justify-stretch transition-all duration-100 ease-out overflow-hidden ${
+          pinsPreference.showPanel ? 'w-96' : 'w-0'
+        }`}
+      >
+        <div
+          className={`pins-panel-inner w-96 h-full transition-transform duration-300 ease-out flex flex-col ${
+            pinsPreference.showPanel ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {pinsPreference.showPanel && <PinsView pinNavigation={pinNavigation} />}
         </div>
       </div>
 
