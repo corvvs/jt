@@ -176,6 +176,8 @@ const OpetationButtons = (props: {
   const { mode } = props;
   const { openModal: openEditDataModal } = useEditJsonModal();
   const { openModal: openSelectDiffTargetModal } = useSelectDiffTargetModal();
+  const { diffTarget } = useDiffTarget();
+  const router = useRouter();
   const flatJsons = useEffectiveItems();
   const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
@@ -238,14 +240,23 @@ const OpetationButtons = (props: {
     )}
 
     {mode === 'json-viewer' && (
-      <MenuButton
-        onClick={() => openSelectDiffTargetModal()}
+      <MenuToggleButton
+        isToggled={!!diffTarget}
+        onClick={(value) => {
+          if (value) {
+            openSelectDiffTargetModal();
+          } else {
+            // diff モード中にクリックされたら diff を終了する
+            const { docId } = parseDocRoute(router.query);
+            if (docId) { router.push(docPath(docId)); }
+          }
+        }}
         onMouseEnter={handleMouseEnter}
         disabled={!flatJsons}
       >
         <InlineIcon i={<GoDiff />} />
         <span>Diff</span>
-      </MenuButton>
+      </MenuToggleButton>
     )}
 
     {mode === 'json-viewer' && (
