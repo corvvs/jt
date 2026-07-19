@@ -1,11 +1,11 @@
 /**
- * ファセット絞り込み: プロファイルの値分布から advanced クエリを合成する.
+ * ファセット絞り込み: プロファイルの統計表示から advanced クエリを合成する.
  *
- * 値分布のリテラルは JSON 表現の文字列 (profile.ts の uniqueValues のキー) で,
- * 文字列なら `"error"`, 数値なら `42` の形。これを
+ * リテラルは JSON 表現の文字列。値分布 (uniqueValues のキー) なら `"error"` や `42`,
+ * 真偽値・null の統計チップなら `true` / `false` / `null`。これを
  *   $.<キーパスパターン>:<値>
- * の形の advanced クエリに変換する。値は文字列なら引用形 (厳密一致),
- * 数値なら裸で合成する。
+ * の形の advanced クエリに変換する。文字列は引用形 (厳密一致),
+ * 数値・真偽値・null は裸で合成する。
  *
  * 合成できない場合は null を返す (クエリ言語にキー側の引用構文が無いため,
  * 構造文字を含むキー名などは表現できない)。UI はその行をクリック不可にする。
@@ -39,7 +39,7 @@ const composeValueToken = (literal: string): string | null => {
   } catch {
     return null;
   }
-  if (typeof parsed === "number") {
+  if (typeof parsed === "number" || typeof parsed === "boolean" || parsed === null) {
     return String(parsed);
   }
   if (typeof parsed === "string") {
@@ -47,7 +47,7 @@ const composeValueToken = (literal: string): string | null => {
     if (/[\u0000-\u001f]/.test(parsed)) { return null; }
     return `"${parsed.replaceAll("\\", "\\\\").replaceAll('"', '\\"')}"`;
   }
-  // uniqueValues は string / number のみのはずだが防御
+  // オブジェクト・配列のリテラルは対象外 (統計表示に現れない)
   return null;
 };
 

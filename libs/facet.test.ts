@@ -42,6 +42,12 @@ describe("composeFacetQuery: 合成", () => {
   it("ナローイング中の rootKey 前置パス (数値インデックス入り)", () => {
     expect(composeFacetQuery("items.3.payload.status", '"ok"')).toBe('$.items.3.payload.status:"ok"');
   });
+
+  it("真偽値と null は裸で合成する", () => {
+    expect(composeFacetQuery("a.flag", "true")).toBe("$.a.flag:true");
+    expect(composeFacetQuery("a.flag", "false")).toBe("$.a.flag:false");
+    expect(composeFacetQuery("a.ratio", "null")).toBe("$.a.ratio:null");
+  });
 });
 
 describe("composeFacetQuery: 合成不能 (null)", () => {
@@ -100,5 +106,12 @@ describe("composeFacetQuery: マッチングとの往復", () => {
     const doc = { msg: 'say "hi" \\ ok', other: "x" };
     const query = composeFacetQuery("msg", JSON.stringify(doc.msg))!;
     expect(matchedKeys(doc, query)).toEqual(["msg"]);
+  });
+
+  it("真偽値と null のファセットの往復", () => {
+    const doc = { rows: [{ flag: true, ratio: null }, { flag: false, ratio: 0.5 }] };
+    expect(matchedKeys(doc, composeFacetQuery("rows.*.flag", "true")!)).toEqual(["rows.0.flag"]);
+    expect(matchedKeys(doc, composeFacetQuery("rows.*.flag", "false")!)).toEqual(["rows.1.flag"]);
+    expect(matchedKeys(doc, composeFacetQuery("rows.*.ratio", "null")!)).toEqual(["rows.0.ratio"]);
   });
 });

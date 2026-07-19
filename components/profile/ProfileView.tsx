@@ -53,6 +53,27 @@ const TypeDisplayNames: Record<JsonValueType, string> = {
 
 const formatRate = (rate: number) => `${Math.round(rate * 1000) / 10}%`;
 
+/**
+ * ファセットの適用/解除 (プロファイル → 検索の結線)。
+ * クリックで advanced モードに切り替えてクエリをセットし検索パネルを開く。
+ * すでに同じクエリなら解除 (クエリを空にする)。
+ */
+const useFacetActions = () => {
+  const { manipulation, setFilteringQuery, setFilteringMode, setFilteringBooleanPreference } = useManipulation();
+
+  const applyFacet = (facetQuery: string, isActive: boolean) => {
+    if (isActive) {
+      setFilteringQuery("");
+      return;
+    }
+    setFilteringMode("advanced");
+    setFilteringQuery(facetQuery);
+    setFilteringBooleanPreference("showPanel", true);
+  };
+
+  return { filteringQuery: manipulation.filteringQuery, applyFacet };
+};
+
 const TypeChips = (props: { node: ProfileNode }) => {
   const { typeCounts } = props.node;
   const types = TypeNameOrder.filter((t) => typeCounts[t]);
@@ -71,11 +92,29 @@ const TypeChips = (props: { node: ProfileNode }) => {
 
 const NodeStats = (props: {
   node: ProfileNode;
+  keypath: string;
   showValues: boolean;
   toggleShowValues: () => void;
 }) => {
-  const { node } = props;
+  const { node, keypath } = props;
+  const { filteringQuery, applyFacet } = useFacetActions();
   const stats: JSX.Element[] = [];
+
+  // true / false / null の統計チップをファセットとしてクリック可能にする
+  const facetChip = (key: string, literal: string, label: string, enabled: boolean) => {
+    const facetQuery = enabled ? composeFacetQuery(keypath, literal) : null;
+    const isActive = facetQuery !== null && filteringQuery === facetQuery;
+    return (
+      <span
+        key={key}
+        className={`profile-stat shrink-0 ${facetQuery ? "profile-facet-stat" : ""} ${isActive ? "is-active" : ""}`}
+        title={facetQuery ? `クリックで ${literal} に絞り込む (再クリックで解除)` : undefined}
+        onClick={facetQuery ? () => applyFacet(facetQuery, isActive) : undefined}
+      >
+        {label}
+      </span>
+    );
+  };
 
   if (node.numberStats) {
     const { min, max } = node.numberStats;
@@ -87,20 +126,14 @@ const NodeStats = (props: {
   }
 
   if (node.booleanStats) {
-    stats.push(
-      <span key="boolean" className="profile-stat shrink-0">
-        true:{node.booleanStats.trueCount} false:{node.booleanStats.falseCount}
-      </span>,
-    );
+    const { trueCount, falseCount } = node.booleanStats;
+    stats.push(facetChip("true", "true", `true:${trueCount}`, trueCount > 0));
+    stats.push(facetChip("false", "false", `false:${falseCount}`, falseCount > 0));
   }
 
   const nullCount = node.typeCounts.null ?? 0;
   if (nullCount > 0 && nullCount < node.total) {
-    stats.push(
-      <span key="null" className="profile-stat shrink-0">
-        null {formatRate(nullCount / node.total)}
-      </span>,
-    );
+    stats.push(facetChip("null", "null", `null ${formatRate(nullCount / node.total)}`, true));
   }
 
   if (node.uniqueValues) {
@@ -128,23 +161,12 @@ const ValueDistribution = (props: {
   keypath: string;
 }) => {
   const { node, depth, keypath } = props;
-  const { manipulation, setFilteringQuery, setFilteringMode, setFilteringBooleanPreference } = useManipulation();
+  const { filteringQuery, applyFacet } = useFacetActions();
   const entries = uniqueValueEntries(node);
   const top = entries.slice(0, ValueDistributionLimit);
   const rest = entries.length - top.length;
   // entries は降順なので先頭が最頻値 = バーのスケール基準
   const maxCount = top.length > 0 ? top[0][1] : 0;
-
-  // ファセット絞り込み: 値クリックで等値クエリを検索に流し込む。再クリックで解除
-  const applyFacet = (facetQuery: string, isActive: boolean) => {
-    if (isActive) {
-      setFilteringQuery("");
-      return;
-    }
-    setFilteringMode("advanced");
-    setFilteringQuery(facetQuery);
-    setFilteringBooleanPreference("showPanel", true);
-  };
 
   return (
     <div
@@ -153,7 +175,7 @@ const ValueDistribution = (props: {
     >
       {top.map(([literal, count]) => {
         const facetQuery = composeFacetQuery(keypath, literal);
-        const isActive = facetQuery !== null && manipulation.filteringQuery === facetQuery;
+        const isActive = facetQuery !== null && filteringQuery === facetQuery;
         return (
           <div
             key={literal}
@@ -258,6 +280,7 @@ const ProfileNodeRow = (props: {
         )}
         <NodeStats
           node={node}
+          keypath={keypath}
           showValues={showValues}
           toggleShowValues={() => setShowValues((prev) => !prev)}
         />
