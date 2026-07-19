@@ -397,8 +397,8 @@ export const ProfileView = () => {
   return (
     <div className="profile-view h-full shrink grow flex flex-col gap-2 overflow-hidden">
       <h2 className="color-inverted px-2 py-1 flex flex-row gap-1 items-center font-bold">
-        <p>プロファイル</p>
         <InlineIcon i={<VscGraph />} />
+        <p>プロファイル</p>
         <button
           className="profile-close-button ml-auto shrink-0 px-1 flex flex-row items-center"
           title="パネルを閉じる"
