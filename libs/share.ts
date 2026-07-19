@@ -24,6 +24,9 @@ export const SHARE_URL_WARN_LENGTH = 100_000;
 export const SHARE_URL_MAX_LENGTH = 1_500_000;
 // 共有クエリ文字列の受け入れ上限
 export const SHARE_QUERY_MAX_LENGTH = 10_000;
+// gzip 展開後バイト数の受け入れ上限. 圧縮済み入力は URL 上限から高々 ~1.1MB であり,
+// 正規の JSON の圧縮率は高くても数十倍なのでこれを超えるのは解凍ボムとみなす
+export const SHARE_DECOMPRESSED_MAX_BYTES = 64 * 1024 * 1024;
 
 export type SharedViewState = {
   /** ナローイングスタック (from のみ. to は受信側で再導出する) */
@@ -52,6 +55,7 @@ export type ShareDecodeErrorKind =
   | "version"     // 未知のプレフィックス or v > 1
   | "base64"      // base64url 復号失敗
   | "gunzip"      // gzip 展開失敗
+  | "too_large"   // フラグメントまたは展開後データが上限超過
   | "json"        // JSON.parse 失敗
   | "schema";     // ペイロードの型検証失敗
 
@@ -73,6 +77,8 @@ export function shareErrorMessage(e: unknown): string {
         return "共有リンクにデータが含まれていません";
       case "version":
         return "共有リンクの形式を解釈できません。ページを再読み込みしてから再度開いてみてください";
+      case "too_large":
+        return "共有リンクのデータが大きすぎるため読み込めません";
       case "base64":
       case "gunzip":
       case "json":
@@ -92,9 +98,29 @@ async function gzipCompress(bytes: Uint8Array): Promise<Uint8Array> {
   return new Uint8Array(await new Response(stream).arrayBuffer());
 }
 
-async function gzipDecompress(bytes: Uint8Array): Promise<Uint8Array> {
+async function gzipDecompress(bytes: Uint8Array, maxBytes: number): Promise<Uint8Array> {
   const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
-  return new Uint8Array(await new Response(stream).arrayBuffer());
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) { break; }
+    total += value.length;
+    if (total > maxBytes) {
+      // 解凍ボム対策: 全量をバッファする前に打ち切る
+      await reader.cancel();
+      throw new ShareDecodeError("too_large");
+    }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return out;
 }
 
 function bytesToBase64url(bytes: Uint8Array): string {
@@ -145,14 +171,22 @@ export async function decodeSharePayload(fragment: string): Promise<SharePayload
   if (body.length === 0) {
     throw new ShareDecodeError("empty");
   }
+  // 正規のリンクは URL 全長が SHARE_URL_MAX_LENGTH 以下なので, フラグメント単体が
+  // これを超えることはない. base64 復号でメモリを確保する前に弾く
+  if (body.length > SHARE_URL_MAX_LENGTH) {
+    throw new ShareDecodeError("too_large");
+  }
   if (!body.startsWith(SHARE_FRAGMENT_PREFIX)) {
     throw new ShareDecodeError(/^j[0-9]+\./.test(body) ? "version" : "base64");
   }
   const bytes = base64urlToBytes(body.slice(SHARE_FRAGMENT_PREFIX.length));
   let raw: Uint8Array;
   try {
-    raw = await gzipDecompress(bytes);
+    raw = await gzipDecompress(bytes, SHARE_DECOMPRESSED_MAX_BYTES);
   } catch (e) {
+    if (e instanceof ShareDecodeError) {
+      throw e;
+    }
     throw new ShareDecodeError("gunzip");
   }
   let parsed: unknown;
