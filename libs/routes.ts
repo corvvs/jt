@@ -4,6 +4,12 @@ import type { ParsedUrlQuery } from "querystring";
  * catch-all ルート /{docId}[/diff/{otherDocId}] の構築と解釈を一箇所に集める.
  */
 
+/**
+ * 共有リンク (/shared#<payload>) を受けるための特殊 docId.
+ * "new" / "_list" と同様に実ドキュメントを指さない.
+ */
+export const SHARED_ROUTE_DOC_ID = "shared";
+
 export function docPath(docId: string) {
   return `/${docId}`;
 }
