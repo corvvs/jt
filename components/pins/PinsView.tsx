@@ -154,8 +154,8 @@ export const PinsView = (props: {
   return (
     <div className="pins-view h-full shrink grow flex flex-col gap-2 overflow-hidden">
       <h2 className="color-inverted px-2 py-1 flex flex-row gap-1 items-center font-bold">
-        <p>ピン</p>
         <InlineIcon i={<VscPinned />} />
+        <p>ピン</p>
         {resolvedPins.length > 0 && <p className="text-sm">({resolvedPins.length})</p>}
         <button
           className="profile-close-button ml-auto shrink-0 px-1 flex flex-row items-center"
