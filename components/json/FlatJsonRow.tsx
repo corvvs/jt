@@ -265,17 +265,8 @@ const PinStatusCell = (props: {
               }
             }}
           >
-            {/* メモ本文は選択・コピーできるプレーンテキスト。編集への入口は鉛筆アイコン。
-                幅は編集時の入力欄と同じ固定幅: ピン巡回でメモの長さが変わっても
-                ↑/↓ ボタンの位置が動かないようにする */}
-            <span className={`pin-memo-view text-sm px-1 w-[18em] shrink-0 break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}>
-              {pin.memo || "メモはありません"}
-            </span>
-            <button
-              className="flippable shrink-0 px-1 flex flex-row items-center"
-              title="メモを編集する"
-              onClick={() => pinsHook.openMemoEdit(item.elementKey)}
-            ><InlineIcon i={<VscEdit />} /></button>
+            {/* ボタン群はバルーン左端 (= グリフ直下の固定位置) に置く:
+                ピン巡回でメモの長さが変わっても位置が動かず, 連打で巡回できる */}
             {jumpablePins.length >= 2 && <>
               <button
                 className="flippable shrink-0 px-1 flex flex-row items-center"
@@ -288,6 +279,15 @@ const PinStatusCell = (props: {
                 onClick={() => jumpToNeighborPin(1)}
               ><InlineIcon i={<VscChevronDown />} /></button>
             </>}
+            <button
+              className="flippable shrink-0 px-1 flex flex-row items-center"
+              title="メモを編集する"
+              onClick={() => pinsHook.openMemoEdit(item.elementKey)}
+            ><InlineIcon i={<VscEdit />} /></button>
+            {/* メモ本文は選択・コピーできるプレーンテキスト */}
+            <span className={`pin-memo-view text-sm px-1 max-w-[24em] break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}>
+              {pin.memo || "メモはありません"}
+            </span>
           </div>
       }
     </div>}
