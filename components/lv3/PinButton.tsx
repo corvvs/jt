@@ -12,13 +12,13 @@ export const PinToggleButton = (props: {
   item: JsonRowItem;
 }) => {
   const { diffTarget } = useDiffTarget();
-  const { canPin, pinMap, pendingMemoKeypath, togglePin } = usePins();
+  const { canPin, pinMap, pendingMemo, togglePin } = usePins();
   if (diffTarget || !canPin) { return null; }
   const isPinned = pinMap.has(props.item.elementKey);
-  // この行のクイックメモ入力が開いている間はフォーカスを奪わない:
-  // 入力の blur (確定) が先に走ると再レンダリングでクリックが失われ,
+  // この行のメモバルーンが開いている間はフォーカスを奪わない:
+  // 表示・入力の blur (閉じる/確定) が先に走ると再レンダリングでクリックが失われ,
   // 「もう一度押してもピンが外れない」状態になる。ピンを外すなら下書きは捨てる
-  const isQuickMemoOpen = pendingMemoKeypath === props.item.elementKey;
+  const isQuickMemoOpen = pendingMemo?.keypath === props.item.elementKey;
   return (<p>
     <IconButton
       icon={isPinned ? VscPinned : VscPin}

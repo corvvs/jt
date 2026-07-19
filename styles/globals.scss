@@ -694,10 +694,16 @@ body {
 }
 
 .pin-memo-balloon {
+  // 包含ブロック (幅 2em のグリフセル) への shrink-to-fit で幅が潰れないようにする
+  width: max-content;
   background-color: var(--background-secondary);
   border: 1px solid var(--foreground-secondary);
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.pin-memo-view {
+  color: var(--foreground);
 }
 
 .pin-row {

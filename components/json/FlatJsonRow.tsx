@@ -165,9 +165,10 @@ const ValueMenuCell = (props: {
 
 /**
  * ピンが打たれた行を示すグリフ列 + メモバルーン.
- * グリフはボタンで, 押すとグリフ直下にメモの表示・編集バルーンが開閉する。
- * ピンを打った直後のクイックメモ入力も同じバルーン (この場合は空の下書き)。
- * Enter・グリフ再クリック・フォーカス喪失で確定 / Esc で破棄して閉じる。
+ * グリフはボタンで, 押すとグリフ直下にメモバルーンが開閉する。
+ * バルーンの初手は読み取り専用の表示 (誤編集を防ぐ) で, 表示をクリックすると
+ * 一手で編集に切り替わる。ピンを打った直後だけは編集状態で開く。
+ * 編集は Enter・グリフ再クリック・フォーカス喪失で確定 / Esc で破棄して閉じる。
  * 何も入力しなければメモ無しのピンのまま閉じるだけで, メモ不要時の追加アクションは無い。
  * ドキュメントにピンが1つも無い間は列ごと描画されない (FlatJsonRow 側で制御)。
  */
@@ -177,14 +178,16 @@ const PinStatusCell = (props: {
 }) => {
   const { item, pinsHook } = props;
   const pin = pinsHook.pinMap.get(item.elementKey);
-  const isOpen = !!pin && pinsHook.pendingMemoKeypath === item.elementKey;
+  const pending = pinsHook.pendingMemo;
+  const isOpen = !!pin && pending?.keypath === item.elementKey;
+  const isEditing = isOpen && !!pending?.editing;
   const [draft, setDraft] = useState("");
 
-  // バルーンが開くたびに下書きを現在のメモで初期化する
+  // 編集に入るたびに下書きを現在のメモで初期化する
   useEffect(() => {
-    if (isOpen) { setDraft(pin?.memo ?? ""); }
+    if (isEditing) { setDraft(pin?.memo ?? ""); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isEditing]);
 
   const commit = () => {
     if (pin) {
@@ -201,25 +204,43 @@ const PinStatusCell = (props: {
       className="pin-status-button grow flex flex-row items-center justify-center"
       title={pin.memo || "メモを追加する"}
       // バルーンが開いている間はフォーカスを奪わない:
-      // 入力の blur (確定) が先に走ると再レンダリングでクリックが失われるため
+      // 表示・入力の blur (閉じる/確定) が先に走ると再レンダリングでクリックが失われるため
       onMouseDown={isOpen ? (e) => e.preventDefault() : undefined}
-      onClick={() => isOpen ? commit() : pinsHook.openMemoInput(item.elementKey)}
+      onClick={() => {
+        if (!isOpen) { pinsHook.openMemoView(item.elementKey); }
+        else if (isEditing) { commit(); }
+        else { pinsHook.closePendingMemo(); }
+      }}
     ><FaThumbtack /></button>}
     {isOpen && <div className="pin-memo-balloon absolute top-full left-0 z-20 p-1">
-      <input
-        className="pin-memo-input text-sm px-1 w-[18em]"
-        autoFocus
-        placeholder="メモ (Enter で確定 / Esc で閉じる)"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        // グローバルショートカット (Cmd+A 等) に入力中のキーを奪われないようにする
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.key === "Enter") { commit(); }
-          if (e.key === "Escape") { pinsHook.closePendingMemo(); }
-        }}
-        onBlur={commit}
-      />
+      {isEditing
+        ? <input
+            className="pin-memo-input text-sm px-1 w-[18em]"
+            autoFocus
+            placeholder="メモ (Enter で確定 / Esc で閉じる)"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            // グローバルショートカット (Cmd+A 等) に入力中のキーを奪われないようにする
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === "Enter") { commit(); }
+              if (e.key === "Escape") { pinsHook.closePendingMemo(); }
+            }}
+            onBlur={commit}
+          />
+        : <button
+            className={`pin-memo-view text-sm px-1 text-left max-w-[24em] break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}
+            title="クリックしてメモを編集する"
+            autoFocus
+            onKeyDown={(e) => {
+              e.stopPropagation();
+              if (e.key === "Escape") { pinsHook.closePendingMemo(); }
+            }}
+            // 外側をクリックしたら閉じる (フォーカスがバルーンの外に移る)
+            onBlur={() => pinsHook.closePendingMemo()}
+            onClick={() => pinsHook.openMemoEdit(item.elementKey)}
+          >{pin.memo || "メモを追加…"}</button>
+      }
     </div>}
   </div>;
 };
@@ -249,7 +270,7 @@ export const FlatJsonRow = (props: {
   } = item;
   const isLeaf = isLeafType(right.type);
   const diff = item.diff;
-  const isPendingMemo = props.pinsHook.pendingMemoKeypath === elementKey && !diff;
+  const isPendingMemo = props.pinsHook.pendingMemo?.keypath === elementKey && !diff;
   // 行の背景は優先順: 検索マッチ > diff 状態 > ナローイング起点 > ホバー
   const backgroundClass = [
     (isMatched && filteringPreference.resultAppearance !== "just") ? "matched-row" : "",

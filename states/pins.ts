@@ -34,10 +34,16 @@ type PinsState = {
 const pinsStateAtom = atom<PinsState>({ docId: null, pins: [], loaded: false });
 
 /**
- * ピンを打った直後にその行へ出すクイックメモ入力の対象キーパス.
- * Enter で確定 / Esc・フォーカス喪失で閉じる (何もしなければメモ無しのピンのまま).
+ * 行のピングリフ直下に出すメモバルーンの状態.
+ * editing=false は読み取り専用の表示 (グリフクリック時の初手 — 誤編集を防ぐ),
+ * editing=true は入力欄 (ピンを打った直後 / 表示をクリックした後)。
  */
-const pendingMemoKeypathAtom = atom<string | null>(null);
+export type PendingMemoState = {
+  keypath: string;
+  editing: boolean;
+};
+
+const pendingMemoAtom = atom<PendingMemoState | null>(null);
 
 /**
  * 行描画が O(1) でピン状態を引くための Map (keypath → pin)
@@ -90,10 +96,10 @@ const persistPins = (docId: string, pins: DocumentPin[]) => {
  */
 export const usePinsLoader = () => {
   const setPinsState = useSetAtom(pinsStateAtom);
-  const setPendingMemoKeypath = useSetAtom(pendingMemoKeypathAtom);
+  const setPendingMemo = useSetAtom(pendingMemoAtom);
 
   const loadPinsForDocument = async (docId: string | undefined) => {
-    setPendingMemoKeypath(null);
+    setPendingMemo(null);
     // "new" は保存前の一時 ID なのでピンの帰属先にしない
     if (!docId || docId === "new") {
       setPinsState({ docId: null, pins: [], loaded: false });
@@ -114,7 +120,7 @@ export const usePinsLoader = () => {
 
 export const usePins = () => {
   const [pinsState, setPinsState] = useAtom(pinsStateAtom);
-  const [pendingMemoKeypath, setPendingMemoKeypath] = useAtom(pendingMemoKeypathAtom);
+  const [pendingMemo, setPendingMemo] = useAtom(pendingMemoAtom);
   const pinMap = useAtomValue(pinMapAtom);
 
   const applyPins = (pins: DocumentPin[]) => {
@@ -136,14 +142,14 @@ export const usePins = () => {
       valuePreview: pinValuePreview(item.right),
     };
     applyPins([...pinsState.pins, pin]);
-    // その場でメモを打てるように, ピンを打った行にクイックメモ入力を出す
-    setPendingMemoKeypath(item.elementKey);
+    // その場でメモを打てるように, ピンを打った行にメモバルーンを編集状態で出す
+    setPendingMemo({ keypath: item.elementKey, editing: true });
   };
 
   const removePin = (keypath: string) => {
     applyPins(pinsState.pins.filter((pin) => pin.keypath !== keypath));
-    if (pendingMemoKeypath === keypath) {
-      setPendingMemoKeypath(null);
+    if (pendingMemo?.keypath === keypath) {
+      setPendingMemo(null);
     }
   };
 
@@ -157,10 +163,12 @@ export const usePins = () => {
     /** ピンを打てる状態か (帰属先ドキュメントが確定し, 保存済みピンの読み込みが済んでいる) */
     canPin: !!pinsState.docId && pinsState.loaded,
     pinMap,
-    pendingMemoKeypath,
-    closePendingMemo: () => setPendingMemoKeypath(null),
-    /** 既存ピンのメモバルーンを開く (グリフクリック用) */
-    openMemoInput: (keypath: string) => setPendingMemoKeypath(keypath),
+    pendingMemo,
+    closePendingMemo: () => setPendingMemo(null),
+    /** メモバルーンを読み取り専用の表示で開く (グリフクリックの初手) */
+    openMemoView: (keypath: string) => setPendingMemo({ keypath, editing: false }),
+    /** メモバルーンを編集状態にする (表示クリック後) */
+    openMemoEdit: (keypath: string) => setPendingMemo({ keypath, editing: true }),
     togglePin,
     removePin,
     updatePinMemo,

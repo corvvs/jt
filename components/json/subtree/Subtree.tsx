@@ -96,10 +96,10 @@ export const SubtreeMenuCell = (props: {
   const { manipulation } = props.manipulationHook;
   const { json } = useJSON();
   const flatJsons = useEffectiveItems();
-  const { pendingMemoKeypath } = usePins();
+  const { pendingMemo } = usePins();
   const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
-  // クイックメモ入力が出ている間はメニューを出したままにする (ピンボタンの位置を動かさない)
-  const isPendingMemo = pendingMemoKeypath === props.item.elementKey;
+  // メモバルーンが開いている間はメニューを出したままにする (ピンボタンの位置を動かさない)
+  const isPendingMemo = pendingMemo?.keypath === props.item.elementKey;
   if (!json || json.status !== "accepted" || (!props.isHovered && !isNarrowed && !isPendingMemo)) { return null; }
   const rawJson = json.json;
 
