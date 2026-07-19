@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { VscClose, VscPinned, VscTrash } from "react-icons/vsc";
+import { VscClose, VscEdit, VscPinned, VscTrash } from "react-icons/vsc";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { usePins, usePinsPreference, ResolvedPin } from "@/states/pins";
 import { useDiffTarget } from "@/states/diff";
@@ -12,15 +12,33 @@ const PinMemo = (props: {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(props.memo);
 
+  const startEditing = () => { setDraft(props.memo); setEditing(true); };
+
   if (!editing) {
+    // メモ本文は選択・コピーできるプレーンテキストにして, 編集への入口は鉛筆アイコンに分ける
+    if (!props.memo) {
+      return (
+        <button
+          className="pin-memo-placeholder text-left text-xs flex flex-row items-center gap-1"
+          title="メモを追加する"
+          onClick={startEditing}
+        >
+          <InlineIcon i={<VscEdit />} />
+          <span>メモを追加…</span>
+        </button>
+      );
+    }
     return (
-      <button
-        className={`pin-memo text-left text-xs ${props.memo ? "" : "pin-memo-placeholder"}`}
-        title="クリックしてメモを編集する"
-        onClick={() => { setDraft(props.memo); setEditing(true); }}
-      >
-        {props.memo || "メモを追加…"}
-      </button>
+      <div className="flex flex-row items-start gap-1 min-w-0">
+        <p className="pin-memo text-xs shrink grow min-w-0 break-words">{props.memo}</p>
+        <button
+          className="flippable shrink-0 px-1 flex flex-row items-center"
+          title="メモを編集する"
+          onClick={startEditing}
+        >
+          <InlineIcon i={<VscEdit />} />
+        </button>
+      </div>
     );
   }
 

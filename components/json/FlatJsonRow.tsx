@@ -2,8 +2,10 @@ import { JsonGauge, JsonRowItem, isLeafType } from "@/libs/jetson";
 import { DiffAnnotation } from "@/libs/diff";
 import _ from "lodash";
 import { FaThumbtack } from "react-icons/fa";
+import { VscEdit } from "react-icons/vsc";
 import { FlatJsonValueCell } from "./FlatJsonValueCell";
-import { useEffect, useState } from "react";
+import { InlineIcon } from "../lv1/InlineIcon";
+import { useEffect, useRef, useState } from "react";
 import { useManipulation } from "@/states/manipulation";
 import { usePins } from "@/states/pins";
 import { FlatJsonLeadingCell } from "./leading/Leading";
@@ -182,12 +184,18 @@ const PinStatusCell = (props: {
   const isOpen = !!pin && pending?.keypath === item.elementKey;
   const isEditing = isOpen && !!pending?.editing;
   const [draft, setDraft] = useState("");
+  const viewRef = useRef<HTMLDivElement>(null);
 
   // 編集に入るたびに下書きを現在のメモで初期化する
   useEffect(() => {
     if (isEditing) { setDraft(pin?.memo ?? ""); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditing]);
+
+  // 表示バルーンにフォーカスを与え, 外側クリック (フォーカス喪失) で閉じられるようにする
+  useEffect(() => {
+    if (isOpen && !isEditing) { viewRef.current?.focus(); }
+  }, [isOpen, isEditing]);
 
   const commit = () => {
     if (pin) {
@@ -228,18 +236,31 @@ const PinStatusCell = (props: {
             }}
             onBlur={commit}
           />
-        : <button
-            className={`pin-memo-view text-sm px-1 text-left max-w-[24em] break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}
-            title="クリックしてメモを編集する"
-            autoFocus
+        : <div
+            ref={viewRef}
+            tabIndex={-1}
+            className="flex flex-row items-start gap-1 outline-none"
             onKeyDown={(e) => {
               e.stopPropagation();
               if (e.key === "Escape") { pinsHook.closePendingMemo(); }
             }}
-            // 外側をクリックしたら閉じる (フォーカスがバルーンの外に移る)
-            onBlur={() => pinsHook.closePendingMemo()}
-            onClick={() => pinsHook.openMemoEdit(item.elementKey)}
-          >{pin.memo || "メモを追加…"}</button>
+            // 外側をクリックしたら閉じる (バルーン内へのフォーカス移動では閉じない)
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                pinsHook.closePendingMemo();
+              }
+            }}
+          >
+            {/* メモ本文は選択・コピーできるプレーンテキスト。編集への入口は鉛筆アイコン */}
+            <span className={`pin-memo-view text-sm px-1 max-w-[24em] break-words ${pin.memo ? "" : "pin-memo-placeholder"}`}>
+              {pin.memo || "メモはありません"}
+            </span>
+            <button
+              className="flippable shrink-0 px-1 flex flex-row items-center"
+              title="メモを編集する"
+              onClick={() => pinsHook.openMemoEdit(item.elementKey)}
+            ><InlineIcon i={<VscEdit />} /></button>
+          </div>
       }
     </div>}
   </div>;
