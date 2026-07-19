@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { flattenJson } from "./jetson";
 import {
+  SHARE_DECOMPRESSED_MAX_BYTES,
   SHARE_FRAGMENT_PREFIX,
+  SHARE_URL_MAX_LENGTH,
   SharePayloadV1,
   ShareDecodeError,
   buildShareUrl,
@@ -112,6 +114,17 @@ describe("encodeSharePayload / decodeSharePayload", () => {
     // 有効な base64url だが gzip ではないバイト列
     const notGzip = btoa("this is not gzip data").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     await expectDecodeError(SHARE_FRAGMENT_PREFIX + notGzip, "gunzip");
+  });
+
+  it("異常系: フラグメント長の上限超過は base64 復号前に too_large で弾く", async () => {
+    await expectDecodeError(SHARE_FRAGMENT_PREFIX + "A".repeat(SHARE_URL_MAX_LENGTH), "too_large");
+  });
+
+  it("異常系: 展開後サイズが上限を超える解凍ボムは too_large で打ち切る", async () => {
+    // 高圧縮率の反復データ (展開後 64MB 超, 圧縮後は数十KB)
+    const bomb = await gzipBase64url("0".repeat(SHARE_DECOMPRESSED_MAX_BYTES + 1024));
+    expect(bomb.length).toBeLessThan(SHARE_URL_MAX_LENGTH);
+    await expectDecodeError(SHARE_FRAGMENT_PREFIX + bomb, "too_large");
   });
 
   it("異常系: JSON 破壊", async () => {
