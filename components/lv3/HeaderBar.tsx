@@ -186,11 +186,13 @@ const OpetationButtons = (props: {
   const {
     handleMouseEnter,
     handleMouseLeave,
+    handleContainerMouseOver,
     backdrop,
   } = useTransientBackdrop();
 
   return <div
     className='header-bar relative flex flex-row items-center gap-1'
+    onMouseOver={handleContainerMouseOver}
     onMouseLeave={handleMouseLeave}
   >
     {backdrop}
@@ -261,10 +263,10 @@ const OpetationButtons = (props: {
 
     {mode === 'json-viewer' && (
       <MenuToggleButton
-        isToggled={profilePreference.showPanel}
+        isToggled={profilePreference.showPanel && !diffTarget}
         onClick={(value) => setShowProfilePanel(value)}
         onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons}
+        disabled={!flatJsons || !!diffTarget}
       >
         <InlineIcon i={<VscGraph />} />
         <span>Profile</span>
@@ -273,10 +275,10 @@ const OpetationButtons = (props: {
 
     {mode === 'json-viewer' && (
       <MenuToggleButton
-        isToggled={pinsPreference.showPanel}
+        isToggled={pinsPreference.showPanel && !diffTarget}
         onClick={(value) => setShowPinsPanel(value)}
         onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons}
+        disabled={!flatJsons || !!diffTarget}
       >
         <InlineIcon i={<VscPinned />} />
         <span>Pins</span>
