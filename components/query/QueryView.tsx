@@ -9,6 +9,7 @@ import { ReactNode, useCallback, useEffect, useRef } from "react";
 import { useAdvancedQuery } from "@/libs/advanced_query";
 import { ModeDescription, useQuery } from "@/states/manipulation/query";
 import { HitCard } from "./HitCard";
+import { SavedQueriesSection } from "./SavedQueriesSection";
 import { FootHinted } from "./FootHinted";
 
 interface QueryViewProps {
@@ -193,7 +194,13 @@ export const QueryView = ({ matchNavigation }: QueryViewProps = {}) => {
     </div>
 
     <div
-      className="px-2 shrink grow"
+      className="px-2 shrink grow overflow-hidden"
+    >
+      <SavedQueriesSection />
+    </div>
+
+    <div
+      className="px-2 shrink-0 grow-0"
     >
       {FilterCard}
     </div>

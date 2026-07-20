@@ -713,6 +713,32 @@ body {
   height: 100%;
 }
 
+/* 保存済みクエリ (検索パネル内のセクション) */
+.saved-query-row {
+  &:hover {
+    background-color: var(--background);
+  }
+}
+
+.saved-query-mode {
+  color: var(--foreground-secondary);
+  font-size: 0.7rem;
+  font-family: Menlo, Monaco, 'Courier New', Consolas, monospace;
+}
+
+.saved-query-action {
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.saved-query-name-input {
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 2px;
+}
+
 .pin-status-cell {
   color: var(--pin-glyph);
 }

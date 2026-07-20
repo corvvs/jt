@@ -33,6 +33,7 @@ import { usePins, usePinsLoader, usePinsPreference } from "@/states/pins";
 import { usePinNavigation } from "@/hooks/usePinNavigation";
 import { MinimapView } from "./minimap/MinimapView";
 import { useMinimapPreference, minimapViewportAtom } from "@/states/minimap";
+import { useSavedQueriesLoader } from "@/states/saved_queries";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -164,6 +165,7 @@ export const Main = (props: {
   const { pinsPreference, setShowPinsPanel } = usePinsPreference();
   // ミニマップは diff モード中も有効なので !diffTarget でゲートしない
   const { minimapPreference } = useMinimapPreference();
+  const { loadSavedQueries } = useSavedQueriesLoader();
   // diff モード中は Profile/Pins は使えないので畳む.
   // preference 自体は書き換えないため, diff を抜けると元の開閉状態に復元される.
   const showProfilePanel = profilePreference.showPanel && !diffTarget;
@@ -201,6 +203,12 @@ export const Main = (props: {
     loadPinsForDocument(loadedDocId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedDocId]);
+
+  // 保存済みクエリを localStorage から読み込む (グローバルなので起動時に1回)
+  useEffect(() => {
+    loadSavedQueries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!router.isReady) { return; }
