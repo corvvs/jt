@@ -7,13 +7,14 @@ import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
 import { diffFlattenedAtom, useEffectiveItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
-import { FaChevronRight, FaExchangeAlt, FaList, FaSearch } from "react-icons/fa";
+import { FaChevronRight, FaExchangeAlt, FaList, FaMap, FaSearch } from "react-icons/fa";
 import { useAtom } from "jotai";
 import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
 import { useDiffOnly, useDiffTarget } from "@/states/diff";
 import { useProfilePreference } from "@/states/profile";
 import { usePinsPreference } from "@/states/pins";
+import { useMinimapPreference } from "@/states/minimap";
 import { docPath, diffPath, parseDocRoute } from "@/libs/routes";
 import { MatchNavigation } from "@/hooks/useMatchNavigation";
 import { GoDiff } from "react-icons/go";
@@ -183,6 +184,7 @@ const OpetationButtons = (props: {
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   const { profilePreference, setShowProfilePanel } = useProfilePreference();
   const { pinsPreference, setShowPinsPanel } = usePinsPreference();
+  const { minimapPreference, setShowMinimap } = useMinimapPreference();
   const {
     handleMouseEnter,
     handleMouseLeave,
@@ -282,6 +284,18 @@ const OpetationButtons = (props: {
       >
         <InlineIcon i={<VscPinned />} />
         <span>Pins</span>
+      </MenuToggleButton>
+    )}
+
+    {mode === 'json-viewer' && (
+      <MenuToggleButton
+        isToggled={minimapPreference.showPanel}
+        onClick={(value) => setShowMinimap(value)}
+        onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons}
+      >
+        <InlineIcon i={<FaMap />} />
+        <span>Map</span>
       </MenuToggleButton>
     )}
 

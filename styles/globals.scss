@@ -701,6 +701,18 @@ body {
   backface-visibility: hidden;
 }
 
+/* ミニマップ — 可視行を縮約した帯 (マッチ・ピン・diff の空間分布) */
+.minimap-container {
+  background-color: var(--background-secondary);
+  transition: background-color var(--theme-transition);
+}
+
+.minimap-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .pin-status-cell {
   color: var(--pin-glyph);
 }

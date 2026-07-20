@@ -31,6 +31,8 @@ import { useProfilePreference } from "@/states/profile";
 import { PinsView } from "./pins/PinsView";
 import { usePins, usePinsLoader, usePinsPreference } from "@/states/pins";
 import { usePinNavigation } from "@/hooks/usePinNavigation";
+import { MinimapView } from "./minimap/MinimapView";
+import { useMinimapPreference } from "@/states/minimap";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -154,6 +156,8 @@ export const Main = (props: {
   const { modalState: preformattedValueModalState } = usePreformattedValueModal();
   const { profilePreference, setShowProfilePanel } = useProfilePreference();
   const { pinsPreference, setShowPinsPanel } = usePinsPreference();
+  // ミニマップは diff モード中も有効なので !diffTarget でゲートしない
+  const { minimapPreference } = useMinimapPreference();
   // diff モード中は Profile/Pins は使えないので畳む.
   // preference 自体は書き換えないため, diff を抜けると元の開閉状態に復元される.
   const showProfilePanel = profilePreference.showPanel && !diffTarget;
@@ -576,6 +580,12 @@ export const Main = (props: {
           isLoading={isLoading}
         />
       </div>
+
+      {minimapPreference.showPanel && (
+        <div className="minimap-container shrink-0 grow-0 w-4">
+          <MinimapView itemViewRef={itemViewRef} />
+        </div>
+      )}
 
       <div
         className={`profile-panel-container shrink-0 grow-0 flex flex-col justify-stretch transition-all duration-100 ease-out overflow-hidden ${
