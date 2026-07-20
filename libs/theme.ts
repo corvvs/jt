@@ -47,7 +47,7 @@ type ColorSet = {
   [Key in typeof ColorSetKeys[number]]: ColorValue;
 };
 
-const ColorSets: {
+export const ColorSets: {
     [Theme in ActualColorTheme]: ColorSet;
 } = {
   light: {
