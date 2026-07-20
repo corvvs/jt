@@ -185,7 +185,7 @@ export const MinimapView = (props: {
   };
 
   return (
-    <div ref={containerRef} className="minimap-body w-full h-full">
+    <div ref={containerRef} className="minimap-body w-full h-full relative overflow-hidden">
       <canvas
         ref={canvasRef}
         className="minimap-canvas cursor-pointer"

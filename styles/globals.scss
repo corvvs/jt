@@ -708,6 +708,12 @@ body {
 }
 
 .minimap-canvas {
+  /* 絶対配置で通常フローから外す. canvas は width/height 属性 (描画バッファ) を
+     dpr 倍で持つため, 通常フローだとその高さが minimap-body を押し広げ,
+     ResizeObserver → size 増 → canvas.height 増 の自己増幅ループを起こしうる.
+     絶対配置 + inset:0 なら親サイズに追従するだけで親を押し広げない. */
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
