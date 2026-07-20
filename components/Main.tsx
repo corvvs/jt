@@ -1,6 +1,6 @@
 import { useJSON } from "@/states";
 import { FlatJsonRow } from "./json/FlatJsonRow";
-import { FixedSizeList } from "react-window";
+import { FixedSizeList, type ListOnItemsRenderedProps } from "react-window";
 import AutoSizer from 'react-virtualized-auto-sizer';
 import _ from "lodash";
 import { FooterBar } from "./lv3/FooterBar";
@@ -32,16 +32,17 @@ import { PinsView } from "./pins/PinsView";
 import { usePins, usePinsLoader, usePinsPreference } from "@/states/pins";
 import { usePinNavigation } from "@/hooks/usePinNavigation";
 import { MinimapView } from "./minimap/MinimapView";
-import { useMinimapPreference } from "@/states/minimap";
+import { useMinimapPreference, minimapViewportAtom } from "@/states/minimap";
 
 interface VirtualScrollProps<T> {
   data: T[];
   renderItem: (item: T, index: number) => JSX.Element;
   itemSize: number;
   itemViewRef: MutableRefObject<any>;
+  onItemsRendered?: (props: ListOnItemsRenderedProps) => void;
 }
 
-function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualScrollProps<T>) {
+function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef, onItemsRendered }: VirtualScrollProps<T>) {
   const Row = ({ index, style }: any) => {
     return (
       <div style={style}>
@@ -60,6 +61,7 @@ function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef }: VirtualSc
           itemCount={data.length}
           itemSize={itemSize}
           overscanCount={20}
+          onItemsRendered={onItemsRendered}
         >
           {Row}
         </FixedSizeList>
@@ -80,6 +82,7 @@ const JsonItemsView = (props: {
   const manipulationHook = useManipulation();
   const toggleSingleHook = useToggleSingle();
   const pinsHook = usePins();
+  const setViewport = useSetAtom(minimapViewportAtom);
 
   // targetDocIdとloadedDocIdが一致していない場合、またはロード中の場合はローディング表示
   if (props.isLoading || props.targetDocId !== props.loadedDocId) {
@@ -128,6 +131,9 @@ const JsonItemsView = (props: {
       />
       }
       itemSize={32} // 各アイテムの高さ
+      onItemsRendered={({ visibleStartIndex, visibleStopIndex }) =>
+        setViewport({ startIndex: visibleStartIndex, stopIndex: visibleStopIndex })
+      }
     />
   );
 }

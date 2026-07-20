@@ -5,6 +5,7 @@ import { filterMapsAtom } from "@/states/manipulation/query";
 import { pinMapAtom } from "@/states/pins";
 import { useColorTheme } from "@/states/theme";
 import { ColorSets } from "@/libs/theme";
+import { minimapViewportAtom } from "@/states/minimap";
 
 /**
  * ミニマップ.
@@ -26,6 +27,7 @@ export const MinimapView = (props: {
   const visibles = useVisibleItems();
   const filterMaps = useAtomValue(filterMapsAtom);
   const pinMap = useAtomValue(pinMapAtom);
+  const viewport = useAtomValue(minimapViewportAtom);
   const { colorTheme } = useColorTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -110,7 +112,26 @@ export const MinimapView = (props: {
         ctx.fillRect(width - laneW, yOf(i), laneW, drawH);
       }
     }
-  }, [visibles, filterMaps, pinMap, colorTheme, size]);
+
+    // 4) 現在の表示範囲を示す枠 (マーカーの上に半透明で重ねる).
+    // viewport の index は onItemsRendered 由来の可視 index. 念のため現在の n で clamp する.
+    if (viewport) {
+      const start = Math.max(0, Math.min(viewport.startIndex, n - 1));
+      const stop = Math.max(start, Math.min(viewport.stopIndex, n - 1));
+      const vy1 = Math.floor((start / n) * height);
+      const vy2 = Math.min(height, Math.ceil(((stop + 1) / n) * height));
+      const vh = Math.max(2, vy2 - vy1);
+      const foreground = colors["foreground"] as string;
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = foreground;
+      ctx.fillRect(0, vy1, width, vh);
+      ctx.restore();
+      ctx.strokeStyle = foreground;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, vy1 + 0.5, width - 1, Math.max(1, vh - 1));
+    }
+  }, [visibles, filterMaps, pinMap, viewport, colorTheme, size]);
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!visibles) { return; }
