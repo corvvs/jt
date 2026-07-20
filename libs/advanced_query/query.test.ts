@@ -5,6 +5,7 @@ import { structurizeQuery } from "./parser";
 import { matchByQuery } from "./matcher";
 import { GroupedQuery, Query, QueryToken } from "./types";
 import { QuerySyntaxError } from "./QuerySyntaxError";
+import { parseQuery } from "./parseQuery";
 
 const parse = (query: string) => structurizeQuery(tokenizeQuery(query));
 
@@ -343,5 +344,28 @@ describe("matcher: 論理演算", () => {
     expect(matchedKeys(LOG_JSON, '(count:42 | ratio:null) & meta.*')).toEqual([
       "meta.count", "meta.ratio",
     ]);
+  });
+});
+
+describe("parseQuery: 構文エラーを例外にせず取り込む", () => {
+  // 回帰: tokenize 段階の QuerySyntaxError (未終了の引用符など) が例外として
+  // 漏れると filterMapsAtom 経由でレンダー中に throw され, アプリごと落ちる.
+  // tokenize エラー・structurize エラーのどちらも throw せず syntaxError で返すこと.
+  // 前半3つは tokenize 段階 (未終了の引用符), 後半3つは structurize 段階のエラー.
+  // ちなみに '"' 単独は値モードでないため key 文字扱いになりエラーにならない.
+  const errorQueries = ['a:"', ':"', 'a:"oops', "a..b", "a:", "(a:1"];
+  for (const query of errorQueries) {
+    it(`throw せず syntaxError を返す: ${JSON.stringify(query)}`, () => {
+      expect(() => parseQuery(query)).not.toThrow();
+      const result = parseQuery(query) as { syntaxError?: QuerySyntaxError; structure?: unknown };
+      expect(result.syntaxError).toBeInstanceOf(QuerySyntaxError);
+      expect(result.structure).toBeUndefined();
+    });
+  }
+
+  it("正常なクエリは structure を返し syntaxError は持たない", () => {
+    const result = parseQuery("a:1") as { syntaxError?: QuerySyntaxError; structure?: unknown };
+    expect(result.structure).toBeDefined();
+    expect(result.syntaxError).toBeUndefined();
   });
 });
