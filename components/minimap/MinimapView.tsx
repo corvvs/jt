@@ -133,7 +133,7 @@ export const MinimapView = (props: {
     }
   }, [visibles, filterMaps, pinMap, viewport, colorTheme, size]);
 
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const scrubTo = (clientY: number) => {
     if (!visibles) { return; }
     const canvas = canvasRef.current;
     if (!canvas) { return; }
@@ -141,9 +141,47 @@ export const MinimapView = (props: {
     if (rect.height <= 0) { return; }
     const n = visibles.visibleItems.length;
     if (n === 0) { return; }
-    const y = e.clientY - rect.top;
+    const y = clientY - rect.top;
     const target = Math.min(n - 1, Math.max(0, Math.round((y / rect.height) * n)));
     props.itemViewRef.current?.scrollToItem(target, "center");
+  };
+
+  // クリックで単発ジャンプ, ドラッグで連続スクラブ.
+  // ドラッグ中は canvas 外に出ても追従できるよう document でリッスンし, mouseup で解除する.
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas || !visibles) { return; }
+    const rect = canvas.getBoundingClientRect();
+    const n = visibles.visibleItems.length;
+    if (rect.height <= 0 || n === 0) { return; }
+    const y = e.clientY - rect.top;
+
+    // カーソルが現在の枠の内側なら「枠を掴んで相対ドラッグ」: 掴んだ位置と枠中心の
+    // オフセットを保持し, 掴んだ瞬間に枠が飛ばないようにする. 枠の外 (トラック) を
+    // 押した場合は従来どおりその位置へジャンプする.
+    let grabOffset = 0;
+    if (viewport) {
+      const start = Math.max(0, Math.min(viewport.startIndex, n - 1));
+      const stop = Math.max(start, Math.min(viewport.stopIndex, n - 1));
+      const vy1 = (start / n) * rect.height;
+      const vy2 = ((stop + 1) / n) * rect.height;
+      if (y >= vy1 && y <= vy2) {
+        grabOffset = y - (vy1 + vy2) / 2;
+      } else {
+        scrubTo(e.clientY);
+      }
+    } else {
+      scrubTo(e.clientY);
+    }
+
+    const onMove = (ev: MouseEvent) => scrubTo(ev.clientY - grabOffset);
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
   };
 
   return (
@@ -151,7 +189,7 @@ export const MinimapView = (props: {
       <canvas
         ref={canvasRef}
         className="minimap-canvas cursor-pointer"
-        onClick={handleClick}
+        onMouseDown={handleMouseDown}
       />
     </div>
   );
