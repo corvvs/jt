@@ -233,6 +233,7 @@ const OpetationButtons = (props: {
 
     {mode === 'json-viewer' && (
       <MenuToggleButton
+        className="ml-4"
         isToggled={filteringPreference.showPanel}
         onClick={(value) => setFilteringBooleanPreference("showPanel", value)}
         onMouseEnter={handleMouseEnter}
@@ -301,6 +302,7 @@ const OpetationButtons = (props: {
 
     {mode === 'json-viewer' && (
       <MenuButton
+        className="ml-4"
         onClick={() => foldAll()}
         onMouseEnter={handleMouseEnter}
         disabled={!flatJsons}
@@ -344,7 +346,7 @@ const MainLine = (props: {
   >
     <AppTitle mode={mode} />
     <OpetationButtons mode={mode} />
-    <ThemeSelector />
+    <div className="ml-auto"><ThemeSelector /></div>
   </div>);
 };
 
