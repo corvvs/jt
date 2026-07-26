@@ -182,7 +182,7 @@ export const Main = (props: {
   const { loadSavedQueries } = useSavedQueriesLoader();
   const { loadHighlightRules } = useHighlightRulesLoader();
   const { highlightPreference, setShowHighlightPanel } = useHighlightPreference();
-  // diff モード中は Profile/Pins/ハイライトルールは使えないので畳む.
+  // diff モード中は Profile/Pins/カラーリングルールは使えないので畳む.
   // preference 自体は書き換えないため, diff を抜けると元の開閉状態に復元される.
   const showProfilePanel = profilePreference.showPanel && !diffTarget;
   const showPinsPanel = pinsPreference.showPanel && !diffTarget;
@@ -221,7 +221,7 @@ export const Main = (props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedDocId]);
 
-  // 保存済みクエリ・ハイライトルールを localStorage から読み込む (グローバルなので起動時に1回)
+  // 保存済みクエリ・カラーリングルールを localStorage から読み込む (グローバルなので起動時に1回)
   useEffect(() => {
     loadSavedQueries();
     loadHighlightRules();
@@ -443,10 +443,10 @@ export const Main = (props: {
         if (!diffTarget) { setShowPinsPanel(!pinsPreference.showPanel); }
       }
 
-      // Cmd+Shift+L: ハイライトルールパネルをトグルする
+      // Cmd+Shift+L: カラーリングルールパネルをトグルする
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'L' || event.key === 'l')) {
         event.preventDefault();
-        // diff モード中はハイライトルールを使えないのでトグルしない (ヘッダーボタンも disabled)
+        // diff モード中はカラーリングルールを使えないのでトグルしない (ヘッダーボタンも disabled)
         if (!diffTarget) { setShowHighlightPanel(!highlightPreference.showPanel); }
       }
 

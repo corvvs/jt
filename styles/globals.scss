@@ -158,7 +158,7 @@ body {
   box-shadow: inset 3px 0 0 var(--matched-foreground);
 }
 
-/* ハイライトルールの行背景 (構造は matched-row と同じ. 色はテーマのパレットトークン) */
+/* カラーリングルールの行背景 (構造は matched-row と同じ. 色はテーマのパレットトークン) */
 @for $i from 0 through 7 {
   .hl-row-#{$i} {
     background-color: var(--highlight-#{$i}-row);
@@ -787,7 +787,7 @@ body {
   border-radius: 2px;
 }
 
-/* ハイライトルールパネル */
+/* カラーリングルールパネル */
 .highlight-view {
   background-color: var(--background-secondary);
   transition: background-color var(--theme-transition);

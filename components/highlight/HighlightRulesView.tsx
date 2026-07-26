@@ -18,7 +18,7 @@ import { useManipulation } from "@/states/manipulation";
 import { useDiffTarget } from "@/states/diff";
 
 /**
- * ハイライトルールの管理パネル.
+ * カラーリングルールの管理パネル.
  *
  * ルールは検索とは独立した注釈レイヤーなので, 検索パネルではなく右側の
  * 独立パネル (Profile / Pins と排他) に置く。検索との行き来は
@@ -355,7 +355,7 @@ export const HighlightRulesView = () => {
     <div className="highlight-view h-full shrink grow flex flex-col gap-2 overflow-hidden">
       <h2 className="color-inverted px-2 py-1 flex flex-row gap-1 items-center font-bold">
         <InlineIcon i={<FaHighlighter />} />
-        <p>ハイライトルール</p>
+        <p>カラーリングルール</p>
         {highlightRules.length > 0 && <p className="text-sm">({highlightRules.length})</p>}
         <button
           className="profile-close-button ml-auto shrink-0 px-1 flex flex-row items-center"

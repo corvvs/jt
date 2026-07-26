@@ -12,7 +12,7 @@ import { minimapViewportAtom } from "@/states/minimap";
  * ミニマップ.
  *
  * 可視行 (visibleItems) を縦に縮約した帯へ, 検索マッチ・ピン・diff status・
- * ハイライトルールの色を投影する.
+ * カラーリングルールの色を投影する.
  * 縦軸は「可視行の index」= react-window のスクロール座標と一致するため,
  * クリック位置 → visibleIndex → scrollToItem がそのまま噛み合う.
  *
@@ -86,7 +86,7 @@ export const MinimapView = (props: {
     const drawH = Math.max(1, Math.ceil(rowH));
     const yOf = (i: number) => Math.floor((i / n) * height);
 
-    // 0) ハイライトルール: 全幅の帯 (行背景に相当). diff モードでは atom が null なので
+    // 0) カラーリングルール: 全幅の帯 (行背景に相当). diff モードでは atom が null なので
     //    diff 帯と重なることはない. マッチ・ピンのレーンは後から上に重なる.
     if (highlightMaps) {
       for (let i = 0; i < n; i++) {

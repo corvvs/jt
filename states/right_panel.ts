@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 
 /**
- * 右側パネル (Profile / Pins / ハイライトルール) の排他制御.
+ * 右側パネル (Profile / Pins / カラーリングルール) の排他制御.
  *
  * パネルが増えて画面を占有しすぎないよう, 右側は同時に1枚しか開けない。
  * 各パネルの preference hook (useProfilePreference 等) はこの atom の derived view で,

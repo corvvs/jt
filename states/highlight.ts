@@ -15,7 +15,7 @@ import { activeRightPanelAtom } from "./right_panel";
 type JotaiStore = ReturnType<typeof createStore>;
 
 /**
- * ハイライトルールの状態. 設計は libs/highlight.ts の冒頭コメント参照.
+ * カラーリングルールの状態. 設計は libs/highlight.ts の冒頭コメント参照.
  * 永続化まわりは states/saved_queries.ts と同じ方針 (グローバル / localStorage)。
  */
 

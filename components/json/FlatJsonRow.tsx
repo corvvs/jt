@@ -284,9 +284,9 @@ export const FlatJsonRow = (props: {
   // キーメニューはポータルで行の外に出るため, 開いた時点でマウスは行から外れる.
   // ホバー扱いを続けないと祖先のキーセルが消え, メニューの基準ごと失われる
   const isHovered = isPointed || keyMenuHook.keyMenu?.rowIndex === item.index;
-  // ハイライトルールの色 (diff モードでは atom が null なので自然に消える)
+  // カラーリングルールの色 (diff モードでは atom が null なので自然に消える)
   const highlightColor = highlightMaps?.rowColor[item.index];
-  // 行の背景は優先順: 検索マッチ > diff 状態 > ナローイング起点 > ハイライトルール > ホバー
+  // 行の背景は優先順: 検索マッチ > diff 状態 > ナローイング起点 > カラーリングルール > ホバー
   const backgroundClass = [
     (isMatched && filteringPreference.resultAppearance !== "just") ? "matched-row" : "",
     diff ? diffAppearanceOf(diff)?.rowClass ?? "" : "",

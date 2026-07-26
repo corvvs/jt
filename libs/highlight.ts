@@ -3,7 +3,7 @@ import { ItemMatcher, buildMatcher } from "./query_matcher";
 import type { QueryMode } from "@/states/manipulation/query";
 
 /**
- * ハイライトルール: クエリにマッチした行へ色を常駐適用する注釈レイヤー.
+ * カラーリングルール: クエリにマッチした行へ色を常駐適用する注釈レイヤー.
  *
  * 検索 (絞り込み・lightup) が非マッチ行を降格するのに対し, ルールはマッチ行を
  * 昇格させるだけで, 非マッチ行の表示には一切影響しない。だから巡回ナビも減光も

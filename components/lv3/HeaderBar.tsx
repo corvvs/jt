@@ -298,7 +298,7 @@ const OpetationButtons = (props: {
         disabled={!flatJsons || !!diffTarget}
       >
         <InlineIcon i={<FaHighlighter />} />
-        <span>Rules</span>
+        <span>Colors</span>
       </MenuToggleButton>
     )}
 

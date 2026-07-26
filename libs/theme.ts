@@ -96,7 +96,7 @@ export const ColorSets: {
     "diff-added-foreground":   "#2e7d43",
     "diff-removed-foreground": "#c24444",
     "diff-changed-foreground": "#9a7b1c",
-    // ハイライトルールのパレット (row = 行背景の淡色 / marker = 左バー・ミニマップの濃色).
+    // カラーリングルールのパレット (row = 行背景の淡色 / marker = 左バー・ミニマップの濃色).
     // 明度は row が diff-*-row, marker が diff-*-foreground の帯に合わせてある
     "highlight-0-row":    "#f0d6d6", // red
     "highlight-1-row":    "#f2e2cc", // orange

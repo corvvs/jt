@@ -5,7 +5,7 @@ import { matchByQuery } from "./advanced_query/matcher";
 import type { QueryMode } from "@/states/manipulation/query";
 
 /**
- * 検索とハイライトルールで共用する行 matcher の構築.
+ * 検索とカラーリングルールで共用する行 matcher の構築.
  *
  * simple / advanced どちらも「行アイテム1つに対して真偽を返す純関数」を返す.
  * 構築できない入力 (短すぎる simple クエリ・構文エラー・空クエリ) では null を返し,
