@@ -1,4 +1,4 @@
-import { JsonGauge, JsonRowItem, isLeafType } from "@/libs/jetson";
+import { JsonGauge, JsonRowItem } from "@/libs/jetson";
 import { DiffAnnotation } from "@/libs/diff";
 import _ from "lodash";
 import { FaThumbtack } from "react-icons/fa";
@@ -12,8 +12,7 @@ import { usePins, resolvedPinsAtom, pinJumpRequestAtom } from "@/states/pins";
 import { FlatJsonLeadingCell } from "./leading/Leading";
 import { LineNumberCell } from "./LineNumberCell";
 import { useToggleSingle } from "@/states/view";
-import { CopyButton, DownloadButton } from "../lv3/CopyButton";
-import { PinToggleButton } from "../lv3/PinButton";
+import { useKeyMenu } from "@/states/key_menu";
 
 const LeadingCells = (props: {
   item: JsonRowItem;
@@ -23,6 +22,7 @@ const LeadingCells = (props: {
   isNarrowedFrom: boolean;
   manipulationHook: ReturnType<typeof useManipulation>;
   toggleSingleHook: ReturnType<typeof useToggleSingle>;
+  keyMenuHook: ReturnType<typeof useKeyMenu>;
 }) => {
   const {
     item,
@@ -32,6 +32,7 @@ const LeadingCells = (props: {
     isNarrowedFrom,
     toggleSingleHook,
     manipulationHook,
+    keyMenuHook,
   } = props;
   const {
     rowItems
@@ -66,39 +67,12 @@ const LeadingCells = (props: {
         isNarrowedFrom={isNarrowedFrom}
         manipulationHook={manipulationHook}
         toggleSingleHook={toggleSingleHook}
+        keyMenuHook={keyMenuHook}
+        rowItem={item}
       />
     })
   }</>
 }
-
-const CopyValueButton = (props: {
-  item: JsonRowItem;
-}) => <CopyButton
-  alt="この要素をJSONとしてクリップボードにコピーする"
-  getSubtext={() => {
-    return JSON.stringify(props.item.right.value, null, 2);
-  }}
-  getToastText={() => `値をクリップボードにコピーしました`}
-/>
-
-const DownloadValueButton = (props: {
-  item: JsonRowItem;
-}) => <DownloadButton
-  alt="この要素をJSONファイルとしてダウンロードする"
-  getData={() => props.item.right.value}
-  getToastText={() => `値をファイルとしてダウンロードしました`}
-  filename={`value-${props.item.elementKey.replace(/[^\w-]/g, '_')}.json`}
-/>
-
-const CopyKeyPathButton = (props: {
-  item: JsonRowItem;
-}) => <CopyButton
-  alt="この要素のキーをクリップボードにコピーする"
-  getSubtext={() => {
-    return props.item.elementKey;
-  }}
-  getToastText={() => `KeyPath ${props.item.elementKey} をクリップボードにコピーしました`}
-/>
 
 type DiffAppearance = {
   glyph: string;
@@ -148,23 +122,6 @@ const DiffStatusCell = (props: {
     title={appearance?.alt}
   >{appearance?.glyph ?? ""}</div>;
 };
-
-const ValueMenuCell = (props: {
-  item: JsonRowItem;
-}) => {
-  const vo = props.item.right;
-  const showCopyValueButton = vo.type !== "null" && vo.type !== "boolean";
-  const showCopyKeyPathButton = true;
-
-  return <div
-    className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
-  >
-    <PinToggleButton item={props.item} />
-    {showCopyValueButton && <CopyValueButton item={props.item} />}
-    {showCopyValueButton && <DownloadValueButton item={props.item} />}
-    {showCopyKeyPathButton && <CopyKeyPathButton item={props.item} />}
-    </div>
-}
 
 /**
  * ピンが打たれた行を示すグリフ列 + メモバルーン.
@@ -301,10 +258,11 @@ export const FlatJsonRow = (props: {
   manipulationHook: ReturnType<typeof useManipulation>;
   toggleSingleHook: ReturnType<typeof useToggleSingle>;
   pinsHook: ReturnType<typeof usePins>;
+  keyMenuHook: ReturnType<typeof useKeyMenu>;
   gauge?: JsonGauge;
 }) => {
   
-  const [isHovered, setIsHovered] = useState(false);
+  const [isPointed, setIsPointed] = useState(false);
   const { manipulation, filteringPreference, filterMaps } = props.manipulationHook;
   const isMatched = !!(filterMaps && filterMaps.matched[props.item.index]);
   const isNarrowedFrom = _.last(manipulation.narrowedRanges)?.from === props.item.index;
@@ -314,14 +272,16 @@ export const FlatJsonRow = (props: {
     gauge,
     manipulationHook,
     toggleSingleHook,
+    keyMenuHook,
   } = props;
   const {
     right,
     elementKey,
   } = item;
-  const isLeaf = isLeafType(right.type);
   const diff = item.diff;
-  const isPendingMemo = props.pinsHook.pendingMemo?.keypath === elementKey && !diff;
+  // キーメニューはポータルで行の外に出るため, 開いた時点でマウスは行から外れる.
+  // ホバー扱いを続けないと祖先のキーセルが消え, メニューの基準ごと失われる
+  const isHovered = isPointed || keyMenuHook.keyMenu?.rowIndex === item.index;
   // 行の背景は優先順: 検索マッチ > diff 状態 > ナローイング起点 > ホバー
   const backgroundClass = [
     (isMatched && filteringPreference.resultAppearance !== "just") ? "matched-row" : "",
@@ -334,10 +294,15 @@ export const FlatJsonRow = (props: {
     className={
       `h-[2em] flex flex-row items-stretch gap-0 ${backgroundClass} ${isWeaken ? "weaken-row" : ""} ${isChangedNewSide ? "diff-changed-new-row" : ""}`
     }
-    onMouseOver={() => setIsHovered(true)}
-    onMouseOut={() => setIsHovered(false)}
+    onMouseOver={() => setIsPointed(true)}
+    onMouseOut={() => setIsPointed(false)}
   >
-    <LineNumberCell item={item} />
+    <LineNumberCell
+      item={item}
+      manipulationHook={manipulationHook}
+      toggleSingleHook={toggleSingleHook}
+      keyMenuHook={keyMenuHook}
+    />
 
     {/* diff モードではピンを扱わない (行の index 空間が別物になる) */}
     {props.pinsHook.hasPins && !diff && <PinStatusCell item={item} pinsHook={props.pinsHook} />}
@@ -352,6 +317,7 @@ export const FlatJsonRow = (props: {
       isNarrowedFrom={isNarrowedFrom}
       manipulationHook={manipulationHook}
       toggleSingleHook={toggleSingleHook}
+      keyMenuHook={keyMenuHook}
     />
 
     <FlatJsonValueCell
@@ -359,9 +325,5 @@ export const FlatJsonRow = (props: {
       elementKey={elementKey}
       matched={isMatched}
     />
-
-    {/* メモバルーンが開いている間はメニューを出したままにする:
-        ホバーが外れてもピンを外すボタンがその場に残る */}
-    {isLeaf && (isHovered || isPendingMemo) && <ValueMenuCell item={item} />}
   </div>)
 }

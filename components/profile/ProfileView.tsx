@@ -19,9 +19,9 @@ import {
 } from "@/libs/profile";
 import { useProfile, useProfilePreference } from "@/states/profile";
 import { useDiffTarget } from "@/states/diff";
-import { useManipulation } from "@/states/manipulation";
+import { useQueryApplication } from "@/states/manipulation";
 import { ClipboardAccess } from "@/libs/sideeffect";
-import { composeFacetQuery } from "@/libs/facet";
+import { composeFacetQuery, composeKeyPatternQuery } from "@/libs/facet";
 
 /**
  * ツリーの初期展開深さ
@@ -53,27 +53,6 @@ const TypeDisplayNames: Record<JsonValueType, string> = {
 
 const formatRate = (rate: number) => `${Math.round(rate * 1000) / 10}%`;
 
-/**
- * ファセットの適用/解除 (プロファイル → 検索の結線)。
- * クリックで advanced モードに切り替えてクエリをセットし検索パネルを開く。
- * すでに同じクエリなら解除 (クエリを空にする)。
- */
-const useFacetActions = () => {
-  const { manipulation, setFilteringQuery, setFilteringMode, setFilteringBooleanPreference } = useManipulation();
-
-  const applyFacet = (facetQuery: string, isActive: boolean) => {
-    if (isActive) {
-      setFilteringQuery("");
-      return;
-    }
-    setFilteringMode("advanced");
-    setFilteringQuery(facetQuery);
-    setFilteringBooleanPreference("showPanel", true);
-  };
-
-  return { filteringQuery: manipulation.filteringQuery, applyFacet };
-};
-
 const TypeChips = (props: { node: ProfileNode }) => {
   const { typeCounts } = props.node;
   const types = TypeNameOrder.filter((t) => typeCounts[t]);
@@ -97,7 +76,7 @@ const NodeStats = (props: {
   toggleShowValues: () => void;
 }) => {
   const { node, keypath } = props;
-  const { filteringQuery, applyFacet } = useFacetActions();
+  const { filteringQuery, applyQuery } = useQueryApplication();
   const stats: JSX.Element[] = [];
 
   // true / false / null の統計チップをファセットとしてクリック可能にする
@@ -109,7 +88,7 @@ const NodeStats = (props: {
         key={key}
         className={`profile-stat shrink-0 ${facetQuery ? "profile-facet-stat" : ""} ${isActive ? "is-active" : ""}`}
         title={facetQuery ? `クリックで ${literal} に絞り込む (再クリックで解除)` : undefined}
-        onClick={facetQuery ? () => applyFacet(facetQuery, isActive) : undefined}
+        onClick={facetQuery ? () => applyQuery(facetQuery, isActive) : undefined}
       >
         {label}
       </span>
@@ -161,7 +140,7 @@ const ValueDistribution = (props: {
   keypath: string;
 }) => {
   const { node, depth, keypath } = props;
-  const { filteringQuery, applyFacet } = useFacetActions();
+  const { filteringQuery, applyQuery } = useQueryApplication();
   const entries = uniqueValueEntries(node);
   const top = entries.slice(0, ValueDistributionLimit);
   const rest = entries.length - top.length;
@@ -185,7 +164,7 @@ const ValueDistribution = (props: {
                 ? `${literal}\nクリックでこの値に絞り込む (再クリックで解除)`
                 : `${literal}\nクエリで表現できない値のため絞り込めません`
             }
-            onClick={facetQuery ? () => applyFacet(facetQuery, isActive) : undefined}
+            onClick={facetQuery ? () => applyQuery(facetQuery, isActive) : undefined}
           >
             <span className="profile-value-literal shrink overflow-hidden text-ellipsis whitespace-nowrap break-keep">
               {literal}
@@ -234,8 +213,13 @@ const ProfileNodeRow = (props: {
   const [isOpen, setIsOpen] = useState(depth < defaultOpenDepth);
   const [showValues, setShowValues] = useState(false);
   const hasChildren = !!node.children && node.children.size > 0;
+  const { filteringQuery, applyQuery } = useQueryApplication();
 
   const keyLabel = node.key === "" ? "(root)" : node.key;
+  // キー名自身もファセットになる: プロファイルのキーパスは配列要素が "*" に
+  // 畳まれているので, これがそのまま「同じ階層の同名キーすべて」のクエリになる
+  const keyQuery = composeKeyPatternQuery(keypath);
+  const isKeyFacetActive = keyQuery !== null && filteringQuery === keyQuery;
   // map の子キーには出現率を出す (配列マージの "*" は対象外)
   const occurrence =
     parent && node.key !== "*" && (parent.typeCounts.map ?? 0) > 0
@@ -261,8 +245,11 @@ const ProfileNodeRow = (props: {
           ) : null}
         </span>
         <span
-          className="profile-key shrink overflow-hidden text-ellipsis whitespace-nowrap break-keep"
-          title={keyLabel}
+          className={`profile-key shrink overflow-hidden text-ellipsis whitespace-nowrap break-keep ${keyQuery ? "profile-facet-key" : ""} ${isKeyFacetActive ? "is-active" : ""}`}
+          title={keyQuery
+            ? `${keyLabel}\nクリックでこのキーで絞り込む (再クリックで解除)\n${keyQuery}`
+            : keyLabel}
+          onClick={keyQuery ? () => applyQuery(keyQuery, isKeyFacetActive) : undefined}
         >
           {keyLabel}
         </span>
