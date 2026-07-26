@@ -34,6 +34,8 @@ import { usePinNavigation } from "@/hooks/usePinNavigation";
 import { MinimapView } from "./minimap/MinimapView";
 import { useMinimapPreference, minimapViewportAtom } from "@/states/minimap";
 import { useSavedQueriesLoader } from "@/states/saved_queries";
+import { HighlightRulesView } from "./highlight/HighlightRulesView";
+import { useHighlightPreference, useHighlightRulesLoader } from "@/states/highlight";
 import { useKeyMenu } from "@/states/key_menu";
 
 interface VirtualScrollProps<T> {
@@ -178,10 +180,13 @@ export const Main = (props: {
   // ミニマップは diff モード中も有効なので !diffTarget でゲートしない
   const { minimapPreference } = useMinimapPreference();
   const { loadSavedQueries } = useSavedQueriesLoader();
-  // diff モード中は Profile/Pins は使えないので畳む.
+  const { loadHighlightRules } = useHighlightRulesLoader();
+  const { highlightPreference, setShowHighlightPanel } = useHighlightPreference();
+  // diff モード中は Profile/Pins/ハイライトルールは使えないので畳む.
   // preference 自体は書き換えないため, diff を抜けると元の開閉状態に復元される.
   const showProfilePanel = profilePreference.showPanel && !diffTarget;
   const showPinsPanel = pinsPreference.showPanel && !diffTarget;
+  const showHighlightPanel = highlightPreference.showPanel && !diffTarget;
   const { loadPinsForDocument } = usePinsLoader();
   const itemViewRef = useRef<any>(null);
   const matchNavigation = useMatchNavigation(itemViewRef);
@@ -216,9 +221,10 @@ export const Main = (props: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadedDocId]);
 
-  // 保存済みクエリを localStorage から読み込む (グローバルなので起動時に1回)
+  // 保存済みクエリ・ハイライトルールを localStorage から読み込む (グローバルなので起動時に1回)
   useEffect(() => {
     loadSavedQueries();
+    loadHighlightRules();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -437,6 +443,13 @@ export const Main = (props: {
         if (!diffTarget) { setShowPinsPanel(!pinsPreference.showPanel); }
       }
 
+      // Cmd+Shift+L: ハイライトルールパネルをトグルする
+      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'L' || event.key === 'l')) {
+        event.preventDefault();
+        // diff モード中はハイライトルールを使えないのでトグルしない (ヘッダーボタンも disabled)
+        if (!diffTarget) { setShowHighlightPanel(!highlightPreference.showPanel); }
+      }
+
       // Cmd+Shift+A: クリップボードの内容を現在のタブに取り込む
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'A' || event.key === 'a')) {
         event.preventDefault();
@@ -495,7 +508,7 @@ export const Main = (props: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filteringPreference.showPanel, setFilteringBooleanPreference, profilePreference.showPanel, setShowProfilePanel, pinsPreference.showPanel, setShowPinsPanel, diffTarget, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
+  }, [filteringPreference.showPanel, setFilteringBooleanPreference, profilePreference.showPanel, setShowProfilePanel, pinsPreference.showPanel, setShowPinsPanel, highlightPreference.showPanel, setShowHighlightPanel, diffTarget, isEditJsonModalOpen, preformattedValueModalState.isOpen, openEditJsonModal, manipulation, popNarrowedRange, filterInputFocused, activeNavigation, router, dataFormat, parseData]);
 
   // ファイルドラッグ&ドロップ機能
   useEffect(() => {
@@ -639,6 +652,20 @@ export const Main = (props: {
           }`}
         >
           {showPinsPanel && <PinsView pinNavigation={pinNavigation} />}
+        </div>
+      </div>
+
+      <div
+        className={`highlight-panel-container shrink-0 grow-0 flex flex-col justify-stretch transition-all duration-100 ease-out overflow-hidden ${
+          showHighlightPanel ? 'w-96' : 'w-0'
+        }`}
+      >
+        <div
+          className={`highlight-panel-inner w-96 h-full transition-transform duration-300 ease-out flex flex-col ${
+            showHighlightPanel ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          {showHighlightPanel && <HighlightRulesView />}
         </div>
       </div>
 

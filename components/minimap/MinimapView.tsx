@@ -2,6 +2,7 @@ import { MutableRefObject, useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import { useVisibleItems } from "@/states/json";
 import { filterMapsAtom } from "@/states/manipulation/query";
+import { highlightMapsAtom } from "@/states/highlight";
 import { pinMapAtom } from "@/states/pins";
 import { useColorTheme } from "@/states/theme";
 import { ColorSets } from "@/libs/theme";
@@ -10,7 +11,8 @@ import { minimapViewportAtom } from "@/states/minimap";
 /**
  * ミニマップ.
  *
- * 可視行 (visibleItems) を縦に縮約した帯へ, 検索マッチ・ピン・diff status を投影する.
+ * 可視行 (visibleItems) を縦に縮約した帯へ, 検索マッチ・ピン・diff status・
+ * ハイライトルールの色を投影する.
  * 縦軸は「可視行の index」= react-window のスクロール座標と一致するため,
  * クリック位置 → visibleIndex → scrollToItem がそのまま噛み合う.
  *
@@ -18,6 +20,7 @@ import { minimapViewportAtom } from "@/states/minimap";
  *   - マッチ: filterMaps.matched[item.index]   (全体 index キー)
  *   - ピン:   pinMap.has(item.elementKey)        (キーパス同定)
  *   - diff:   item.diff?.status                   (行フィールド)
+ *   - ルール: highlightMaps.rowColor[item.index] (全体 index キー)
  *
  * 描画は canvas 1 枚. 数万行でも DOM 要素を増やさない.
  */
@@ -26,6 +29,7 @@ export const MinimapView = (props: {
 }) => {
   const visibles = useVisibleItems();
   const filterMaps = useAtomValue(filterMapsAtom);
+  const highlightMaps = useAtomValue(highlightMapsAtom);
   const pinMap = useAtomValue(pinMapAtom);
   const viewport = useAtomValue(minimapViewportAtom);
   const { colorTheme } = useColorTheme();
@@ -82,6 +86,17 @@ export const MinimapView = (props: {
     const drawH = Math.max(1, Math.ceil(rowH));
     const yOf = (i: number) => Math.floor((i / n) * height);
 
+    // 0) ハイライトルール: 全幅の帯 (行背景に相当). diff モードでは atom が null なので
+    //    diff 帯と重なることはない. マッチ・ピンのレーンは後から上に重なる.
+    if (highlightMaps) {
+      for (let i = 0; i < n; i++) {
+        const color = highlightMaps.rowColor[items[i].index];
+        if (color === undefined) { continue; }
+        ctx.fillStyle = colors[`highlight-${color}-marker` as keyof typeof colors] as string;
+        ctx.fillRect(0, yOf(i), width, drawH);
+      }
+    }
+
     // 1) diff: 全幅の帯 (行背景に相当). added/removed/changed のみ. child_changed は控えめに省く.
     for (let i = 0; i < n; i++) {
       const status = items[i].diff?.status;
@@ -131,7 +146,7 @@ export const MinimapView = (props: {
       ctx.lineWidth = 1;
       ctx.strokeRect(0.5, vy1 + 0.5, width - 1, Math.max(1, vh - 1));
     }
-  }, [visibles, filterMaps, pinMap, viewport, colorTheme, size]);
+  }, [visibles, filterMaps, highlightMaps, pinMap, viewport, colorTheme, size]);
 
   const scrubTo = (clientY: number) => {
     if (!visibles) { return; }

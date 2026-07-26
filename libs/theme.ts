@@ -41,6 +41,22 @@ const ColorSetKeys = [
   "diff-added-foreground",
   "diff-removed-foreground",
   "diff-changed-foreground",
+  "highlight-0-row",
+  "highlight-1-row",
+  "highlight-2-row",
+  "highlight-3-row",
+  "highlight-4-row",
+  "highlight-5-row",
+  "highlight-6-row",
+  "highlight-7-row",
+  "highlight-0-marker",
+  "highlight-1-marker",
+  "highlight-2-marker",
+  "highlight-3-marker",
+  "highlight-4-marker",
+  "highlight-5-marker",
+  "highlight-6-marker",
+  "highlight-7-marker",
 ] as const;
 
 type ColorSet = {
@@ -80,6 +96,24 @@ export const ColorSets: {
     "diff-added-foreground":   "#2e7d43",
     "diff-removed-foreground": "#c24444",
     "diff-changed-foreground": "#9a7b1c",
+    // ハイライトルールのパレット (row = 行背景の淡色 / marker = 左バー・ミニマップの濃色).
+    // 明度は row が diff-*-row, marker が diff-*-foreground の帯に合わせてある
+    "highlight-0-row":    "#f0d6d6", // red
+    "highlight-1-row":    "#f2e2cc", // orange
+    "highlight-2-row":    "#f1ecc9", // yellow
+    "highlight-3-row":    "#d8ecd6", // green
+    "highlight-4-row":    "#d2eae8", // teal
+    "highlight-5-row":    "#d9def5", // blue
+    "highlight-6-row":    "#e6d8ee", // purple
+    "highlight-7-row":    "#f0d7e6", // pink
+    "highlight-0-marker": "#b94a4a",
+    "highlight-1-marker": "#b06f22",
+    "highlight-2-marker": "#99841f",
+    "highlight-3-marker": "#2e8a48",
+    "highlight-4-marker": "#23807a",
+    "highlight-5-marker": "#3d5cc4",
+    "highlight-6-marker": "#7e42ad",
+    "highlight-7-marker": "#b0468b",
   },
 
   dark: {
@@ -112,6 +146,22 @@ export const ColorSets: {
     "diff-added-foreground":   "#73d98a",
     "diff-removed-foreground": "#e88787",
     "diff-changed-foreground": "#e0c25e",
+    "highlight-0-row":    "#4a2d2d", // red
+    "highlight-1-row":    "#4a3a29", // orange
+    "highlight-2-row":    "#494327", // yellow
+    "highlight-3-row":    "#2d4732", // green
+    "highlight-4-row":    "#264543", // teal
+    "highlight-5-row":    "#2d3a52", // blue
+    "highlight-6-row":    "#3e2e4c", // purple
+    "highlight-7-row":    "#4a2c3f", // pink
+    "highlight-0-marker": "#e88f8f",
+    "highlight-1-marker": "#e0a460",
+    "highlight-2-marker": "#d9c465",
+    "highlight-3-marker": "#79d992",
+    "highlight-4-marker": "#5fc9c2",
+    "highlight-5-marker": "#7d9bf0",
+    "highlight-6-marker": "#b98ae0",
+    "highlight-7-marker": "#e08ac0",
   },
 }
 
