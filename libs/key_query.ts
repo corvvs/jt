@@ -10,8 +10,8 @@
  * 生き残る。ひとつも残らなければキーメニューはクエリ生成の節を出さない。
  */
 
-import { JsonRowItem, isLeafType } from "./jetson";
-import { KeyPathSegment, composeKeyPathQuery, composeValueToken } from "./facet";
+import { JsonRowItem, isLeafType, segmentsOf } from "./jetson";
+import { composeKeyPathQuery, composeValueToken } from "./facet";
 import { parseQuery } from "./advanced_query/parseQuery";
 import { matchByQuery } from "./advanced_query/matcher";
 
@@ -22,14 +22,6 @@ export type KeyQueryCandidate = {
    */
   label: string;
   query: string;
-};
-
-/**
- * ノードのキーパスをセグメント列にする. ルート (キーを持たない) は空配列.
- */
-export const segmentsOf = (item: JsonRowItem): KeyPathSegment[] => {
-  // rowItems は [ルート, ..., 親]. ルートはキーを持たないので落とす
-  return [...item.rowItems, item].slice(1).map((node) => node.itemKey!);
 };
 
 /**

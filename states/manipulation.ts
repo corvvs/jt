@@ -93,24 +93,31 @@ export const useManipulation = () => {
  * 生成したクエリを検索に適用する (プロファイルのファセット / 行のキーメニューで共用).
  * advanced モードに切り替えてクエリをセットし, 検索パネルを開く。
  * すでに同じクエリが入っているなら解除 (クエリを空にする)。
+ *
+ * hook を引数で受けるのは, すでに useManipulation を props で受けている
+ * 呼び出し元 (行のキーメニュー) に購読をもう1つ張らせないため。
+ */
+export const applyGeneratedQuery = (
+  hook: ReturnType<typeof useManipulation>,
+  query: string,
+  isActive: boolean,
+) => {
+  if (isActive) {
+    hook.setFilteringQuery("");
+    return;
+  }
+  hook.setFilteringMode("advanced");
+  hook.setFilteringQuery(query);
+  hook.setFilteringBooleanPreference("showPanel", true);
+};
+
+/**
+ * applyGeneratedQuery の, 自前で useManipulation を張る版 (プロファイルパネル用).
  */
 export const useQueryApplication = () => {
-  const {
-    manipulation,
-    setFilteringQuery,
-    setFilteringMode,
-    setFilteringBooleanPreference,
-  } = useManipulation();
-
-  const applyQuery = (query: string, isActive: boolean) => {
-    if (isActive) {
-      setFilteringQuery("");
-      return;
-    }
-    setFilteringMode("advanced");
-    setFilteringQuery(query);
-    setFilteringBooleanPreference("showPanel", true);
-  };
-
-  return { filteringQuery: manipulation.filteringQuery, applyQuery } as const;
+  const hook = useManipulation();
+  return {
+    filteringQuery: hook.manipulation.filteringQuery,
+    applyQuery: (query: string, isActive: boolean) => applyGeneratedQuery(hook, query, isActive),
+  } as const;
 };

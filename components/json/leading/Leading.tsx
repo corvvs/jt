@@ -23,6 +23,7 @@ const RightmostKeyCell = (props: {
   rowItem: JsonRowItem;
   isTogglable?: boolean;
   isMatched?: boolean;
+  manipulationHook: ReturnType<typeof useManipulation>;
   toggleSingleHook: ReturnType<typeof useToggleSingle>;
   keyMenuHook: ReturnType<typeof useKeyMenu>;
 }) => {
@@ -61,6 +62,8 @@ const RightmostKeyCell = (props: {
       item={right}
       anchorRef={cellRef}
       onClose={keyMenuHook.closeKeyMenu}
+      manipulationHook={props.manipulationHook}
+      toggleSingleHook={props.toggleSingleHook}
     />}
 
     {
@@ -179,6 +182,7 @@ export const FlatJsonLeadingCell = (props: {
           ? <RightmostKeyCell
             index={props.index} gauge={gauge} right={props.nextItem} isTogglable={isTogglable}
             rowItem={rowItem}
+            manipulationHook={manipulationHook}
             toggleSingleHook={toggleSingleHook}
             keyMenuHook={keyMenuHook}
           />
@@ -197,6 +201,7 @@ export const FlatJsonLeadingCell = (props: {
       <RightmostKeyCell
         index={props.index} gauge={gauge} right={right} isTogglable={isTogglable} isMatched={isMatched}
         rowItem={rowItem}
+        manipulationHook={manipulationHook}
         toggleSingleHook={toggleSingleHook}
         keyMenuHook={keyMenuHook}
       />
@@ -216,6 +221,7 @@ export const FlatJsonLeadingCell = (props: {
     return <RightmostKeyCell
       gauge={gauge} index={props.index} right={right} isTogglable={isTogglable} isMatched={isMatched}
       rowItem={rowItem}
+      manipulationHook={manipulationHook}
       toggleSingleHook={toggleSingleHook}
       keyMenuHook={keyMenuHook}
     />

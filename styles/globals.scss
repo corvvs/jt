@@ -822,6 +822,33 @@ body {
   font-weight: bold;
 }
 
+// ルート行の行番号はキーメニューの的になる (ルートはキーを持たずキーセルが無い).
+// 他の行番号と見分けがつくよう印を常に出し, ホバーはセル全体を塗る:
+// 下線は数字の下に出るのでポインタに隠れて気づけない
+.line-number-menu-trigger {
+  // 休止状態でも「押せる箱」に見せる: 印だけでは他の行番号との差が弱い
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 3px;
+  opacity: 0.7;
+
+  .line-number-menu-mark {
+    opacity: 0.8;
+  }
+
+  &:hover,
+  .key-menu-open & {
+    // 下線ではなくセル全体を塗る: 下線は数字の下なのでポインタに隠れて気づけない
+    text-decoration: none;
+    opacity: 1;
+    color: var(--foreground);
+    background-color: var(--background-secondary);
+
+    .line-number-menu-mark {
+      opacity: 1;
+    }
+  }
+}
+
 .pin-memo-balloon {
   // 包含ブロック (幅 2em のグリフセル) への shrink-to-fit で幅が潰れないようにする
   width: max-content;

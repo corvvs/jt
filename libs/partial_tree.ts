@@ -1,13 +1,20 @@
 import _ from "lodash";
-import { JsonRowItem } from "./jetson";
+import { JsonRowItem, KeyPathSegment } from "./jetson";
 import { FilteringMap, FilteringResultAppearanceOption } from "@/states/manipulation/query";
 
+/**
+ * ノードのキーパス (セグメント列) で部分木を取り出す. 空配列ならドキュメント全体.
+ *
+ * ドット結合済みのキーパス文字列を渡すと lodash が段の境界として "." を解釈するので,
+ * キー名に "." を含むドキュメントで別のノードを取ってしまう
+ * (例 { "a.b": {c:1}, a:{b:{c:2}} } で "a.b.c" は入れ子側の 2 を返す)。
+ * セグメント列ならリテラルなキー名として引ける。
+ */
 export function extractSubtree(
   rawJson: any,
-  keyPath: string,
+  segments: KeyPathSegment[],
 ) {
-  const subJson = keyPath ? _.get(rawJson, keyPath) : rawJson;
-  return subJson;
+  return segments.length > 0 ? _.get(rawJson, segments) : rawJson;
 }
 
 function extractFiltetedPartialTree(

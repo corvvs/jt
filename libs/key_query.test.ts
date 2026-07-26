@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildKeyQueryCandidates, countQueryMatches, segmentsOf } from "./key_query";
-import { JsonRowItem, flattenJson } from "./jetson";
+import { buildKeyQueryCandidates, countQueryMatches } from "./key_query";
+import { JsonRowItem, flattenJson, segmentsOf } from "./jetson";
 import { tokenizeQuery } from "./advanced_query/tokenizer";
 import { structurizeQuery } from "./advanced_query/parser";
 import { matchByQuery } from "./advanced_query/matcher";

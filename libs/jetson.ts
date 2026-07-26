@@ -247,6 +247,22 @@ export function isLeafType(type: JsonValueObject["type"]) {
 }
 
 /**
+ * キーパスのセグメント (オブジェクトのキー名または配列の添字)
+ */
+export type KeyPathSegment = string | number;
+
+/**
+ * ルートから item までのキーパスをセグメント列にする. ルート自身は空配列.
+ *
+ * ドット結合済みの elementKey と違い, キー名に "." を含んでいても段の境界が
+ * 曖昧にならない。クエリの合成や部分木の取り出しはこちらを使うこと。
+ */
+export function segmentsOf(item: JsonRowItem): KeyPathSegment[] {
+  // rowItems は [ルート, ..., 親]. ルートはキーを持たないので落とす
+  return [...item.rowItems, item].slice(1).map((node) => node.itemKey!);
+}
+
+/**
  * item 自身と, まだ visible でない祖先を visibleMap に立てる.
  * 祖先は下から順に辿り, すでに visible ならそこで打ち切る.
  */

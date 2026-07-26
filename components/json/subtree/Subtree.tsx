@@ -4,47 +4,8 @@ import { usePreference } from "@/states/preference";
 import { useManipulation } from "@/states/manipulation";
 import { IconButton } from "@/components/lv1/IconButton";
 import { CgArrowsBreakeV, CgArrowsShrinkV } from "react-icons/cg";
-import { useJSON } from "@/states";
 import { useEffectiveItems } from "@/states/json";
 import { useToggleSingle } from "@/states/view";
-import { extractSubtree } from "@/libs/partial_tree";
-import { CopyButton, DownloadButton } from "@/components/lv3/CopyButton";
-import { PinToggleButton } from "@/components/lv3/PinButton";
-import { usePins } from "@/states/pins";
-
-const CopySubtreeButton = (props: {
-  item: JsonRowItem;
-  rawJson: any;
-}) => {
-
-  return <CopyButton
-    alt="この要素以下をJSONとしてクリップボードにコピーする"
-    getSubtext={() => {
-      const { rawJson } = props;
-      const keyPath = props.item.elementKey;
-      const subJson = extractSubtree(rawJson, props.item.elementKey);
-      if (!subJson) { return null; }
-      return JSON.stringify(subJson, null, 2);
-    }}
-    getToastText={() => `キーパス ${props.item.elementKey} 以下のJSONをクリップボードにコピーしました`}
-  />
-}
-
-const DownloadSubtreeButton = (props: {
-  item: JsonRowItem;
-  rawJson: any;
-}) => {
-  return <DownloadButton
-    alt="この要素以下をJSONファイルとしてダウンロードする"
-    getData={() => {
-      const { rawJson } = props;
-      const keyPath = props.item.elementKey;
-      return extractSubtree(rawJson, props.item.elementKey);
-    }}
-    getToastText={() => `キーパス ${props.item.elementKey} 以下のJSONをダウンロードしました`}
-    filename={`subtree-${props.item.elementKey.replace(/[^\w-]/g, '_')}.json`}
-  />
-}
 
 const NarrowSubtreeButton = (props: {
   isNarrowed: boolean;
@@ -87,6 +48,13 @@ const UnnarrowSubtreeButton = (props: {
   </p>);
 }
 
+/**
+ * コンテナ行のホバーメニュー.
+ *
+ * ナローイングと解除だけを置く: 掘る → 戻るを繰り返す中心操作なので, ここだけは
+ * 1クリックで済ませたい。それ以外の行の操作はキーメニュー (KeyMenu) に集約している。
+ * ナローイング自体もキーメニューにあり, そちらは祖先の段にも効く。
+ */
 export const SubtreeMenuCell = (props: {
   item: JsonRowItem;
   isHovered: boolean;
@@ -94,26 +62,20 @@ export const SubtreeMenuCell = (props: {
   manipulationHook: ReturnType<typeof useManipulation>;
 }) => {
   const { manipulation } = props.manipulationHook;
-  const { json } = useJSON();
   const flatJsons = useEffectiveItems();
-  const { pendingMemo } = usePins();
   const isNarrowed = _.last(manipulation.narrowedRanges)?.from === props.item.index;
-  // メモバルーンが開いている間はメニューを出したままにする (ピンボタンの位置を動かさない)
-  const isPendingMemo = pendingMemo?.keypath === props.item.elementKey;
-  if (!json || json.status !== "accepted" || (!props.isHovered && !isNarrowed && !isPendingMemo)) { return null; }
-  const rawJson = json.json;
+  // ルートへのナローイングは全体表示と同じで, スタックに何も見えない段が積まれるだけ
+  const isRoot = props.item.rowItems.length === 0;
+  if (!flatJsons || (!props.isHovered && !isNarrowed)) { return null; }
 
   return (<div
     className="subtree-menu grow-0 shrink-0 flex flex-row items-center p-1 gap-1 text-sm"
   >
-    <PinToggleButton item={props.item} />
-    <CopySubtreeButton item={props.item} rawJson={rawJson} />
-    <DownloadSubtreeButton item={props.item} rawJson={rawJson} />
-    <NarrowSubtreeButton
+    {!isRoot && <NarrowSubtreeButton
       isNarrowed={isNarrowed} item={props.item} allItems={flatJsons!.items}
       toggleSingleHook={props.toggleSingleHook}
       manipulationHook={props.manipulationHook}
-    />
+    />}
     <UnnarrowSubtreeButton
       isNarrowed={isNarrowed} item={props.item} allItems={flatJsons!.items}
       manipulationHook={props.manipulationHook}

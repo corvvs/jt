@@ -1,3 +1,5 @@
+import { KeyPathSegment } from "./jetson";
+
 /**
  * advanced クエリの合成. 入口は2つある:
  *
@@ -91,11 +93,6 @@ export const composeKeyPatternQuery = (keypath: string): string | null => {
   if (!keypath.split(".").every(isExpressibleSegment)) { return null; }
   return `$.${keypath}`;
 };
-
-/**
- * キーパスのセグメント (キー名または配列添字)
- */
-export type KeyPathSegment = string | number;
 
 export type KeyPathQueryOptions = {
   /**

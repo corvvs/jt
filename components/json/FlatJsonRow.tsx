@@ -297,7 +297,12 @@ export const FlatJsonRow = (props: {
     onMouseOver={() => setIsPointed(true)}
     onMouseOut={() => setIsPointed(false)}
   >
-    <LineNumberCell item={item} />
+    <LineNumberCell
+      item={item}
+      manipulationHook={manipulationHook}
+      toggleSingleHook={toggleSingleHook}
+      keyMenuHook={keyMenuHook}
+    />
 
     {/* diff モードではピンを扱わない (行の index 空間が別物になる) */}
     {props.pinsHook.hasPins && !diff && <PinStatusCell item={item} pinsHook={props.pinsHook} />}
