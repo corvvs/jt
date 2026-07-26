@@ -8,6 +8,7 @@ import { FlatJsonValueCell } from "./FlatJsonValueCell";
 import { InlineIcon } from "../lv1/InlineIcon";
 import { useEffect, useRef, useState } from "react";
 import { useManipulation } from "@/states/manipulation";
+import { highlightMapsAtom } from "@/states/highlight";
 import { usePins, resolvedPinsAtom, pinJumpRequestAtom } from "@/states/pins";
 import { FlatJsonLeadingCell } from "./leading/Leading";
 import { LineNumberCell } from "./LineNumberCell";
@@ -263,6 +264,7 @@ export const FlatJsonRow = (props: {
 }) => {
   
   const [isPointed, setIsPointed] = useState(false);
+  const highlightMaps = useAtomValue(highlightMapsAtom);
   const { manipulation, filteringPreference, filterMaps } = props.manipulationHook;
   const isMatched = !!(filterMaps && filterMaps.matched[props.item.index]);
   const isNarrowedFrom = _.last(manipulation.narrowedRanges)?.from === props.item.index;
@@ -282,11 +284,14 @@ export const FlatJsonRow = (props: {
   // キーメニューはポータルで行の外に出るため, 開いた時点でマウスは行から外れる.
   // ホバー扱いを続けないと祖先のキーセルが消え, メニューの基準ごと失われる
   const isHovered = isPointed || keyMenuHook.keyMenu?.rowIndex === item.index;
-  // 行の背景は優先順: 検索マッチ > diff 状態 > ナローイング起点 > ホバー
+  // カラーリングルールの色 (diff モードでは atom が null なので自然に消える)
+  const highlightColor = highlightMaps?.rowColor[item.index];
+  // 行の背景は優先順: 検索マッチ > diff 状態 > ナローイング起点 > カラーリングルール > ホバー
   const backgroundClass = [
     (isMatched && filteringPreference.resultAppearance !== "just") ? "matched-row" : "",
     diff ? diffAppearanceOf(diff)?.rowClass ?? "" : "",
     isNarrowedFrom ? "narrowed-from-row" : "",
+    highlightColor !== undefined ? `hl-row-${highlightColor}` : "",
     isHovered ? "secondary-background" : "",
   ].find(Boolean) ?? "";
   const isChangedNewSide = diff?.status === "changed" && diff.side === "new";

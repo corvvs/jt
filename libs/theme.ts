@@ -41,6 +41,22 @@ const ColorSetKeys = [
   "diff-added-foreground",
   "diff-removed-foreground",
   "diff-changed-foreground",
+  "highlight-0-row",
+  "highlight-1-row",
+  "highlight-2-row",
+  "highlight-3-row",
+  "highlight-4-row",
+  "highlight-5-row",
+  "highlight-6-row",
+  "highlight-7-row",
+  "highlight-0-marker",
+  "highlight-1-marker",
+  "highlight-2-marker",
+  "highlight-3-marker",
+  "highlight-4-marker",
+  "highlight-5-marker",
+  "highlight-6-marker",
+  "highlight-7-marker",
 ] as const;
 
 type ColorSet = {
@@ -80,6 +96,26 @@ export const ColorSets: {
     "diff-added-foreground":   "#2e7d43",
     "diff-removed-foreground": "#c24444",
     "diff-changed-foreground": "#9a7b1c",
+    // カラーリングルールのパレット (row = 行背景の淡色 / marker = 左バー・ミニマップの濃色).
+    // 明度は row が diff-*-row, marker が diff-*-foreground の帯に合わせてある
+    "highlight-0-row":    "#f0d6d6", // red
+    "highlight-1-row":    "#f2e2cc", // orange
+    "highlight-2-row":    "#f1ecc9", // yellow
+    "highlight-3-row":    "#d8ecd6", // green
+    "highlight-4-row":    "#d2eae8", // teal
+    "highlight-5-row":    "#d9def5", // blue
+    "highlight-6-row":    "#e6d8ee", // purple
+    "highlight-7-row":    "#f0d7e6", // pink
+    // 赤とオレンジはミニマップの数 px でも見分けられるよう, 色相だけでなく明度も離す
+    "highlight-0-marker": "#c92a2a",
+    "highlight-1-marker": "#e8820e",
+    "highlight-2-marker": "#b39a10",
+    // 緑とティールも同様 (ティールを明るくシアン寄りに, 緑をわずかに深く)
+    "highlight-3-marker": "#1c8c3c",
+    "highlight-4-marker": "#0ba7bd",
+    "highlight-5-marker": "#3556e0",
+    "highlight-6-marker": "#8a35c9",
+    "highlight-7-marker": "#cc3392",
   },
 
   dark: {
@@ -112,6 +148,23 @@ export const ColorSets: {
     "diff-added-foreground":   "#73d98a",
     "diff-removed-foreground": "#e88787",
     "diff-changed-foreground": "#e0c25e",
+    "highlight-0-row":    "#4a2d2d", // red
+    "highlight-1-row":    "#4a3a29", // orange
+    "highlight-2-row":    "#494327", // yellow
+    "highlight-3-row":    "#2d4732", // green
+    "highlight-4-row":    "#264543", // teal
+    "highlight-5-row":    "#2d3a52", // blue
+    "highlight-6-row":    "#3e2e4c", // purple
+    "highlight-7-row":    "#4a2c3f", // pink
+    "highlight-0-marker": "#f26d6d",
+    "highlight-1-marker": "#f0993d",
+    "highlight-2-marker": "#e8c93e",
+    // 緑とティールは明度でも見分けられるよう離す (ライトテーマと同じ方針)
+    "highlight-3-marker": "#2fbf5a",
+    "highlight-4-marker": "#4be3ea",
+    "highlight-5-marker": "#5f8dfa",
+    "highlight-6-marker": "#b370f0",
+    "highlight-7-marker": "#f070c2",
   },
 }
 

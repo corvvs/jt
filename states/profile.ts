@@ -4,18 +4,21 @@ import { ProfileNode, profileJson } from "@/libs/profile";
 import { effectiveItemsAtom } from "./json";
 import { diffTargetAtom } from "./diff";
 import { narrowedRangeAtom } from "./manipulation/narrowing";
+import { activeRightPanelAtom } from "./right_panel";
 
 export type ProfilePreference = {
   showPanel: boolean;
 };
 
-const profilePreferenceAtom = atom<ProfilePreference>({ showPanel: false });
-
+/** 右パネルは排他 (states/right_panel.ts 参照). API は専用 atom 時代のまま */
 export const useProfilePreference = () => {
-  const [profilePreference, setProfilePreference] = useAtom(profilePreferenceAtom);
+  const [activePanel, setActivePanel] = useAtom(activeRightPanelAtom);
+  const profilePreference: ProfilePreference = { showPanel: activePanel === "profile" };
   return {
     profilePreference,
-    setShowProfilePanel: (value: boolean) => setProfilePreference((prev) => ({ ...prev, showPanel: value })),
+    setShowProfilePanel: (value: boolean) => setActivePanel(
+      (prev) => (value ? "profile" : prev === "profile" ? null : prev)
+    ),
   } as const;
 };
 

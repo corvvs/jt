@@ -1,8 +1,6 @@
 import { atom, useAtom } from "jotai";
-import _ from "lodash";
-import { JsonRowItem } from "./jetson";
-import { matchByQuery } from "./advanced_query/matcher";
 import { parseQuery } from "./advanced_query/parseQuery";
+import { matcherOfParsedQuery } from "./query_matcher";
 import { filteringPreferenceAtom, filteringQueryAtom } from "@/states/manipulation/query";
 
 const parsedAdvancedQueryAtom = atom(
@@ -21,17 +19,7 @@ export const advancedMatcherAtom = atom(
     if (!parsedQuery) {
       return { matcher: null };
     }
-    if (parsedQuery.syntaxError) {
-      return { matcher: null };
-    }
-    const q = parsedQuery.structure ? _.first(parsedQuery.structure) : undefined;
-    if (!q) {
-      return { matcher: null };
-    }
-    if (q.type === "GroupedQuery" || q.type === "Query") {
-      return { matcher: (item: JsonRowItem) => matchByQuery(item, q) };
-    }
-    return { matcher: () => true };
+    return { matcher: matcherOfParsedQuery(parsedQuery) };
   }
 );
 

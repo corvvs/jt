@@ -1,8 +1,9 @@
-import { JsonRowItem, markSelfAndAncestorsVisible } from "@/libs/jetson";
+import { markSelfAndAncestorsVisible } from "@/libs/jetson";
 import { atom, useAtom } from "jotai";
 import _ from "lodash";
 import { effectiveItemsAtom } from "../json";
 import { advancedMatcherAtom } from "@/libs/advanced_query";
+import { makeSimpleMatcher } from "@/libs/query_matcher";
 import { loadDefaultSearchAppearance, loadDefaultSearchMode } from "../search_mode";
 
 export const defaultFilteringQuery = "";
@@ -85,31 +86,10 @@ export const filterMapsAtom = atom<FilteringMap | null>(
 
     const actualMatcher = (() => {
       if (get(filteringPreferenceAtom).mode === "simple") {
-
-        const simpleQuery = get(filteringQueryAtom).trim().toLowerCase();
-        // 最小2文字まで入力されるまで検索を開始しない（パフォーマンス改善）
-        if (simpleQuery.length < 2) { return null; }
-        return (item: JsonRowItem) => {
-          const key = item.itemKey?.toString().toLowerCase();
-          if (key?.includes(simpleQuery)) { return true; }
-          if (item.right.type === "string") {
-            const value = item.right.value.toLowerCase();
-            if (value.includes(simpleQuery)) {
-              return true;
-            }
-          } else if (item.right.type === "number") {
-            const value = item.right.value.toString().toLowerCase();
-            if (value.includes(simpleQuery)) {
-              return true;
-            }
-          }
-          return false;
-        };
-
+        // 2文字未満では検索しない制限を含む (makeSimpleMatcher 参照)
+        return makeSimpleMatcher(get(filteringQueryAtom));
       } else {
-
         return get(advancedMatcherAtom).matcher;
-
       }
     })();
     

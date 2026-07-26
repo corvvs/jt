@@ -5,18 +5,21 @@ import { JsonRowItem } from "@/libs/jetson";
 import { DocumentPin, pinValuePreview } from "@/libs/pins";
 import { DocumentPinsStore } from "@/data/pins";
 import { effectiveItemsAtom } from "./json";
+import { activeRightPanelAtom } from "./right_panel";
 
 export type PinsPreference = {
   showPanel: boolean;
 };
 
-const pinsPreferenceAtom = atom<PinsPreference>({ showPanel: false });
-
+/** 右パネルは排他 (states/right_panel.ts 参照). API は専用 atom 時代のまま */
 export const usePinsPreference = () => {
-  const [pinsPreference, setPinsPreference] = useAtom(pinsPreferenceAtom);
+  const [activePanel, setActivePanel] = useAtom(activeRightPanelAtom);
+  const pinsPreference: PinsPreference = { showPanel: activePanel === "pins" };
   return {
     pinsPreference,
-    setShowPinsPanel: (value: boolean) => setPinsPreference((prev) => ({ ...prev, showPanel: value })),
+    setShowPinsPanel: (value: boolean) => setActivePanel(
+      (prev) => (value ? "pins" : prev === "pins" ? null : prev)
+    ),
   } as const;
 };
 
