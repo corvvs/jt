@@ -106,8 +106,9 @@ export const ColorSets: {
     "highlight-5-row":    "#d9def5", // blue
     "highlight-6-row":    "#e6d8ee", // purple
     "highlight-7-row":    "#f0d7e6", // pink
-    "highlight-0-marker": "#d03535",
-    "highlight-1-marker": "#cc6e0f",
+    // 赤とオレンジはミニマップの数 px でも見分けられるよう, 色相だけでなく明度も離す
+    "highlight-0-marker": "#c92a2a",
+    "highlight-1-marker": "#e8820e",
     "highlight-2-marker": "#b39a10",
     "highlight-3-marker": "#229a47",
     "highlight-4-marker": "#12968d",
