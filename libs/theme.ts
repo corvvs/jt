@@ -110,8 +110,9 @@ export const ColorSets: {
     "highlight-0-marker": "#c92a2a",
     "highlight-1-marker": "#e8820e",
     "highlight-2-marker": "#b39a10",
-    "highlight-3-marker": "#229a47",
-    "highlight-4-marker": "#12968d",
+    // 緑とティールも同様 (ティールを明るくシアン寄りに, 緑をわずかに深く)
+    "highlight-3-marker": "#1c8c3c",
+    "highlight-4-marker": "#0ba7bd",
     "highlight-5-marker": "#3556e0",
     "highlight-6-marker": "#8a35c9",
     "highlight-7-marker": "#cc3392",
