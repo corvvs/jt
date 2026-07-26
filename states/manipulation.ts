@@ -88,3 +88,29 @@ export const useManipulation = () => {
     clearManipulation,
   };
 };
+
+/**
+ * 生成したクエリを検索に適用する (プロファイルのファセット / 行のキーメニューで共用).
+ * advanced モードに切り替えてクエリをセットし, 検索パネルを開く。
+ * すでに同じクエリが入っているなら解除 (クエリを空にする)。
+ */
+export const useQueryApplication = () => {
+  const {
+    manipulation,
+    setFilteringQuery,
+    setFilteringMode,
+    setFilteringBooleanPreference,
+  } = useManipulation();
+
+  const applyQuery = (query: string, isActive: boolean) => {
+    if (isActive) {
+      setFilteringQuery("");
+      return;
+    }
+    setFilteringMode("advanced");
+    setFilteringQuery(query);
+    setFilteringBooleanPreference("showPanel", true);
+  };
+
+  return { filteringQuery: manipulation.filteringQuery, applyQuery } as const;
+};

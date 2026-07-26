@@ -1,5 +1,6 @@
 import { JsonGauge, JsonRowItem } from "@/libs/jetson";
 import _ from "lodash";
+import { useRef } from "react";
 import { ActualIconForType } from "../FlatJsonValueCell";
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { ToggleButton } from "@/components/lv1/ToggleButton";
@@ -8,38 +9,59 @@ import { SubtreeMenuCell } from "../subtree/Subtree";
 import { useManipulation } from "@/states/manipulation";
 import { FaGlasses } from "react-icons/fa";
 import { usePreformattedValueModal } from "@/states/modal";
+import { useKeyMenu } from "@/states/key_menu";
+import { KeyMenu } from "./KeyMenu";
 
 const RightmostKeyCell = (props: {
   index: number;
   gauge?: JsonGauge;
   right: JsonRowItem;
+  /**
+   * このセルを表示している行のアイテム. 祖先セルでは right と異なる
+   * (同じ祖先が配下の全行に現れるので, メニューの開閉は行とノードの対で同定する)
+   */
+  rowItem: JsonRowItem;
   isTogglable?: boolean;
   isMatched?: boolean;
   toggleSingleHook: ReturnType<typeof useToggleSingle>;
+  keyMenuHook: ReturnType<typeof useKeyMenu>;
 }) => {
   const {
     right,
     gauge,
     index,
     isMatched,
+    rowItem,
+    keyMenuHook,
   } = props;
   const { openModal } = usePreformattedValueModal();
+  const cellRef = useRef<HTMLDivElement>(null);
   if (typeof right.itemKey === "undefined") { return null; }
   const { toggleState, toggleItem } = props.toggleSingleHook;
   const depth = index % 5;
   const text = typeof right.itemKey === "string" ? right.itemKey : `[${right.itemKey}]`;
-  const currentColumnLength = gauge ? gauge.crampedKeyLengths[index + 1] : 6;  
+  const currentColumnLength = gauge ? gauge.crampedKeyLengths[index + 1] : 6;
+  const isMenuOpen = keyMenuHook.isKeyMenuOpen(rowItem.index, right.index);
 
   return <div
-    className={`item-key grow-0 shrink-0 flex flex-row items-center p-1 depth-${depth} ${isMatched ? "matched-cell" : ""}`}
+    ref={cellRef}
+    className={`item-key grow-0 shrink-0 flex flex-row items-center p-1 depth-${depth} ${isMatched ? "matched-cell" : ""} ${isMenuOpen ? "key-menu-open" : ""}`}
     style={{ width: `${currentColumnLength}em`, overflow: "normal" }}
     title={right.itemKey.toString()}
   >
-    <p
-      className='grow shrink text-ellipsis whitespace-nowrap break-keep overflow-hidden'
+    <button
+      className='key-menu-trigger grow shrink text-ellipsis whitespace-nowrap break-keep overflow-hidden text-left'
+      title={`${right.itemKey}\nクリックでメニュー (クエリ生成 / コピー / ピン)`}
+      onClick={() => keyMenuHook.toggleKeyMenu(rowItem.index, right.index)}
     >
       {text}
-    </p>
+    </button>
+
+    {isMenuOpen && <KeyMenu
+      item={right}
+      anchorRef={cellRef}
+      onClose={keyMenuHook.closeKeyMenu}
+    />}
 
     {
       props.isTogglable
@@ -118,6 +140,11 @@ export const FlatJsonLeadingCell = (props: {
   isNarrowedFrom: boolean;
   manipulationHook: ReturnType<typeof useManipulation>;
   toggleSingleHook: ReturnType<typeof useToggleSingle>;
+  keyMenuHook: ReturnType<typeof useKeyMenu>;
+  /**
+   * このセルを表示している行のアイテム
+   */
+  rowItem: JsonRowItem;
   /**
    * その行に本来表示したいアイテム
    * 「最も右のLeadingCell」にのみ与えられる
@@ -133,6 +160,8 @@ export const FlatJsonLeadingCell = (props: {
     index,
     manipulationHook,
     toggleSingleHook,
+    keyMenuHook,
+    rowItem,
   } = props;
   const isRightmost = !!right;
   const showTypeCell = right && (right.right.type === "array" || right.right.type === "map");
@@ -149,7 +178,9 @@ export const FlatJsonLeadingCell = (props: {
         (props.isHovered || props.isNarrowedFrom)
           ? <RightmostKeyCell
             index={props.index} gauge={gauge} right={props.nextItem} isTogglable={isTogglable}
+            rowItem={rowItem}
             toggleSingleHook={toggleSingleHook}
+            keyMenuHook={keyMenuHook}
           />
           : null
       }
@@ -164,8 +195,10 @@ export const FlatJsonLeadingCell = (props: {
     // -> 続けて, 本来のitemの型と要素数を表示する
     return <>
       <RightmostKeyCell
-        index={props.index}gauge={gauge} right={right} isTogglable={isTogglable} isMatched={isMatched}
+        index={props.index} gauge={gauge} right={right} isTogglable={isTogglable} isMatched={isMatched}
+        rowItem={rowItem}
         toggleSingleHook={toggleSingleHook}
+        keyMenuHook={keyMenuHook}
       />
       <RightmostTypeCell
         index={props.typeIndex} gauge={gauge} right={right}
@@ -182,7 +215,9 @@ export const FlatJsonLeadingCell = (props: {
     // -> 開閉する必要がない
     return <RightmostKeyCell
       gauge={gauge} index={props.index} right={right} isTogglable={isTogglable} isMatched={isMatched}
+      rowItem={rowItem}
       toggleSingleHook={toggleSingleHook}
+      keyMenuHook={keyMenuHook}
     />
   }
 }

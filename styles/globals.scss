@@ -755,6 +755,73 @@ body {
   }
 }
 
+// キーセルのクリックで開くメニュー (ポータルで body 直下に出る)
+.key-menu {
+  z-index: 30;
+  min-width: 18em;
+  max-width: min(40em, calc(100vw - 8px));
+  background-color: var(--background-secondary);
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.key-menu-header {
+  color: var(--foreground-key);
+  border-bottom: 1px solid var(--foreground-secondary);
+}
+
+.key-menu-section {
+  &:not(:first-of-type) {
+    border-top: 1px solid var(--foreground-secondary);
+  }
+}
+
+.key-menu-row {
+  color: var(--foreground);
+
+  &:hover {
+    background-color: var(--background);
+  }
+
+  // 現在の検索クエリがこの候補と一致している (= 絞り込み中)
+  &.is-active {
+    font-weight: bold;
+
+    .key-menu-query {
+      opacity: 1;
+    }
+  }
+}
+
+.key-menu-query {
+  color: var(--foreground-key);
+  opacity: 0.7;
+  text-align: right;
+}
+
+.key-menu-count,
+.key-menu-note {
+  opacity: 0.7;
+}
+
+// メニューを開く的 (キー名). ホバーで押せることを示す
+.key-menu-trigger {
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}
+
+.key-menu-open .key-menu-trigger {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  font-weight: bold;
+}
+
 .pin-memo-balloon {
   // 包含ブロック (幅 2em のグリフセル) への shrink-to-fit で幅が潰れないようにする
   width: max-content;
@@ -797,6 +864,22 @@ body {
 
 .profile-key {
   color: var(--foreground-key);
+}
+
+// キー名自身のファセット (このキーで絞り込む)
+.profile-facet-key {
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  &.is-active {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    font-weight: bold;
+  }
 }
 
 .profile-stat,

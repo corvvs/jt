@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { composeFacetQuery } from "./facet";
+import { composeFacetQuery, composeKeyPathQuery, composeKeyPatternQuery } from "./facet";
 import { flattenJson } from "./jetson";
 import { tokenizeQuery } from "./advanced_query/tokenizer";
 import { structurizeQuery } from "./advanced_query/parser";
@@ -113,5 +113,73 @@ describe("composeFacetQuery: マッチングとの往復", () => {
     expect(matchedKeys(doc, composeFacetQuery("rows.*.flag", "true")!)).toEqual(["rows.0.flag"]);
     expect(matchedKeys(doc, composeFacetQuery("rows.*.flag", "false")!)).toEqual(["rows.1.flag"]);
     expect(matchedKeys(doc, composeFacetQuery("rows.*.ratio", "null")!)).toEqual(["rows.0.ratio"]);
+  });
+});
+
+describe("composeKeyPatternQuery", () => {
+  it("キーパスパターンだけのクエリを合成する", () => {
+    expect(composeKeyPatternQuery("items.*.status")).toBe("$.items.*.status");
+    expect(composeKeyPatternQuery("meta")).toBe("$.meta");
+  });
+
+  it("空・表現できないキーパスは null", () => {
+    expect(composeKeyPatternQuery("")).toBeNull();
+    expect(composeKeyPatternQuery("a b")).toBeNull();
+    expect(composeKeyPatternQuery("pre*fix")).toBeNull();
+  });
+
+  it("配列マージのパターンは同じ階層の同名キーすべてにマッチする", () => {
+    const doc = { items: [{ status: "a" }, { status: "b" }], other: { status: "c" } };
+    expect(matchedKeys(doc, composeKeyPatternQuery("items.*.status")!))
+      .toEqual(["items.0.status", "items.1.status"]);
+  });
+});
+
+describe("composeKeyPathQuery", () => {
+  it("セグメント列からアンカー付きのキーパスを合成する", () => {
+    expect(composeKeyPathQuery(["items", 3, "status"])).toBe("$.items.3.status");
+  });
+
+  it("添字を緩和する", () => {
+    expect(composeKeyPathQuery(["items", 3, "status"], { relaxIndices: true }))
+      .toBe("$.items.*.status");
+    expect(composeKeyPathQuery(["a", 0, "b", 1], { relaxIndices: true })).toBe("$.a.*.b.*");
+  });
+
+  it("非アンカーにできる", () => {
+    expect(composeKeyPathQuery(["status"], { anchored: false })).toBe("status");
+  });
+
+  it("値条件を付ける", () => {
+    expect(composeKeyPathQuery(["a"], { value: '"x"' })).toBe('$.a:"x"');
+  });
+
+  it("述語を付ける ($ 付きで直下に固定する)", () => {
+    expect(composeKeyPathQuery(["items", 3], { relaxIndices: true, predicate: { key: "status", value: '"e"' } }))
+      .toBe('$.items.*[$.status:"e"]');
+  });
+
+  it("空のセグメント列は null", () => {
+    expect(composeKeyPathQuery([])).toBeNull();
+  });
+
+  it("実在するキー名としては * も表現できない", () => {
+    expect(composeKeyPathQuery(["*"])).toBeNull();
+    expect(composeKeyPathQuery(["a", "*", "b"])).toBeNull();
+  });
+
+  it("緩和した添字は * として書かれる (キー名 * の制限に触れない)", () => {
+    expect(composeKeyPathQuery(["a", 0], { relaxIndices: true })).toBe("$.a.*");
+  });
+
+  it("構造文字・空白入りのキー名は null", () => {
+    expect(composeKeyPathQuery(["a.b"])).toBeNull();
+    expect(composeKeyPathQuery(["a b"])).toBeNull();
+    expect(composeKeyPathQuery(["a:b"])).toBeNull();
+    expect(composeKeyPathQuery(["a", ""])).toBeNull();
+  });
+
+  it("述語のキーが表現できなければ null", () => {
+    expect(composeKeyPathQuery(["a"], { predicate: { key: "x.y", value: '"v"' } })).toBeNull();
   });
 });

@@ -34,6 +34,7 @@ import { usePinNavigation } from "@/hooks/usePinNavigation";
 import { MinimapView } from "./minimap/MinimapView";
 import { useMinimapPreference, minimapViewportAtom } from "@/states/minimap";
 import { useSavedQueriesLoader } from "@/states/saved_queries";
+import { useKeyMenu } from "@/states/key_menu";
 
 interface VirtualScrollProps<T> {
   data: T[];
@@ -92,6 +93,7 @@ const JsonItemsView = (props: {
   const manipulationHook = useManipulation();
   const toggleSingleHook = useToggleSingle();
   const pinsHook = usePins();
+  const keyMenuHook = useKeyMenu();
   const setViewport = useSetAtom(minimapViewportAtom);
 
   // targetDocIdとloadedDocIdが一致していない場合、またはロード中の場合はローディング表示
@@ -137,6 +139,7 @@ const JsonItemsView = (props: {
         manipulationHook={manipulationHook}
         toggleSingleHook={toggleSingleHook}
         pinsHook={pinsHook}
+        keyMenuHook={keyMenuHook}
         gauge={gauge}
       />
       }
