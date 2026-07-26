@@ -106,14 +106,14 @@ export const ColorSets: {
     "highlight-5-row":    "#d9def5", // blue
     "highlight-6-row":    "#e6d8ee", // purple
     "highlight-7-row":    "#f0d7e6", // pink
-    "highlight-0-marker": "#b94a4a",
-    "highlight-1-marker": "#b06f22",
-    "highlight-2-marker": "#99841f",
-    "highlight-3-marker": "#2e8a48",
-    "highlight-4-marker": "#23807a",
-    "highlight-5-marker": "#3d5cc4",
-    "highlight-6-marker": "#7e42ad",
-    "highlight-7-marker": "#b0468b",
+    "highlight-0-marker": "#d03535",
+    "highlight-1-marker": "#cc6e0f",
+    "highlight-2-marker": "#b39a10",
+    "highlight-3-marker": "#229a47",
+    "highlight-4-marker": "#12968d",
+    "highlight-5-marker": "#3556e0",
+    "highlight-6-marker": "#8a35c9",
+    "highlight-7-marker": "#cc3392",
   },
 
   dark: {
@@ -154,14 +154,14 @@ export const ColorSets: {
     "highlight-5-row":    "#2d3a52", // blue
     "highlight-6-row":    "#3e2e4c", // purple
     "highlight-7-row":    "#4a2c3f", // pink
-    "highlight-0-marker": "#e88f8f",
-    "highlight-1-marker": "#e0a460",
-    "highlight-2-marker": "#d9c465",
-    "highlight-3-marker": "#79d992",
-    "highlight-4-marker": "#5fc9c2",
-    "highlight-5-marker": "#7d9bf0",
-    "highlight-6-marker": "#b98ae0",
-    "highlight-7-marker": "#e08ac0",
+    "highlight-0-marker": "#f26d6d",
+    "highlight-1-marker": "#f0993d",
+    "highlight-2-marker": "#e8c93e",
+    "highlight-3-marker": "#4fe07c",
+    "highlight-4-marker": "#35d9cd",
+    "highlight-5-marker": "#5f8dfa",
+    "highlight-6-marker": "#b370f0",
+    "highlight-7-marker": "#f070c2",
   },
 }
 
