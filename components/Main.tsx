@@ -43,15 +43,23 @@ interface VirtualScrollProps<T> {
   onItemsRendered?: (props: ListOnItemsRenderedProps) => void;
 }
 
-function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef, onItemsRendered }: VirtualScrollProps<T>) {
-  const Row = ({ index, style }: any) => {
-    return (
-      <div style={style}>
-        {renderItem(data[index], index)}
-      </div>
-    );
-  };
+/**
+ * 行コンポーネントはモジュール直下に置き, 描画に必要なものは itemData で渡す.
+ *
+ * VirtualScroll の内側で定義すると再レンダーごとに要素の型が変わり, react-window が
+ * 全行を unmount → remount する。すると mousedown と mouseup の間に行の DOM が
+ * 作り直された場合にブラウザが click を合成せず, 行のボタンの1回目の押下が
+ * 取りこぼされる (検索欄からフォーカスが外れる時など)。
+ */
+const VirtualScrollRow = ({ index, style, data }: any) => {
+  return (
+    <div style={style}>
+      {data.renderItem(data.items[index], index)}
+    </div>
+  );
+};
 
+function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef, onItemsRendered }: VirtualScrollProps<T>) {
   return (
     <AutoSizer>
       {({ height, width }: { height: number; width: number; }) => (
@@ -63,8 +71,9 @@ function VirtualScroll<T>({ data, renderItem, itemSize, itemViewRef, onItemsRend
           itemSize={itemSize}
           overscanCount={20}
           onItemsRendered={onItemsRendered}
+          itemData={{ items: data, renderItem }}
         >
-          {Row}
+          {VirtualScrollRow}
         </FixedSizeList>
       )}
     </AutoSizer>
