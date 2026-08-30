@@ -35,6 +35,7 @@ import { MinimapView } from "./minimap/MinimapView";
 import { useMinimapPreference, minimapViewportAtom } from "@/states/minimap";
 import { useSavedQueriesLoader } from "@/states/saved_queries";
 import { HighlightRulesView } from "./highlight/HighlightRulesView";
+import { ViewportControls } from "./lv2/ViewportControls";
 import { useHighlightPreference, useHighlightRulesLoader } from "@/states/highlight";
 import { useKeyMenu } from "@/states/key_menu";
 
@@ -609,8 +610,14 @@ export const Main = (props: {
         </div>
       </div>
 
+      {/*
+        JSON 本体の表示領域. ViewportControls (右上のフローティング操作) の
+        positioning context にするため relative にしてある.
+        ViewportControls は absolute なので通常フローに入らず,
+        AutoSizer / react-window が測るビューポートの幅・高さを変えない.
+      */}
       <div
-        className="shrink grow text-base"
+        className="relative shrink grow text-base"
       >
         <JsonItemsView
           itemViewRef={itemViewRef}
@@ -618,6 +625,7 @@ export const Main = (props: {
           loadedDocId={loadedDocId}
           isLoading={isLoading}
         />
+        <ViewportControls />
       </div>
 
       {minimapPreference.showPanel && (

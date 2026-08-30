@@ -7,6 +7,12 @@ export const MenuButton = (
     children: ReactNode;
     disabled?: boolean;
     className?: string;
+    /**
+     * アイコンのみのボタンでラベルを補うための説明.
+     * title は hover 時のツールチップ, ariaLabel は支援技術向けの名前になる.
+     */
+    title?: string;
+    ariaLabel?: string;
   }
 ) => {
   return (
@@ -17,6 +23,8 @@ export const MenuButton = (
       onClick={() => props.onClick()}
       onMouseEnter={props.onMouseEnter}
       disabled={props.disabled}
+      title={props.title}
+      aria-label={props.ariaLabel ?? props.title}
     >
       {props.children}
     </button>
@@ -31,6 +39,8 @@ export const MenuToggleButton = (
     disabled?: boolean;
     children: ReactNode;
     className?: string;
+    title?: string;
+    ariaLabel?: string;
   }
 ) => {
   return (
@@ -39,6 +49,9 @@ export const MenuToggleButton = (
       onClick={() => props.onClick(!props.isToggled)}
       onMouseEnter={props.onMouseEnter}
       disabled={props.disabled}
+      title={props.title}
+      aria-label={props.ariaLabel ?? props.title}
+      aria-pressed={props.isToggled}
     >
       {props.children}
     </button>

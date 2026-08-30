@@ -2,12 +2,10 @@ import React, { MutableRefObject } from "react";
 import { VscEdit, VscGraph, VscNewFile, VscPinned } from 'react-icons/vsc';
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
-import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
-import { useToggleMass } from "@/states/view";
 import { useJSON } from "@/states";
 import { diffFlattenedAtom, useEffectiveItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
-import { FaChevronRight, FaExchangeAlt, FaHighlighter, FaList, FaMap, FaSearch } from "react-icons/fa";
+import { FaChevronRight, FaExchangeAlt, FaHighlighter, FaList, FaSearch } from "react-icons/fa";
 import { useAtom } from "jotai";
 import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
@@ -15,7 +13,6 @@ import { useDiffOnly, useDiffTarget } from "@/states/diff";
 import { useProfilePreference } from "@/states/profile";
 import { usePinsPreference } from "@/states/pins";
 import { useHighlightPreference } from "@/states/highlight";
-import { useMinimapPreference } from "@/states/minimap";
 import { docPath, diffPath, parseDocRoute } from "@/libs/routes";
 import { MatchNavigation } from "@/hooks/useMatchNavigation";
 import { GoDiff } from "react-icons/go";
@@ -181,12 +178,10 @@ const OpetationButtons = (props: {
   const { diffTarget } = useDiffTarget();
   const router = useRouter();
   const flatJsons = useEffectiveItems();
-  const { unfoldAll, foldAll } = useToggleMass();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   const { profilePreference, setShowProfilePanel } = useProfilePreference();
   const { pinsPreference, setShowPinsPanel } = usePinsPreference();
   const { highlightPreference, setShowHighlightPanel } = useHighlightPreference();
-  const { minimapPreference, setShowMinimap } = useMinimapPreference();
   const {
     handleMouseEnter,
     handleMouseLeave,
@@ -300,41 +295,6 @@ const OpetationButtons = (props: {
         <InlineIcon i={<FaHighlighter />} />
         <span>Colors</span>
       </MenuToggleButton>
-    )}
-
-    {mode === 'json-viewer' && (
-      <MenuToggleButton
-        isToggled={minimapPreference.showPanel}
-        onClick={(value) => setShowMinimap(value)}
-        onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons}
-      >
-        <InlineIcon i={<FaMap />} />
-        <span>Map</span>
-      </MenuToggleButton>
-    )}
-
-    {mode === 'json-viewer' && (
-      <MenuButton
-        className="ml-4"
-        onClick={() => foldAll()}
-        onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons}
-      >
-        <InlineIcon i={<HiChevronDoubleUp />} />
-        <span>Fold</span>
-      </MenuButton>
-    )}
-
-    {mode === 'json-viewer' && (
-      <MenuButton
-        onClick={() => unfoldAll()}
-        onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons}
-      >
-        <InlineIcon i={<HiChevronDoubleDown />} />
-        <span>Unfold</span>
-      </MenuButton>
     )}
 
   </div>;
