@@ -743,6 +743,35 @@ body {
   backface-visibility: hidden;
 }
 
+/* JSON ビューポート右上のフローティング操作 (Fold all / Unfold all / MiniMap).
+   position は Tailwind 側 (absolute top-1 right-4) で指定してあり,
+   ここは面としての見た目だけを持つ. 子の z-index: 1 は header-bar と同じく
+   transient-backdrop (z-index: 0) をボタンの背面に回すため. */
+.viewport-controls {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+  transition: background-color var(--theme-transition);
+  /* トグル中のボタン背景と backdrop を角丸で切り抜く.
+     コンテナ側に padding を置かない代わりに, 余白はボタンの padding で作る. */
+  overflow: hidden;
+
+  /* backdrop (z-index: 0) を巻き込まないよう, セレクタは button に限定する.
+     header-bar の `>*` を真似ると .transient-backdrop より後方の定義になり,
+     同じ詳細度で後勝ちして backdrop の z-index/padding を奪ってしまう. */
+  >button {
+    z-index: 1;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.4rem;
+
+    >span {
+      padding: 0.15rem;
+    }
+  }
+}
+
 /* ミニマップ — 可視行を縮約した帯 (マッチ・ピン・diff の空間分布) */
 .minimap-container {
   background-color: var(--background-secondary);
