@@ -1,16 +1,26 @@
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
-import { FaMap } from "react-icons/fa";
+import { FaHighlighter, FaMap } from "react-icons/fa";
 import { useToggleMass } from "@/states/view";
 import { useEffectiveItems } from "@/states/json";
 import { useMinimapPreference } from "@/states/minimap";
+import { useHighlightPreference } from "@/states/highlight";
+import { useDiffTarget } from "@/states/diff";
 import { useTransientBackdrop } from "@/features/TransientBackdrop";
 
 /**
- * JSON ビューポート右上に浮かせるローカル操作 (Fold all / Unfold all / MiniMap).
+ * JSON ビューポート右上に浮かせるローカル操作
+ * (Fold all / Unfold all | Colors / MiniMap).
  *
  * 「今見ている JSON 本体に対する操作」なのでヘッダーではなくビューポートに属させる.
+ *
+ * 並びは「畳む操作」と「可視化操作」の2グループ. Colors (行に意味を付ける) と
+ * MiniMap (その意味や検索・ピン・diff の分布を全体へ投影する) は使う場面が近いので
+ * 隣接させ, Fold/Unfold との間だけ余白を広げて見た目のまとまりを作る.
+ * ただし UI 上のコロケートであって, 両者の state は独立のまま:
+ * 片方のトグルがもう片方を開閉することはなく, availability も互いに依存しない.
+ *
  * 呼び出し側 (Main) の JSON 表示領域を positioning context (relative) にし,
  * この要素は absolute で通常フローから外れる:
  * AutoSizer / react-window が測るのは親の内容領域なので, overlay を足しても
@@ -26,6 +36,9 @@ export const ViewportControls = () => {
   const flatJsons = useEffectiveItems();
   const { foldAll, unfoldAll } = useToggleMass();
   const { minimapPreference, setShowMinimap } = useMinimapPreference();
+  const { highlightPreference, setShowHighlightPanel } = useHighlightPreference();
+  // Colors は diff モード中は使えない (ヘッダーにあった頃と同じ). MiniMap は diff でも有効.
+  const { diffTarget } = useDiffTarget();
   const {
     handleMouseEnter,
     handleMouseLeave,
@@ -58,6 +71,19 @@ export const ViewportControls = () => {
       >
         <InlineIcon i={<HiChevronDoubleDown />} />
       </MenuButton>
+
+      <MenuToggleButton
+        className="ml-4"
+        isToggled={highlightPreference.showPanel && !diffTarget}
+        onClick={(value) => setShowHighlightPanel(value)}
+        onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons || !!diffTarget}
+        title="カラーリングルールのパネルを開閉する"
+        ariaLabel="Colors"
+      >
+        <InlineIcon i={<FaHighlighter />} />
+        <span>Colors</span>
+      </MenuToggleButton>
 
       <MenuToggleButton
         isToggled={minimapPreference.showPanel}

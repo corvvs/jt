@@ -5,14 +5,13 @@ import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { useJSON } from "@/states";
 import { diffFlattenedAtom, useEffectiveItems } from "@/states/json";
 import { useManipulation } from "@/states/manipulation";
-import { FaChevronRight, FaExchangeAlt, FaHighlighter, FaList, FaSearch } from "react-icons/fa";
+import { FaChevronRight, FaExchangeAlt, FaList, FaSearch } from "react-icons/fa";
 import { useAtom } from "jotai";
 import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
 import { useDiffOnly, useDiffTarget } from "@/states/diff";
 import { useProfilePreference } from "@/states/profile";
 import { usePinsPreference } from "@/states/pins";
-import { useHighlightPreference } from "@/states/highlight";
 import { docPath, diffPath, parseDocRoute } from "@/libs/routes";
 import { MatchNavigation } from "@/hooks/useMatchNavigation";
 import { GoDiff } from "react-icons/go";
@@ -181,7 +180,6 @@ const OpetationButtons = (props: {
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   const { profilePreference, setShowProfilePanel } = useProfilePreference();
   const { pinsPreference, setShowPinsPanel } = usePinsPreference();
-  const { highlightPreference, setShowHighlightPanel } = useHighlightPreference();
   const {
     handleMouseEnter,
     handleMouseLeave,
@@ -282,18 +280,6 @@ const OpetationButtons = (props: {
       >
         <InlineIcon i={<VscPinned />} />
         <span>Pins</span>
-      </MenuToggleButton>
-    )}
-
-    {mode === 'json-viewer' && (
-      <MenuToggleButton
-        isToggled={highlightPreference.showPanel && !diffTarget}
-        onClick={(value) => setShowHighlightPanel(value)}
-        onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons || !!diffTarget}
-      >
-        <InlineIcon i={<FaHighlighter />} />
-        <span>Colors</span>
       </MenuToggleButton>
     )}
 

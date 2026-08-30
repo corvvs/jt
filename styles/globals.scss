@@ -743,7 +743,7 @@ body {
   backface-visibility: hidden;
 }
 
-/* JSON ビューポート右上のフローティング操作 (Fold all / Unfold all / MiniMap).
+/* JSON ビューポート右上のフローティング操作 (Fold all / Unfold all | Colors / MiniMap).
    position は Tailwind 側 (absolute top-1 right-4) で指定してあり,
    ここは面としての見た目だけを持つ. 子の z-index: 1 は header-bar と同じく
    transient-backdrop (z-index: 0) をボタンの背面に回すため. */
