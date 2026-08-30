@@ -692,6 +692,14 @@ body {
   padding: 0.15rem 0.40rem;
   pointer-events: none;
   background-color: var(--foreground);
+
+  /* 縦並びのメニュー用. 幅いっぱいに広げ, 高さと translateY は JS が書く */
+  &.is-vertical {
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 0;
+  }
 }
 
 .query-view,
@@ -769,6 +777,98 @@ body {
     >span {
       padding: 0.15rem;
     }
+  }
+}
+
+/* テーマ切替 (ヘッダー右端). 実効テーマのアイコン1つ + 押下で開く縦メニュー */
+.theme-selector-trigger {
+  /* 通常時は角丸正方形. 高さ 2.4em に幅を合わせ, アイコンを中央に置く */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4em;
+  height: 2.4em;
+  padding: 0;
+  border-radius: 6px;
+
+  /* 単独のボタンなので transient-backdrop は使わない.
+     .menu-toggle-button の hover は色だけ反転させる (背景は backdrop 任せ) ので,
+     ここで背景も付けて反転を完成させる. */
+  &:not(:disabled):hover {
+    color: var(--background);
+    background-color: var(--foreground);
+    transition: background-color var(--flippable-transition);
+  }
+}
+
+/* react-icons は 1em で描かれるので, サイズは font-size で与える.
+   トリガー・メニューの行ともに 20px (ラベルは 16px) */
+.theme-trigger-icon,
+.theme-menu-icon {
+  display: block;
+  font-size: 20px;
+  line-height: 0;
+}
+
+.theme-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  min-width: 8em;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--foreground-secondary);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.theme-menu-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  /* ラベル列 + アイコン列. アイコンは auto 幅なので縦に揃う.
+     ラベルはその列の中で中央揃えにする. */
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.55em;
+  width: 100%;
+  padding: 0.34em 0.6em;
+  white-space: nowrap;
+  color: var(--foreground);
+
+  /* backdrop が載っている行. hover 中の行か, hover していなければ選択中の行 */
+  &.is-on {
+    color: var(--background);
+    transition: color var(--flippable-transition);
+  }
+}
+
+.theme-menu-label {
+  text-align: center;
+}
+
+/* Auto の合成アイコン: 塗りの Sun を左上, 塗りの Moon を右下へ縮小して重ねる */
+.theme-auto-icon {
+  position: relative;
+  display: block;
+  width: 1em;
+  height: 1em;
+
+  >svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: scale(0.62);
+  }
+
+  >svg:first-child {
+    transform-origin: 0 0;
+  }
+
+  >svg:last-child {
+    transform-origin: 100% 100%;
   }
 }
 

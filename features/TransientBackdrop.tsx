@@ -1,19 +1,48 @@
 import { SyntheticEvent, useEffect, useRef, useState } from "react";
+import { useIsomorphicLayoutEffect } from "@/hooks/useIsomorphicLayoutEffect";
 
-export const useTransientBackdrop = () => {
+type BackdropAxis = "x" | "y";
+
+type TransientBackdropOptions = {
+  /**
+   * バックドロップが動く向き.
+   * 横並びのツールバーは "x" (既定), 縦並びのメニューは "y".
+   */
+  axis?: BackdropAxis;
+  /**
+   * hover していないときにバックドロップが載る要素.
+   * 渡すと「消える」のではなくこの要素へ戻るので, 選択状態の表示を兼ねられる.
+   * null なら従来どおり hover が外れたら消える.
+   */
+  restingElement?: HTMLElement | null;
+};
+
+export const useTransientBackdrop = (options?: TransientBackdropOptions) => {
+  const axis = options?.axis ?? "x";
+  const restingElement = options?.restingElement ?? null;
+
   const hoveredRef = useRef<HTMLElement | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hoverState, setHoverState] = useState<{
-    left: number;
-    width: number;
+    /** 軸に沿った位置 */
+    offset: number;
+    /** 軸に沿った長さ */
+    size: number;
     visible: boolean;
-    animation: "in" | "out" | "move"
+    animation: "in" | "out" | "move" | "instant"
   }>({
-    left: 0,
-    width: 0,
+    offset: 0,
+    size: 0,
     visible: false,
     animation: "in",
   });
+
+  // 軸に沿った位置と長さを測る. 横は offsetLeft/offsetWidth, 縦は offsetTop/offsetHeight.
+  const measure = (el: HTMLElement) => (
+    axis === "y"
+      ? { offset: el.offsetTop, size: el.offsetHeight }
+      : { offset: el.offsetLeft, size: el.offsetWidth }
+  );
 
   const cancelHide = () => {
     if (hideTimerRef.current !== null) {
@@ -25,17 +54,24 @@ export const useTransientBackdrop = () => {
   const hide = () => {
     hoveredRef.current = null;  // マウスが要素から離れたときはnullを設定
     setHoverState((prev) => {
+      // 定位置があるなら消さずにそこへ戻す
+      if (restingElement) {
+        return { ...measure(restingElement), visible: true, animation: "move" };
+      }
       return { ...prev, animation: "out", visible: false };
     });
   };
 
   const handleMouseEnter = (e: SyntheticEvent<HTMLElement>) => {
     cancelHide();
-    const animation = hoveredRef.current ? "move" : "in";
-    hoveredRef.current = e.currentTarget as HTMLElement;
-    const width = hoveredRef.current.offsetWidth;
-    const left = hoveredRef.current.offsetLeft
-    setHoverState({ left, width, animation, visible: true })
+    const el = e.currentTarget as HTMLElement;
+    hoveredRef.current = el;
+    // 既に出ているならスライド, 出ていないならフェードイン
+    setHoverState((prev) => ({
+      ...measure(el),
+      visible: true,
+      animation: prev.visible ? "move" : "in",
+    }));
   };
 
   const handleMouseLeave = () => {
@@ -54,18 +90,43 @@ export const useTransientBackdrop = () => {
     hideTimerRef.current = setTimeout(hide, 80);
   };
 
+  // 定位置の出入りに追従する.
+  // ペイント前に走らせる: useEffect だと定位置が決まるのが1フレーム遅れ,
+  // 「メニューが出てから一拍おいて選択行がライトアップされる」ように見える.
+  useIsomorphicLayoutEffect(() => {
+    if (!restingElement) {
+      // 定位置が消えた (メニューを閉じた等). 次に開くときスライドしないよう畳んでおく
+      setHoverState((prev) => (prev.visible ? { ...prev, visible: false, animation: "out" } : prev));
+      return;
+    }
+    if (hoveredRef.current) { return; }
+    setHoverState((prev) => ({
+      ...measure(restingElement),
+      visible: true,
+      // 初回配置はメニュー自体が現れる瞬間なので, フェードさせず即座に置く.
+      // 2回目以降 (hover から戻ってきた等) はスライドさせる.
+      animation: prev.visible ? "move" : "instant",
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restingElement, axis]);
+
   useEffect(() => cancelHide, []);
 
   const backdrop = <div
-    className="transient-backdrop"
+    className={`transient-backdrop${axis === "y" ? " is-vertical" : ""}`}
     style={{
-      width: hoverState.width,
-      transform: `translateX(${hoverState.left}px)`,
+      ...(
+        axis === "y"
+          ? { height: hoverState.size, transform: `translateY(${hoverState.offset}px)` }
+          : { width: hoverState.size, transform: `translateX(${hoverState.offset}px)` }
+      ),
       opacity: hoverState.visible ? 1 : 0,
       ...(
         hoverState.animation === "move"
           ? { transitionDuration: "128ms" }
-          : { transition: "opacity 128ms" }
+          : hoverState.animation === "instant"
+            ? { transition: "none" }
+            : { transition: "opacity 128ms" }
       ),
     }}
   />;
