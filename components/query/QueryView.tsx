@@ -43,6 +43,31 @@ const ModePanel = () => {
   />
 };
 
+// 入力欄の高さの下限・上限 (行数)
+const QueryInputMinRows = 1;
+const QueryInputMaxRows = 5;
+
+/**
+ * 入力内容の行数に合わせて textarea の高さを調節する.
+ * 上限行数を超えたときだけ縦スクロールさせ, それ以外ではスクロールバーを隠す.
+ */
+const fitHeightToContent = (el: HTMLTextAreaElement | null) => {
+  if (!el) { return; }
+  const style = window.getComputedStyle(el);
+  const lineHeight = parseFloat(style.lineHeight);
+  const verticalPadding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+  const verticalBorder = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+  if (!_.isFinite(lineHeight) || !_.isFinite(verticalPadding) || !_.isFinite(verticalBorder)) { return; }
+  const minHeight = lineHeight * QueryInputMinRows + verticalPadding + verticalBorder;
+  const maxHeight = lineHeight * QueryInputMaxRows + verticalPadding + verticalBorder;
+  // 一度高さを捨ててから scrollHeight を測らないと, 行が減った場合に縮められない.
+  el.style.height = "auto";
+  // box-sizing: border-box なので, scrollHeight (内容+padding) に border 分を足して揃える.
+  const contentHeight = el.scrollHeight + verticalBorder;
+  el.style.height = `${_.clamp(contentHeight, minHeight, maxHeight)}px`;
+  el.style.overflowY = contentHeight > maxHeight ? "auto" : "hidden";
+};
+
 const QueryInputField = () => {
   const {
     filteringPreference,
@@ -52,7 +77,7 @@ const QueryInputField = () => {
   } = useQuery();
   const { filteringPreference: manipulationPreference } = useManipulation();
 
-  const inputRef = useRef<any>();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const reflectQuery = useCallback(
     _.debounce((value: string) => {
       setFilteringQuery(prev => {
@@ -62,14 +87,18 @@ const QueryInputField = () => {
   );
 
   useEffect(() => {
-    inputRef.current.value = filteringQuery;
-    inputRef.current.focus();
+    const el = inputRef.current;
+    if (!el) { return; }
+    el.value = filteringQuery;
+    el.focus();
+    fitHeightToContent(el);
   }, [filteringQuery]);
 
   // 表示時にフォーカスを当てるための処理
   useEffect(() => {
     if (manipulationPreference.showPanel) {
       inputRef.current?.focus();
+      fitHeightToContent(inputRef.current);
     }
   }, [manipulationPreference.showPanel]);
 
@@ -78,12 +107,13 @@ const QueryInputField = () => {
     : 'items.*[status:"error"] のように入力...';
 
   return <div>
-    <input
-      type="text"
+    <textarea
       ref={inputRef}
-      className="p-1 bg-transparent	border-[1px] outline-0 w-full font-monospacy"
+      rows={QueryInputMinRows}
+      className="block p-1 bg-transparent border-[1px] outline-0 w-full font-monospacy leading-normal resize-none overflow-y-hidden"
       placeholder={placeholder}
       onChange={(e) => {
+        fitHeightToContent(e.currentTarget);
         reflectQuery(e.currentTarget.value);
       }}
       onFocus={() => {
@@ -133,7 +163,7 @@ export const QueryView = ({ matchNavigation }: QueryViewProps = {}) => {
     </h2>
 
     <div
-      className="px-2 flex flex-col gap-1"
+      className="px-2 shrink-0 grow-0 flex flex-col gap-1"
     >
       <QueryInputField />
 
