@@ -1,5 +1,5 @@
 import React, { MutableRefObject } from "react";
-import { VscEdit, VscGraph, VscNewFile, VscPinned } from 'react-icons/vsc';
+import { VscEdit, VscGraph, VscNewFile } from 'react-icons/vsc';
 import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { useJSON } from "@/states";
@@ -11,7 +11,6 @@ import _ from "lodash";
 import { useEditJsonModal, useSelectDiffTargetModal } from "@/states/modal";
 import { useDiffOnly, useDiffTarget } from "@/states/diff";
 import { useProfilePreference } from "@/states/profile";
-import { usePinsPreference } from "@/states/pins";
 import { docPath, diffPath, parseDocRoute } from "@/libs/routes";
 import { MatchNavigation } from "@/hooks/useMatchNavigation";
 import { GoDiff } from "react-icons/go";
@@ -179,7 +178,6 @@ const OpetationButtons = (props: {
   const flatJsons = useEffectiveItems();
   const { filteringPreference, setFilteringBooleanPreference } = useManipulation();
   const { profilePreference, setShowProfilePanel } = useProfilePreference();
-  const { pinsPreference, setShowPinsPanel } = usePinsPreference();
   const {
     handleMouseEnter,
     handleMouseLeave,
@@ -241,6 +239,19 @@ const OpetationButtons = (props: {
 
     {mode === 'json-viewer' && (
       <MenuToggleButton
+        isToggled={profilePreference.showPanel && !diffTarget}
+        onClick={(value) => setShowProfilePanel(value)}
+        onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons || !!diffTarget}
+      >
+        <InlineIcon i={<VscGraph />} />
+        <span>Profile</span>
+      </MenuToggleButton>
+    )}
+
+    {mode === 'json-viewer' && (
+      <MenuToggleButton
+        className="ml-4"
         isToggled={!!diffTarget}
         onClick={(value) => {
           if (value) {
@@ -256,30 +267,6 @@ const OpetationButtons = (props: {
       >
         <InlineIcon i={<GoDiff />} />
         <span>Diff</span>
-      </MenuToggleButton>
-    )}
-
-    {mode === 'json-viewer' && (
-      <MenuToggleButton
-        isToggled={profilePreference.showPanel && !diffTarget}
-        onClick={(value) => setShowProfilePanel(value)}
-        onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons || !!diffTarget}
-      >
-        <InlineIcon i={<VscGraph />} />
-        <span>Profile</span>
-      </MenuToggleButton>
-    )}
-
-    {mode === 'json-viewer' && (
-      <MenuToggleButton
-        isToggled={pinsPreference.showPanel && !diffTarget}
-        onClick={(value) => setShowPinsPanel(value)}
-        onMouseEnter={handleMouseEnter}
-        disabled={!flatJsons || !!diffTarget}
-      >
-        <InlineIcon i={<VscPinned />} />
-        <span>Pins</span>
       </MenuToggleButton>
     )}
 

@@ -2,20 +2,22 @@ import { InlineIcon } from "@/components/lv1/InlineIcon";
 import { MenuButton, MenuToggleButton } from "@/components/lv1/MenuButton";
 import { HiChevronDoubleDown, HiChevronDoubleUp } from "react-icons/hi";
 import { FaHighlighter, FaMap } from "react-icons/fa";
+import { VscPinned } from "react-icons/vsc";
 import { useToggleMass } from "@/states/view";
 import { useEffectiveItems } from "@/states/json";
 import { useMinimapPreference } from "@/states/minimap";
 import { useHighlightPreference } from "@/states/highlight";
+import { usePinsPreference } from "@/states/pins";
 import { useDiffTarget } from "@/states/diff";
 import { useTransientBackdrop } from "@/features/TransientBackdrop";
 
 /**
  * JSON ビューポート右上に浮かせるローカル操作
- * (Fold all / Unfold all | Colors / MiniMap).
+ * (Fold all / Unfold all | Pins / Colors / MiniMap).
  *
  * 「今見ている JSON 本体に対する操作」なのでヘッダーではなくビューポートに属させる.
  *
- * 並びは「畳む操作」と「可視化操作」の2グループ. Colors (行に意味を付ける) と
+ * 並びは「畳む操作」と「可視化操作」の2グループ. Pins・Colors (行に意味を付ける) と
  * MiniMap (その意味や検索・ピン・diff の分布を全体へ投影する) は使う場面が近いので
  * 隣接させ, Fold/Unfold との間だけ余白を広げて見た目のまとまりを作る.
  * ただし UI 上のコロケートであって, 両者の state は独立のまま:
@@ -37,7 +39,8 @@ export const ViewportControls = () => {
   const { foldAll, unfoldAll } = useToggleMass();
   const { minimapPreference, setShowMinimap } = useMinimapPreference();
   const { highlightPreference, setShowHighlightPanel } = useHighlightPreference();
-  // Colors は diff モード中は使えない (ヘッダーにあった頃と同じ). MiniMap は diff でも有効.
+  const { pinsPreference, setShowPinsPanel } = usePinsPreference();
+  // Pins と Colors は diff モード中は使えない (ヘッダーにあった頃と同じ). MiniMap は diff でも有効.
   const { diffTarget } = useDiffTarget();
   const {
     handleMouseEnter,
@@ -74,6 +77,18 @@ export const ViewportControls = () => {
 
       <MenuToggleButton
         className="ml-4"
+        isToggled={pinsPreference.showPanel && !diffTarget}
+        onClick={(value) => setShowPinsPanel(value)}
+        onMouseEnter={handleMouseEnter}
+        disabled={!flatJsons || !!diffTarget}
+        title="ピンのパネルを開閉する"
+        ariaLabel="Pins"
+      >
+        <InlineIcon i={<VscPinned />} />
+        <span>Pins</span>
+      </MenuToggleButton>
+
+      <MenuToggleButton
         isToggled={highlightPreference.showPanel && !diffTarget}
         onClick={(value) => setShowHighlightPanel(value)}
         onMouseEnter={handleMouseEnter}
